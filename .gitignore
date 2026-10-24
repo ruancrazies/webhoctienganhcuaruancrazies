@@ -1,0 +1,18 @@
+node_modules/
+.next/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+
+# Nội dung: CSV tải tay, dữ liệu thô, media — không commit (content/backup thì có commit)
+content/import/*
+!content/import/.gitkeep
+content/sources/*
+!content/sources/.gitkeep
+content/media/*
+!content/media/.gitkeep
+
+supabase/.temp/
+
+supabase/.temp/

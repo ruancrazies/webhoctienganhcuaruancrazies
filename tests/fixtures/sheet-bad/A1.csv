@@ -1,0 +1,10 @@
+key,en,vi,vi_alt,pos,ipa,cefr,domain,topics,rank,note
+apple:n:1,apple,quả táo,,n,,A1,general,food-drink,1,
+apple:n:1,apple,trái táo,,n,,A1,general,food-drink,,
+,pear,quả lê,,n,,A1,general,food-drink,,
+Bad Key,egg,quả trứng,,n,,A1,general,food-drink,,
+run:v:1,run,chạy,,verb,,A1,general,food-drink,,
+sun:n:1,sun,mặt trời,,n,,B1,general,food-drink,,
+bed:n:1,bed,cái giường,,n,,A1,cooking,food-drink,,
+cup:n:1,cup,cái cốc,,n,,A1,general,kitchen,,
+dog:n:1,dog,con chó,,n,,A1,general,food-drink,abc,

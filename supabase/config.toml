@@ -1,0 +1,34 @@
+# Cấu hình Supabase local (supabase CLI). Chạy `supabase start` để có Postgres cục bộ ở cổng 54322.
+# File tối giản; `supabase init` có thể sinh bản đầy đủ — giữ các mục dưới đây.
+project_id = "english-game"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+
+[db]
+port = 54322
+major_version = 17
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/**"]
+enable_signup = true
+minimum_password_length = 6
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true   # xác nhận email bằng mã (mục 1)
+
+otp_length = 6                # mã xác nhận 6 chữ số
+otp_expiry = 3600             # 60 phút (khớp CODE_VALID_MINUTES trong src/server/mail-templates.ts)
+max_frequency = "30s"         # tối thiểu 30 giây giữa hai lần gửi mail cho cùng một người
+
+# Bước 3: Send Email Hook — Supabase gọi vào Next.js thay vì tự gửi mail.
+# Cần SEND_EMAIL_HOOK_SECRET trong môi trường khi chạy `supabase start` (npm run auth:secrets).
+[auth.hook.send_email]
+enabled = true
+uri = "http://host.docker.internal:3000/api/auth/send-email"
+secrets = "env(SEND_EMAIL_HOOK_SECRET)"

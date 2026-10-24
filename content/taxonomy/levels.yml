@@ -1,0 +1,24 @@
+# Cấu hình cấp độ và bài kiểm tra lên cấp (mục 4.3, 4.6).
+# Chỉnh số ở đây, không cần sửa logic.
+
+# Số từ `general` đã học (level >= 1), CỘNG DỒN từ A1, tối thiểu để được vào thi cấp đó.
+# Nếu nội dung hiện có ít hơn ngưỡng, ngưỡng tự hạ xuống bằng tổng số từ general active (tránh kẹt).
+# Cơ sở: trung bình các khoảng của Milton & Alexiou (2009), xem mục 6.6.
+examMinWords:
+  A1: 1000
+  A2: 2000
+  B1: 3000
+  B2: 3500
+  C1: 4100
+
+exam:
+  vocab:
+    total: 20
+    mix: { quiz: 8, cloze: 6, type: 6 }   # chọn nghĩa / điền vào câu / gõ từ
+  grammar:
+    total: 10                              # câu ngữ pháp của đúng cấp đó
+  durationMinutes: 20
+  passTotal: 0.80                          # tổng >= 80%
+  passPart: 0.70                           # từ vựng >= 70% VÀ ngữ pháp >= 70%
+  cooldownMinutes: 60                      # sau lượt không đạt, chờ 1 giờ mới thi lại cấp đó
+  maxAttemptsPerDay: 3                     # tối đa 3 lượt/ngày (giờ VN), tính mọi cấp

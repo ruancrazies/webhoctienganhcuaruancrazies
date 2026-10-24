@@ -1,0 +1,17 @@
+{
+  "sheetId": "REPLACE_WITH_SHEET_ID",
+  "wordTabs": [
+    { "name": "A1", "gid": null },
+    { "name": "A2", "gid": null },
+    { "name": "B1", "gid": null },
+    { "name": "B2", "gid": null },
+    { "name": "C1", "gid": null },
+    { "name": "C2", "gid": null }
+  ],
+  "otherTabs": {
+    "sentences": { "name": "sentences", "gid": null },
+    "grammar": { "name": "grammar", "gid": null },
+    "topics": { "name": "topics", "gid": null },
+    "domains": { "name": "domains", "gid": null }
+  }
+}
