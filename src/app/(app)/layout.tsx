@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { MuteButton } from "@/components/MuteButton";
 import { TabBar, TopNav } from "@/components/Nav";
+import { PetBackground, PetButton } from "@/components/PetBackground";
 import { ThemeButton } from "@/components/ThemeToggle";
 import { requireUser } from "@/server/auth/session";
 import "../app.css";
@@ -19,9 +20,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           </Link>
           <TopNav />
           <ThemeButton />
+          <PetButton />
           <MuteButton />
         </div>
       </header>
+      <PetBackground />
       {children}
       <TabBar />
     </div>
