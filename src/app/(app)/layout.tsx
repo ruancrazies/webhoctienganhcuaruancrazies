@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { MuteButton } from "@/components/MuteButton";
 import { TabBar, TopNav } from "@/components/Nav";
+import { ThemeButton } from "@/components/ThemeToggle";
 import { requireUser } from "@/server/auth/session";
 import "../app.css";
 
@@ -17,6 +18,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             English Game
           </Link>
           <TopNav />
+          <ThemeButton />
           <MuteButton />
         </div>
       </header>

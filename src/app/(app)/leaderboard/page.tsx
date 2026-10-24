@@ -1,4 +1,5 @@
 import { BlitzBoard } from "./BlitzBoard";
+import { Avatar } from "@/components/Avatar";
 import { fmtNumber } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { getLeaderboard } from "@/server/services";
@@ -30,9 +31,12 @@ export default async function LeaderboardPage() {
             {rows.map((r) => (
               <li key={r.rank} className={r.isMe ? "me" : undefined} aria-current={r.isMe ? "true" : undefined}>
                 <span className={`rank${r.rank <= 3 ? ` r${r.rank}` : ""}`}>{r.rank}</span>
-                <span className="who">
-                  <b>{r.username}{r.isMe ? " (bạn)" : ""}</b>
-                  <span className="muted small">{r.level ? `Đã qua cấp ${r.level}` : "Chưa qua cấp nào"}</span>
+                <span className="who-row">
+                  <Avatar avatar={r.avatar} username={r.username} size="sm" />
+                  <span className="who">
+                    <b>{r.username}{r.isMe ? " (bạn)" : ""}</b>
+                    <span className="muted small">{r.level ? `Đã qua cấp ${r.level}` : "Chưa qua cấp nào"}</span>
+                  </span>
                 </span>
                 <span className="pts">{fmtNumber(r.xp)} XP</span>
               </li>

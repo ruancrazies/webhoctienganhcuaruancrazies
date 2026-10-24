@@ -55,6 +55,7 @@ export async function getHome(userId: string, ctx: Ctx = {}): Promise<HomeRespon
   return {
     profile: {
       username: profile.username,
+      avatar: profile.avatar,
       xp: profile.xp,
       streak: displayStreak({ lastDay: profile.lastDay, streak: profile.streak, bestStreak: profile.bestStreak }, today),
       bestStreak: profile.bestStreak,

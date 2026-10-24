@@ -18,7 +18,7 @@ const password = z
   .min(PASSWORD_MIN, `Mật khẩu tối thiểu ${PASSWORD_MIN} ký tự`)
   .max(PASSWORD_MAX, `Mật khẩu tối đa ${PASSWORD_MAX} ký tự`);
 
-const username = z
+export const usernameSchema = z
   .string({ error: "Vui lòng nhập tên đăng nhập" })
   .trim()
   .regex(USERNAME_RE, "Tên đăng nhập 3–20 ký tự: chữ không dấu, số hoặc dấu _");
@@ -32,7 +32,7 @@ const confirmMatches = (v: { password: string; confirm: string }) => v.password 
 const confirmError = { message: "Mật khẩu nhập lại không khớp", path: ["confirm"] };
 
 export const registerSchema = z
-  .object({ username, email, password, confirm: z.string({ error: "Vui lòng nhập lại mật khẩu" }) })
+  .object({ username: usernameSchema, email, password, confirm: z.string({ error: "Vui lòng nhập lại mật khẩu" }) })
   .refine(confirmMatches, confirmError);
 
 export const loginSchema = z.object({

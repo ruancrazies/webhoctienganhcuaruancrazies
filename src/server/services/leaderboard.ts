@@ -8,7 +8,7 @@ const TOP_N = 10;
 const BLITZ_TOP_N = 5;
 const TTL_MS = 60_000;
 
-type Entry = { id: string; username: string; xp: number; level: Cefr | null };
+type Entry = { id: string; username: string; avatar: string | null; xp: number; level: Cefr | null };
 let cache: { at: number; rows: Entry[] } | undefined;
 const blitzCache = new Map<Cefr, { at: number; rows: BlitzBoardResponse["rows"] }>();
 
@@ -25,7 +25,7 @@ export async function getLeaderboard(userId: string, ctx: Ctx = {}): Promise<Lea
     cache = { at: t, rows: top.map((p) => ({ ...p, level: highestPassedLevel(passes.get(p.id) ?? new Set()) })) };
   }
   return {
-    rows: cache.rows.map((r, i) => ({ rank: i + 1, username: r.username, xp: r.xp, level: r.level, isMe: r.id === userId })),
+    rows: cache.rows.map((r, i) => ({ rank: i + 1, username: r.username, avatar: r.avatar, xp: r.xp, level: r.level, isMe: r.id === userId })),
   };
 }
 

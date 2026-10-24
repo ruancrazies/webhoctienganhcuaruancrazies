@@ -15,6 +15,9 @@ async function profileIdByUsername(username: string): Promise<string | null> {
   return (data?.id as string | undefined) ?? null;
 }
 
+/** Id người đang giữ tên này (không phân biệt hoa thường), hoặc null nếu tên còn trống. */
+export const usernameOwner = profileIdByUsername;
+
 /** Tên đăng nhập không phân biệt hoa thường (khớp index profiles_username_idx). */
 export async function isUsernameTaken(username: string): Promise<boolean> {
   return (await profileIdByUsername(username)) !== null;

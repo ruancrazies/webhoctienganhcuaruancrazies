@@ -8,6 +8,7 @@ const db = () => createAdminClient();
 export type Profile = {
   id: string;
   username: string;
+  avatar: string | null;
   xp: number;
   streak: number;
   bestStreak: number;
@@ -16,17 +17,18 @@ export type Profile = {
   xpDay: number | null;
 };
 
-type Raw = { id: string; username: string; xp: number; streak: number; best_streak: number; last_day: number | null; xp_today: number; xp_day: number | null };
+type Raw = { id: string; username: string; avatar: string | null; xp: number; streak: number; best_streak: number; last_day: number | null; xp_today: number; xp_day: number | null };
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   const r = unwrap<Raw>(
     "profiles.get",
-    await db().from("profiles").select("id,username,xp,streak,best_streak,last_day,xp_today,xp_day").eq("id", userId).maybeSingle(),
+    await db().from("profiles").select("id,username,avatar,xp,streak,best_streak,last_day,xp_today,xp_day").eq("id", userId).maybeSingle(),
   );
   if (!r) return null;
   return {
     id: r.id,
     username: r.username,
+    avatar: r.avatar,
     xp: Number(r.xp),
     streak: r.streak,
     bestStreak: r.best_streak,
@@ -37,10 +39,10 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 }
 
 /** Top theo XP (index profiles_xp_idx). */
-export async function topProfiles(limit: number): Promise<{ id: string; username: string; xp: number }[]> {
-  const rows = unwrapList<{ id: string; username: string; xp: number }>(
+export async function topProfiles(limit: number): Promise<{ id: string; username: string; avatar: string | null; xp: number }[]> {
+  const rows = unwrapList<{ id: string; username: string; avatar: string | null; xp: number }>(
     "profiles.top",
-    await db().from("profiles").select("id,username,xp").order("xp", { ascending: false }).limit(limit),
+    await db().from("profiles").select("id,username,avatar,xp").order("xp", { ascending: false }).limit(limit),
   );
   return rows.map((r) => ({ ...r, xp: Number(r.xp) }));
 }
@@ -61,4 +63,14 @@ export async function blitzBoard(cefr: Cefr, limit: number): Promise<BoardRow[]>
     await db().from("game_scores").select("best,profiles!inner(username)").eq("game", `blitz:${cefr}`).order("best", { ascending: false }).limit(limit),
   );
   return rows.map((r) => ({ username: r.profiles.username, best: r.best }));
+}
+
+/** Đổi tên đăng nhập. Vi phạm index duy nhất (không phân biệt hoa thường) → RepoError có code "23505". */
+export async function updateUsername(userId: string, username: string): Promise<void> {
+  unwrap("profiles.updateUsername", await db().from("profiles").update({ username }).eq("id", userId));
+}
+
+/** Đổi avatar (mã trong core/avatars.ts, hoặc null để về chữ cái đầu). */
+export async function updateAvatar(userId: string, avatar: string | null): Promise<void> {
+  unwrap("profiles.updateAvatar", await db().from("profiles").update({ avatar }).eq("id", userId));
 }

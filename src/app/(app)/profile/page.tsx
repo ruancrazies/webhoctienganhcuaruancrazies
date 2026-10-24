@@ -1,8 +1,11 @@
 import { logoutAction } from "@/app/(auth)/actions";
+import { Avatar } from "@/components/Avatar";
 import { MuteToggle } from "@/components/MuteButton";
+import { ThemePicker } from "@/components/ThemeToggle";
 import { LEVEL_NAMES, fmtNumber, ratio } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { getHome } from "@/server/services";
+import { AvatarPicker, UsernameForm } from "./AccountSettings";
 
 export const metadata = { title: "Hồ sơ · English Game" };
 export const dynamic = "force-dynamic";
@@ -18,7 +21,7 @@ export default async function ProfilePage() {
   return (
     <main className="page page-narrow">
       <section className="row" style={{ gap: 16, flexWrap: "nowrap" }} aria-labelledby="pf-h">
-        <span className="avatar" aria-hidden="true">{profile.username.charAt(0).toUpperCase()}</span>
+        <Avatar avatar={profile.avatar} username={profile.username} />
         <div style={{ minWidth: 0 }}>
           <h1 id="pf-h" style={{ overflowWrap: "anywhere" }}>{profile.username}</h1>
           <p className="muted" style={{ overflowWrap: "anywhere" }}>{user.email}</p>
@@ -63,8 +66,15 @@ export default async function ProfilePage() {
         </p>
       </section>
 
+      <section className="sheet sheet-plain stack" aria-labelledby="ac-h">
+        <h2 id="ac-h">Tài khoản</h2>
+        <UsernameForm username={profile.username} />
+        <AvatarPicker avatar={profile.avatar} username={profile.username} />
+      </section>
+
       <section className="sheet sheet-plain stack" aria-labelledby="st-h">
         <h2 id="st-h">Cài đặt</h2>
+        <ThemePicker />
         <MuteToggle />
         <form action={logoutAction}>
           <button type="submit" className="btn btn-light">Đăng xuất</button>

@@ -113,12 +113,12 @@ export type HomeLevel = LevelStatus & {
   topics: HomeTopic[];
 };
 export type HomeResponse = {
-  profile: { username: string; xp: number; streak: number; bestStreak: number; xpToday: number; dailyXpCap: number };
+  profile: { username: string; avatar: string | null; xp: number; streak: number; bestStreak: number; xpToday: number; dailyXpCap: number };
   dueCount: number;
   levels: HomeLevel[];
 };
 
-export type LeaderboardRow = { rank: number; username: string; xp: number; level: Cefr | null; isMe: boolean };
+export type LeaderboardRow = { rank: number; username: string; avatar: string | null; xp: number; level: Cefr | null; isMe: boolean };
 export type LeaderboardResponse = { rows: LeaderboardRow[] };
 export type BlitzBoardResponse = { cefr: Cefr; rows: BoardRow[] };
 

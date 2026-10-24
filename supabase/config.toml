@@ -24,7 +24,7 @@ enable_confirmations = true   # xác nhận email bằng mã (mục 1)
 
 otp_length = 6                # mã xác nhận 6 chữ số
 otp_expiry = 3600             # 60 phút (khớp CODE_VALID_MINUTES trong src/server/mail-templates.ts)
-max_frequency = "30s"         # tối thiểu 30 giây giữa hai lần gửi mail cho cùng một người
+max_frequency = "60s"         # tối thiểu 60 giây giữa hai lần gửi mail cho cùng một người
 
 # Bước 3: Send Email Hook — Supabase gọi vào Next.js thay vì tự gửi mail.
 # Cần SEND_EMAIL_HOOK_SECRET trong môi trường khi chạy `supabase start` (npm run auth:secrets).

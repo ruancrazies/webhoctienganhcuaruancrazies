@@ -108,7 +108,7 @@ export async function resendAction(_: FormState, formData: FormData): Promise<Fo
 
     const ip = clientIp(await headers());
     if (!(await hitRateLimit(`resend:${ip}`, 3600, 10))) return { error: TOO_MANY };
-    if (!(await hitRateLimit(`resend-email:${keyHash(email)}`, 3600, 3))) return { error: TOO_MANY };
+    if (!(await hitRateLimit(`resend-email:${keyHash(email)}`, 3600, 10))) return { error: TOO_MANY };
 
     const supabase = await createSupabaseServer();
     const { error } = await supabase.auth.resend({ type: "signup", email });
@@ -140,7 +140,7 @@ export async function loginAction(_: FormState, formData: FormData): Promise<For
     if (error) {
       if (error.code === "email_not_confirmed") {
         // Chỉ xảy ra khi mật khẩu đúng: gửi lại mã (nếu chưa vượt giới hạn) và chuyển sang trang xác nhận.
-        if (await hitRateLimit(`resend-email:${keyHash(email)}`, 3600, 3)) {
+        if (await hitRateLimit(`resend-email:${keyHash(email)}`, 3600, 10)) {
           await supabase.auth.resend({ type: "signup", email });
         }
         return { redirectTo: verifyUrl(email, "unconfirmed") };

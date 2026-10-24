@@ -24,7 +24,7 @@ export type HookDeps = {
 
 export type HookResult = { status: number; body: Record<string, unknown> };
 
-export const MAIL_PER_EMAIL_PER_HOUR = 5;
+export const MAIL_PER_EMAIL_PER_HOUR = 10;
 const DEFAULT_BUDGET_MS = 4000;
 
 const payloadSchema = z.object({
