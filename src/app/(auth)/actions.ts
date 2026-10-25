@@ -14,6 +14,7 @@ import {
   verifySchema,
 } from "@/core/auth";
 import { clientIp } from "@/server/auth/client-ip";
+import { CAPTCHA_FIELD, verifyCaptcha } from "@/server/captcha";
 import { createSupabaseServer } from "@/server/auth/supabase";
 import { findEmailByUsername, isUsernameTaken } from "@/server/auth/users";
 import { keyHash } from "@/server/hash";
@@ -24,6 +25,7 @@ const TOO_MANY = "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phú
 const BUSY = "Hệ thống đang bận, vui lòng thử lại sau.";
 const BAD_LOGIN = "Sai tên đăng nhập/email hoặc mật khẩu";
 const BAD_CODE = "Mã không đúng hoặc đã hết hạn";
+const BAD_CAPTCHA = "Vui lòng xác minh bạn không phải người máy rồi thử lại.";
 
 type Outcome = FormState | { redirectTo: string };
 
@@ -65,6 +67,7 @@ export async function registerAction(_: FormState, formData: FormData): Promise<
 
     const ip = clientIp(await headers());
     if (!(await hitRateLimit(`register:${ip}`, 3600, 10))) return { error: TOO_MANY, values };
+    if (!(await verifyCaptcha(raw[CAPTCHA_FIELD], ip))) return { error: BAD_CAPTCHA, values };
 
     // Kiểm tra trước để báo lỗi rõ ràng; trigger tạo profile vẫn là lớp chặn cuối (index duy nhất).
     if (await isUsernameTaken(username)) {
@@ -129,6 +132,7 @@ export async function loginAction(_: FormState, formData: FormData): Promise<For
 
     const ip = clientIp(await headers());
     if (!(await hitRateLimit(`login:${ip}`, 900, 20))) return { error: TOO_MANY, values };
+    if (!(await verifyCaptcha(raw[CAPTCHA_FIELD], ip))) return { error: BAD_CAPTCHA, values };
     // Giới hạn theo tài khoản để chặn dò mật khẩu từ nhiều IP.
     if (!(await hitRateLimit(`login-id:${keyHash(identifier)}`, 900, 10))) return { error: TOO_MANY, values };
 
@@ -163,6 +167,7 @@ export async function forgotAction(_: FormState, formData: FormData): Promise<Fo
 
     const ip = clientIp(await headers());
     if (!(await hitRateLimit(`forgot:${ip}`, 3600, 10))) return { error: TOO_MANY, values };
+    if (!(await verifyCaptcha(raw[CAPTCHA_FIELD], ip))) return { error: BAD_CAPTCHA, values };
     if (!(await hitRateLimit(`forgot-email:${keyHash(email)}`, 3600, 3))) return { error: TOO_MANY, values };
 
     const supabase = await createSupabaseServer();

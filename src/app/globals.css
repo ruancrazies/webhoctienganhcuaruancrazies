@@ -54,3 +54,6 @@ button:disabled { opacity: 0.6; cursor: progress; }
 .banner-ok { background: var(--ok-bg); color: var(--ok); }
 .links { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin: 18px 0 0; font-size: 14px; }
 a { color: var(--primary); }
+
+.captcha { display: flex; justify-content: center; min-height: 0; }
+.note { margin: 0; padding: 10px 12px; border-radius: 10px; font-size: 13px; line-height: 1.5; background: var(--ok-bg); color: var(--text); border: 1px dashed var(--border); }

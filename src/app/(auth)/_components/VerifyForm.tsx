@@ -5,6 +5,7 @@ import { resendAction, verifyAction } from "../actions";
 import type { FormState } from "../state";
 import { Field } from "./Field";
 import { FormMessage } from "./FormMessage";
+import { SpamNote } from "./SpamNote";
 
 /** Khớp max_frequency của Supabase Auth (60s giữa hai lần gửi mail cho cùng một email). */
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -33,6 +34,7 @@ export function VerifyForm({ email }: { email: string }) {
         <Field label="Mã xác nhận (6 chữ số)" name="token" inputMode="numeric" autoComplete="one-time-code" maxLength={6} pattern="\d{6}" error={e.token} required />
         <button type="submit" disabled={pending}>{pending ? "Đang xác nhận…" : "Xác nhận"}</button>
       </form>
+      <SpamNote />
       <form action={resendForm} className="form form-secondary">
         <FormMessage error={resend.error} notice={resend.notice} />
         <input type="hidden" name="email" value={email} />
