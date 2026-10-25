@@ -63,9 +63,13 @@ export function LevelScopePicker({ cefr, domains, topics }: { cefr: string; doma
       </section>
 
       <section className="cta-row" aria-label="Học từ vựng">
-        <Link href={learnHref(scope)} className="cta is-primary">
-          <b>📖 Học từ vựng</b>
-          <span className="muted">Xem từ, nghĩa, phiên âm và câu ví dụ; đánh dấu từ đã học</span>
+        <Link href={learnHref(scope, "new")} className="cta is-primary">
+          <b>🌱 Học từ mới</b>
+          <span className="muted">Mỗi lượt 50 từ chưa học: nghĩa, phiên âm, câu ví dụ; đánh dấu từ đã học</span>
+        </Link>
+        <Link href={learnHref(scope, "review")} className="cta">
+          <b>🔁 Ôn lại từ cũ</b>
+          <span className="muted">Xem lại các từ đã học, từ đến hạn ôn hiện lên trước</span>
         </Link>
       </section>
 

@@ -32,3 +32,10 @@ max_frequency = "60s"         # tối thiểu 60 giây giữa hai lần gửi ma
 enabled = true
 uri = "http://host.docker.internal:3000/api/auth/send-email"
 secrets = "env(SEND_EMAIL_HOOK_SECRET)"
+
+# CAPTCHA do Supabase Auth tự xác minh (bắt buộc cho cả lệnh gọi thẳng /auth/v1/*). Local: để tắt;
+# production: bật trong Dashboard > Authentication > Attack Protection rồi đặt SUPABASE_CAPTCHA_ENABLED=true cho ứng dụng.
+# [auth.captcha]
+# enabled = true
+# provider = "turnstile"
+# secret = "env(SUPABASE_AUTH_CAPTCHA_SECRET)"

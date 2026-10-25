@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import { resendAction, verifyAction } from "../actions";
 import type { FormState } from "../state";
+import { Captcha } from "./Captcha";
 import { Field } from "./Field";
 import { FormMessage } from "./FormMessage";
 import { SpamNote } from "./SpamNote";
@@ -10,9 +11,9 @@ import { SpamNote } from "./SpamNote";
 /** Khớp max_frequency của Supabase Auth (60s giữa hai lần gửi mail cho cùng một email). */
 const RESEND_COOLDOWN_SECONDS = 60;
 
-export function VerifyForm({ email }: { email: string }) {
-  // Mã vừa được gửi khi người dùng tới trang này nên bắt đầu đếm ngược ngay.
-  const [left, setLeft] = useState(RESEND_COOLDOWN_SECONDS);
+export function VerifyForm({ email, freshCode = true }: { email: string; freshCode?: boolean }) {
+  // Mã vừa được gửi khi người dùng tới trang này nên bắt đầu đếm ngược ngay (trừ khi chưa gửi mã nào).
+  const [left, setLeft] = useState(freshCode ? RESEND_COOLDOWN_SECONDS : 0);
   useEffect(() => {
     if (left <= 0) return;
     const t = setTimeout(() => setLeft((n) => n - 1), 1000);
@@ -38,6 +39,7 @@ export function VerifyForm({ email }: { email: string }) {
       <form action={resendForm} className="form form-secondary">
         <FormMessage error={resend.error} notice={resend.notice} />
         <input type="hidden" name="email" value={email} />
+        <Captcha resetSignal={resend} />
         <button type="submit" className="link-button" disabled={resending || !email || left > 0}>
           {resending ? "Đang gửi…" : left > 0 ? `Gửi lại mã sau ${left}s` : "Chưa nhận được mã? Gửi lại"}
         </button>

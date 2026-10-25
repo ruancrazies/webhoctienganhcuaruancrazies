@@ -263,3 +263,46 @@ export async function pickWordsForExam(cefr: Cefr, domain: string, n: number, ex
   }
   return [...out.values()].slice(0, n);
 }
+
+// ---------- danh sách học: từ mới / ôn lại (migration 0005) ----------
+
+/** Từ kèm khóa phân trang của chính nó: `${freq_rank}:${id}` (từ mới) hoặc `${micro-giây next_review}:${id}` (ôn lại). */
+export type PagedWord = Word & { pageKey: string };
+
+async function wordsInOrder(label: string, ids: number[]): Promise<Map<number, Word>> {
+  if (!ids.length) return new Map();
+  const rows = unwrapList<WordRow>(label, await db().from("words").select(WORD_COLS).in("id", ids).eq("status", "active"));
+  return new Map(rows.map((r) => [r.id, toWord(r)]));
+}
+
+const scopeArgs = (scope: ResolvedScope) => ({
+  p_cefr: scope.cefr,
+  p_domain: scope.domain,
+  p_topic: scope.topicId ?? null,
+});
+
+/** Từ MỚI: người dùng chưa có tiến độ nào. Keyset (freq_rank, id), lấy tối đa `limit`. */
+export async function listNewWords(userId: string, scope: ResolvedScope, cursor: { a: number; id: number } | null, limit: number): Promise<PagedWord[]> {
+  const rows = unwrapList<{ id: number; freq_rank: number }>(
+    "rpc.list_new_words",
+    await db().rpc("list_new_words", { p_user: userId, ...scopeArgs(scope), p_rank: cursor?.a ?? null, p_id: cursor?.id ?? null, p_limit: limit }),
+  );
+  const words = await wordsInOrder("words.newByIds", rows.map((r) => r.id));
+  return rows.flatMap((r) => {
+    const w = words.get(r.id);
+    return w ? [{ ...w, pageKey: `${r.freq_rank}:${r.id}` }] : [];
+  });
+}
+
+/** Từ ĐÃ có tiến độ (ôn lại): đến hạn trước. Con trỏ (micro-giây next_review, id). */
+export async function listReviewWords(userId: string, scope: ResolvedScope, cursor: { a: number; id: number } | null, limit: number): Promise<PagedWord[]> {
+  const rows = unwrapList<{ id: number; next_us: number }>(
+    "rpc.list_review_words",
+    await db().rpc("list_review_words", { p_user: userId, ...scopeArgs(scope), p_after_us: cursor?.a ?? null, p_id: cursor?.id ?? null, p_limit: limit }),
+  );
+  const words = await wordsInOrder("words.reviewByIds", rows.map((r) => r.id));
+  return rows.flatMap((r) => {
+    const w = words.get(r.id);
+    return w ? [{ ...w, pageKey: `${r.next_us}:${r.id}` }] : [];
+  });
+}

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { buildCsp, makeNonce, mediaOrigin } from "@/lib/csp";
 
 /**
  * Chạy trước mỗi request: làm mới phiên Supabase (ghi lại cookie) và chặn người chưa đăng nhập.
@@ -14,6 +15,12 @@ export async function proxy(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anon) throw new Error("Thiếu NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY (xem .env.example)");
+
+  // CSP theo request: Next đọc nonce từ header CSP của request để gắn vào script của chính nó; layout đọc x-nonce.
+  const nonce = makeNonce();
+  const csp = buildCsp(nonce, { dev: process.env.NODE_ENV !== "production", mediaOrigin: mediaOrigin(process.env.NEXT_PUBLIC_MEDIA_BASE_URL) });
+  request.headers.set("x-nonce", nonce);
+  request.headers.set("content-security-policy", csp);
 
   let response = NextResponse.next({ request });
 
@@ -54,6 +61,7 @@ export async function proxy(request: NextRequest) {
     return redirectTo(`/login?next=${encodeURIComponent(pathname + search)}`);
   }
 
+  response.headers.set("Content-Security-Policy", csp);
   return response;
 }
 

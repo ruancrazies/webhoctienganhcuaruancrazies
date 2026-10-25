@@ -48,9 +48,10 @@ export function playHref(game: GameId, scope: { cefr: string; domain?: string; t
 }
 
 /** Đường dẫn trang học cho một phạm vi. */
-export function learnHref(scope: { cefr: string; domain?: string; topic?: string }): string {
+export function learnHref(scope: { cefr: string; domain?: string; topic?: string }, mode: "new" | "review" = "new"): string {
   const q = new URLSearchParams();
   if (scope.topic) q.set("topic", scope.topic);
   else q.set("domain", scope.domain ?? "all");
+  if (mode === "review") q.set("mode", "review");
   return `/learn/${scope.cefr}?${q.toString()}`;
 }

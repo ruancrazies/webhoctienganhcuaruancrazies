@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { handleSendEmail, MAIL_PER_EMAIL_PER_HOUR, type HookDeps } from "../../src/server/auth/send-email-hook";
+import { handleSendEmail, MAIL_GLOBAL_PER_DAY, MAIL_GLOBAL_PER_HOUR, MAIL_PER_EMAIL_PER_HOUR, type HookDeps } from "../../src/server/auth/send-email-hook";
 import { newSecret, sign } from "./helpers";
 
 const payload = (over: Record<string, unknown> = {}) =>
@@ -86,12 +86,14 @@ describe("handleSendEmail", () => {
     const { call, rateLimit } = setup();
     await call(payload());
     await call(payload({ user: { id: "u1", email: "LINH@example.COM" } }));
-    const [k1, win, max] = rateLimit.mock.calls[0];
+    const perEmail = rateLimit.mock.calls.filter((c) => String(c[0]).startsWith("mail:"));
+    expect(perEmail).toHaveLength(2);
+    const [k1, win, max] = perEmail[0];
     expect(k1).toMatch(/^mail:[0-9a-f]{32}$/);
     expect(k1).not.toContain("linh");
     expect(win).toBe(3600);
     expect(max).toBe(MAIL_PER_EMAIL_PER_HOUR);
-    expect(rateLimit.mock.calls[1][0]).toBe(k1);
+    expect(perEmail[1][0]).toBe(k1);
   });
 
   it("gửi mail lỗi → 502 để Auth báo cho người dùng", async () => {
@@ -135,5 +137,49 @@ describe("handleSendEmail", () => {
     const { call, deferred } = setup();
     await call(payload());
     expect(deferred).toHaveLength(0);
+  });
+
+  describe("trần toàn hệ thống (bảo vệ hạn mức Gmail)", () => {
+    const limitOnly = (blocked: string) => vi.fn(async (key: string) => key !== blocked);
+
+    it("dùng đúng khóa/cửa sổ/ngưỡng mặc định", async () => {
+      const { call, rateLimit } = setup();
+      await call(payload());
+      expect(rateLimit).toHaveBeenCalledWith("mail-global-hour", 3600, MAIL_GLOBAL_PER_HOUR);
+      expect(rateLimit).toHaveBeenCalledWith("mail-global-day", 86400, MAIL_GLOBAL_PER_DAY);
+    });
+
+    it("cho đặt ngưỡng ngày riêng (MAIL_GLOBAL_PER_DAY)", async () => {
+      const { call, rateLimit } = setup({ globalPerDay: 500 });
+      await call(payload());
+      expect(rateLimit).toHaveBeenCalledWith("mail-global-day", 86400, 500);
+    });
+
+    it("quá trần giờ → 429, không gửi", async () => {
+      const { call, sendMail } = setup({ rateLimit: limitOnly("mail-global-hour") });
+      expect((await call(payload())).status).toBe(429);
+      expect(sendMail).not.toHaveBeenCalled();
+    });
+
+    it("quá trần ngày → 429, không gửi", async () => {
+      const { call, sendMail } = setup({ rateLimit: limitOnly("mail-global-day") });
+      expect((await call(payload())).status).toBe(429);
+      expect(sendMail).not.toHaveBeenCalled();
+    });
+
+    it("một địa chỉ đã bị chặn theo email thì KHÔNG đốt ngân sách toàn cục", async () => {
+      const rateLimit = vi.fn(async (key: string) => !key.startsWith("mail:"));
+      const { call, sendMail } = setup({ rateLimit });
+      expect((await call(payload())).status).toBe(429);
+      expect(sendMail).not.toHaveBeenCalled();
+      expect(rateLimit.mock.calls.map((c) => c[0])).toEqual([expect.stringMatching(/^mail:/)]);
+    });
+
+    it("chữ ký sai vẫn không chạm tới bất kỳ rate limit nào", async () => {
+      const { deps, rateLimit } = setup();
+      const body = payload();
+      expect((await handleSendEmail(body, sign(body, newSecret()), deps)).status).toBe(401);
+      expect(rateLimit).not.toHaveBeenCalled();
+    });
   });
 });

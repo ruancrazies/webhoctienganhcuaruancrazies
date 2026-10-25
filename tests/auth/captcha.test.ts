@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { captchaEnabled, verifyCaptcha } from "../../src/server/captcha";
+import { captchaEnabled, checkCaptcha, supabaseCaptcha, verifyCaptcha } from "../../src/server/captcha";
 
 const fetchMock = vi.fn();
 beforeEach(() => {
@@ -8,7 +8,10 @@ beforeEach(() => {
 });
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   delete process.env.TURNSTILE_SECRET_KEY;
+  delete process.env.SUPABASE_CAPTCHA_ENABLED;
+  delete process.env.CAPTCHA_DISABLED;
 });
 
 describe("verifyCaptcha", () => {
@@ -46,5 +49,56 @@ describe("verifyCaptcha", () => {
     process.env.TURNSTILE_SECRET_KEY = "s";
     fetchMock.mockResolvedValueOnce({ ok: false, status: 500, json: async () => ({}) });
     await expect(verifyCaptcha("tok")).rejects.toThrow();
+  });
+});
+
+describe("production: đóng cửa khi thiếu cấu hình", () => {
+  it("thiếu TURNSTILE_SECRET_KEY → ném lỗi, KHÔNG âm thầm cho qua", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    await expect(verifyCaptcha("tok")).rejects.toThrow(/TURNSTILE_SECRET_KEY/);
+    await expect(checkCaptcha("tok")).rejects.toThrow(/TURNSTILE_SECRET_KEY/);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("CAPTCHA_DISABLED=true là lối thoát có chủ đích", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    process.env.CAPTCHA_DISABLED = "true";
+    expect(await verifyCaptcha(undefined)).toBe(true);
+  });
+
+  it("có secret thì production vẫn kiểm tra bình thường", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    process.env.TURNSTILE_SECRET_KEY = "s";
+    expect(await verifyCaptcha(undefined)).toBe(false);
+  });
+});
+
+describe("checkCaptcha", () => {
+  it("chế độ app: tự gọi siteverify, không trả token để chuyển tiếp", async () => {
+    process.env.TURNSTILE_SECRET_KEY = "s";
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) });
+    expect(supabaseCaptcha()).toBe(false);
+    expect(await checkCaptcha("tok", "1.2.3.4")).toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("chế độ supabase: KHÔNG gọi siteverify (token chỉ dùng một lần), trả token để chuyển cho Supabase", async () => {
+    process.env.SUPABASE_CAPTCHA_ENABLED = "true";
+    expect(supabaseCaptcha()).toBe(true);
+    expect(await checkCaptcha("tok")).toEqual({ ok: true, captchaToken: "tok" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("chế độ supabase: thiếu/rỗng/quá dài token → từ chối sớm", async () => {
+    process.env.SUPABASE_CAPTCHA_ENABLED = "true";
+    expect((await checkCaptcha(undefined)).ok).toBe(false);
+    expect((await checkCaptcha("")).ok).toBe(false);
+    expect((await checkCaptcha("x".repeat(5000))).ok).toBe(false);
+  });
+
+  it("chế độ supabase hoạt động cả trên production dù không có TURNSTILE_SECRET_KEY", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    process.env.SUPABASE_CAPTCHA_ENABLED = "true";
+    expect((await checkCaptcha("tok")).ok).toBe(true);
   });
 });

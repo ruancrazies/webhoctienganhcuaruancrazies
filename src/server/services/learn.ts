@@ -3,20 +3,25 @@ import type { LearnCard, LearnPage, LearnQuery, MarkLearnedRequest } from "../..
 import { ServiceError } from "../errors";
 import { HOUR, LEARN_MARK_PER_HOUR, LEARN_LIST_PER_MINUTE, MINUTE } from "../limits";
 import { hitRateLimit } from "../ratelimit";
-import { listWordsByRank, markLearned as repoMarkLearned, progressFor, resolveScope, sentencesFor, wordMeta } from "../repo";
+import { listNewWords, listReviewWords, markLearned as repoMarkLearned, progressFor, resolveScope, sentencesFor, wordMeta } from "../repo";
 import { getLevelStatuses, requireUnlocked } from "./levels";
 
-export const LEARN_PAGE_SIZE = 30;
+/** Mỗi lần hiển thị 50 từ; muốn xem tiếp thì bấm "Làm mới" (thay danh sách, không nối dài). */
+export const LEARN_PAGE_SIZE = 50;
 const EXAMPLES_PER_WORD = 3;
 
-function decodeCursor(raw: string | undefined): { rank: number; id: number } | null {
+function decodeCursor(raw: string | undefined): { a: number; id: number } | null {
   if (!raw) return null;
-  const m = /^(\d{1,10}):(\d{1,15})$/.exec(raw);
+  const m = /^(\d{1,16}):(\d{1,15})$/.exec(raw);
   if (!m) throw new ServiceError(400, "BAD_CURSOR", "Con trỏ phân trang không hợp lệ");
-  return { rank: Number(m[1]), id: Number(m[2]) };
+  return { a: Number(m[1]), id: Number(m[2]) };
 }
 
-/** Mục 5.12: danh sách từ để học, phân trang keyset 30 từ/trang, kèm trạng thái và ≤3 câu ví dụ. */
+/**
+ * Mục 5.12: danh sách để học, keyset 50 từ/lượt, kèm trạng thái và ≤3 câu ví dụ.
+ *  - mode "new": từ CHƯA có tiến độ, theo thứ tự tần suất.
+ *  - mode "review": từ ĐÃ có tiến độ, đến hạn ôn trước.
+ */
 export async function listLearn(query: LearnQuery, userId: string): Promise<LearnPage> {
   if (!(await hitRateLimit(`learn-list:${userId}`, MINUTE, LEARN_LIST_PER_MINUTE))) {
     throw new ServiceError(429, "RATE_LIMITED", "Bạn thao tác quá nhanh");
@@ -26,7 +31,8 @@ export async function listLearn(query: LearnQuery, userId: string): Promise<Lear
   await requireUnlocked(userId, scope.cefr);
 
   // lấy dư một dòng để biết còn trang sau hay không
-  const rows = await listWordsByRank(scope, decodeCursor(query.cursor), LEARN_PAGE_SIZE + 1);
+  const list = query.mode === "review" ? listReviewWords : listNewWords;
+  const rows = await list(userId, scope, decodeCursor(query.cursor), LEARN_PAGE_SIZE + 1);
   const hasMore = rows.length > LEARN_PAGE_SIZE;
   const page = rows.slice(0, LEARN_PAGE_SIZE);
   const ids = page.map((w) => w.id);
@@ -48,7 +54,7 @@ export async function listLearn(query: LearnQuery, userId: string): Promise<Lear
   }));
 
   const last = page[page.length - 1];
-  return { items, nextCursor: hasMore && last ? `${last.freqRank}:${last.id}` : undefined };
+  return { items, nextCursor: hasMore && last ? last.pageKey : undefined, mode: query.mode };
 }
 
 /**

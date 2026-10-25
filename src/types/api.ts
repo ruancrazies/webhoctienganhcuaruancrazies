@@ -40,9 +40,15 @@ export const finishRequestSchema = z.object({
 });
 export type FinishRequest = z.infer<typeof finishRequestSchema>;
 
+/** "new": từ chưa học · "review": từ đã có tiến độ (ôn lại). */
+export const learnModeSchema = z.enum(["new", "review"]);
+export type LearnMode = z.infer<typeof learnModeSchema>;
+
 export const learnQuerySchema = z.object({
   scope: scopeSchema,
-  cursor: z.string().regex(/^\d{1,10}:\d{1,15}$/).optional(),
+  mode: learnModeSchema.default("new"),
+  // "<freq_rank>:<id>" (new) hoặc "<micro-giây>:<id>" (review): số đầu tối đa 16 chữ số
+  cursor: z.string().regex(/^\d{1,16}:\d{1,15}$/).optional(),
 });
 export type LearnQuery = z.infer<typeof learnQuerySchema>;
 
@@ -89,7 +95,8 @@ export type LearnCard = {
   state: LearnState;
   examples: { en: string; vi?: string | null }[];
 };
-export type LearnPage = { items: LearnCard[]; nextCursor?: string };
+/** `nextCursor` undefined = đã tới cuối; "Làm mới" khi đó quay lại đầu danh sách. */
+export type LearnPage = { items: LearnCard[]; nextCursor?: string; mode: LearnMode };
 
 export type ExamStartResponse = { examId: string; items: Question[]; expiresAt: string; resumed: boolean };
 export type ExamResult = {

@@ -20,11 +20,18 @@ export type HookDeps = {
   defer: (task: () => Promise<void>) => void;
   nowMs?: number;
   budgetMs?: number;
+  /** Trần số mail của TOÀN hệ thống mỗi ngày (bảo vệ hạn mức Gmail/Resend). Mặc định MAIL_GLOBAL_PER_DAY. */
+  globalPerDay?: number;
+  /** Trần số mail của toàn hệ thống mỗi giờ (chặn bùng nổ trong thời gian ngắn). */
+  globalPerHour?: number;
 };
 
 export type HookResult = { status: number; body: Record<string, unknown> };
 
 export const MAIL_PER_EMAIL_PER_HOUR = 10;
+/** Gmail cá nhân ~100 người nhận/ngày: chừa dư để mail của người dùng thật không bị chặn bởi hạn mức của Google. */
+export const MAIL_GLOBAL_PER_DAY = 90;
+export const MAIL_GLOBAL_PER_HOUR = 30;
 const DEFAULT_BUDGET_MS = 4000;
 
 const payloadSchema = z.object({
@@ -69,6 +76,13 @@ export async function handleSendEmail(rawBody: string, headers: Pick<Headers, "g
   // Chống dùng hệ thống để gửi thư rác tới một địa chỉ (cũng bảo vệ hạn mức Gmail).
   const allowed = await deps.rateLimit(`mail:${keyHash(user.email)}`, 3600, MAIL_PER_EMAIL_PER_HOUR);
   if (!allowed) return fail(429, "Đã gửi quá nhiều email tới địa chỉ này, vui lòng thử lại sau");
+
+  // Trần toàn cục (kiểm sau trần theo email để một địa chỉ bị dội mail không đốt hết ngân sách chung): kẻ gọi thẳng
+  // Supabase Auth với nhiều email khác nhau cũng không làm cạn được hạn mức Gmail của người dùng thật.
+  const globalOk =
+    (await deps.rateLimit("mail-global-hour", 3600, deps.globalPerHour ?? MAIL_GLOBAL_PER_HOUR)) &&
+    (await deps.rateLimit("mail-global-day", 86400, deps.globalPerDay ?? MAIL_GLOBAL_PER_DAY));
+  if (!globalOk) return fail(429, "Hệ thống đang gửi quá nhiều email, vui lòng thử lại sau");
 
   const task = deps.sendMail({ to: user.email, ...built });
 

@@ -1,20 +1,25 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { learnHref } from "@/games/registry";
 import { ApiFail, apiGet, apiPost, errorMessage } from "@/lib/api";
 import { STATE_LABEL, fmtNumber, posLabel } from "@/lib/format";
 import { sfx, speak } from "@/lib/sound";
-import type { LearnCard, LearnPage, LearnState } from "@/types/api";
+import type { LearnCard, LearnMode, LearnPage, LearnState } from "@/types/api";
 
 const STATE_CHIP: Record<LearnState, string> = { new: "chip", learned: "chip chip-warn", due: "chip chip-red", mastered: "chip chip-good" };
 
-type Props = { cefr: string; topic?: string; domain: string; total: number };
+type Props = { cefr: string; topic?: string; domain: string; mode: LearnMode };
 
-export function LearnList({ cefr, topic, domain, total }: Props) {
+export function LearnList({ cefr, topic, domain, mode }: Props) {
   const [items, setItems] = useState<LearnCard[]>([]);
+  /** Con trỏ tới lượt SAU (undefined = đã tới cuối danh sách). */
   const [cursor, setCursor] = useState<string | undefined>();
+  /** Lượt đang hiển thị bắt đầu từ đầu danh sách (không có con trỏ). */
+  const [fromStart, setFromStart] = useState(true);
   const [loading, setLoading] = useState(true);
-  const [more, setMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<ApiFail | null>(null);
   const [saving, setSaving] = useState(0);
   const [note, setNote] = useState<string | null>(null);
@@ -31,32 +36,33 @@ export function LearnList({ cefr, topic, domain, total }: Props) {
         q.set("cefr", cefr);
         q.set("domain", domain);
       }
+      q.set("mode", mode);
       if (c) q.set("cursor", c);
       return `/api/learn/words?${q.toString()}`;
     },
-    [cefr, topic, domain],
+    [cefr, topic, domain, mode],
   );
 
+  /** Lấy một lượt 50 từ và THAY danh sách hiện tại bằng nó (không nối dài). `c` rỗng = từ đầu danh sách. */
   const load = useCallback(
-    async (c?: string) => {
+    async (c?: string, isRefresh = false) => {
       const id = ++reqId.current;
-      if (c) setMore(true);
+      if (isRefresh) setRefreshing(true);
       else setLoading(true);
       setError(null);
       try {
         const page = await apiGet<LearnPage>(query(c));
         if (id !== reqId.current) return;
-        setItems((prev) => {
-          const seen = new Set(prev.map((x) => x.wordId));
-          return [...prev, ...page.items.filter((x) => !seen.has(x.wordId))];
-        });
+        setItems(page.items);
         setCursor(page.nextCursor);
+        setFromStart(!c);
+        if (isRefresh) window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (e) {
         if (id === reqId.current) setError(e instanceof ApiFail ? e : new ApiFail(0, "ERROR", errorMessage(e)));
       } finally {
         if (id === reqId.current) {
           setLoading(false);
-          setMore(false);
+          setRefreshing(false);
         }
       }
     },
@@ -126,6 +132,16 @@ export function LearnList({ cefr, topic, domain, total }: Props) {
     };
   }, [flush]);
 
+  /** "Làm mới": lưu các từ vừa đánh dấu, rồi đổi sang 50 từ tiếp theo (hết danh sách thì quay lại từ đầu). */
+  const refresh = useCallback(async () => {
+    await flush();
+    await load(cursor, true);
+  }, [flush, load, cursor]);
+
+  const hrefScope = topic ? { cefr, topic } : { cefr, domain };
+  // Cả phạm vi chỉ có một lượt (≤ 50 từ): làm mới sẽ ra đúng danh sách cũ nên không hiện nút.
+  const canRefresh = Boolean(cursor) || !fromStart;
+
   if (loading && items.length === 0) {
     return (
       <div className="stack" aria-busy="true" aria-label="Đang tải danh sách từ">
@@ -148,11 +164,19 @@ export function LearnList({ cefr, topic, domain, total }: Props) {
   }
 
   if (items.length === 0) {
-    return (
+    return mode === "review" ? (
       <div className="sheet sheet-plain state">
-        <div className="big" aria-hidden="true">📭</div>
-        <h2>Chưa có từ nào ở phạm vi này</h2>
-        <p className="muted">Thử chọn lĩnh vực hoặc chủ đề khác.</p>
+        <div className="big" aria-hidden="true">🌱</div>
+        <h2>Chưa có từ nào để ôn lại</h2>
+        <p className="muted">Các từ bạn đã học hoặc đã chơi sẽ xuất hiện ở đây.</p>
+        <Link href={learnHref(hrefScope, "new")} className="btn">Học từ mới</Link>
+      </div>
+    ) : (
+      <div className="sheet sheet-plain state">
+        <div className="big" aria-hidden="true">🎉</div>
+        <h2>Không còn từ mới ở phạm vi này</h2>
+        <p className="muted">Bạn đã học hết từ ở đây, hãy ôn lại hoặc chọn lĩnh vực/chủ đề khác.</p>
+        <Link href={learnHref(hrefScope, "review")} className="btn">Ôn lại từ cũ</Link>
       </div>
     );
   }
@@ -161,7 +185,7 @@ export function LearnList({ cefr, topic, domain, total }: Props) {
     <>
       <div className="spread">
         <p className="muted">
-          Đã tải {fmtNumber(items.length)}{total > 0 ? `/${fmtNumber(total)}` : ""} từ, {fmtNumber(learnedCount)} từ đã học{saving > 0 ? ", đang lưu…" : ""}
+          {fmtNumber(items.length)} từ, {fmtNumber(learnedCount)} từ đã học{saving > 0 ? ", đang lưu…" : ""}
         </p>
         <button type="button" className="btn btn-light btn-sm" disabled={markable.length === 0} onClick={() => mark(markable.map((w) => w.wordId), true)}>
           Đánh dấu cả danh sách đã học{markable.length > 0 ? ` (${markable.length})` : ""}
@@ -169,7 +193,7 @@ export function LearnList({ cefr, topic, domain, total }: Props) {
       </div>
       {note ? <p className="err" role="alert">{note}</p> : null}
 
-      <ul className="stack" style={{ listStyle: "none", margin: 0, padding: 0 }}>
+      <ul className="stack" style={{ listStyle: "none", margin: 0, padding: 0, opacity: refreshing ? 0.5 : 1 }} aria-busy={refreshing}>
         {items.map((w) => (
           <li key={w.wordId}>
             <article className={`wc s-${w.state}`} aria-label={w.en}>
@@ -217,12 +241,12 @@ export function LearnList({ cefr, topic, domain, total }: Props) {
           {error.message}
         </p>
       ) : null}
-      {cursor ? (
-        <button type="button" className="btn btn-light btn-block" disabled={more} onClick={() => void load(cursor)}>
-          {more ? "Đang tải…" : "Tải thêm 30 từ"}
+      {canRefresh ? (
+        <button type="button" className="btn btn-light btn-block" disabled={refreshing} onClick={() => void refresh()}>
+          {refreshing ? "Đang làm mới…" : cursor ? "🔄 Làm mới: 50 từ tiếp theo" : "🔄 Làm mới: quay lại từ đầu"}
         </button>
       ) : (
-        <p className="muted small" style={{ textAlign: "center" }}>Đã hết danh sách.</p>
+        <p className="muted small" style={{ textAlign: "center" }}>Đã hiển thị hết danh sách.</p>
       )}
     </>
   );

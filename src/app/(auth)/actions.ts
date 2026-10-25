@@ -14,7 +14,7 @@ import {
   verifySchema,
 } from "@/core/auth";
 import { clientIp } from "@/server/auth/client-ip";
-import { CAPTCHA_FIELD, verifyCaptcha } from "@/server/captcha";
+import { CAPTCHA_FIELD, checkCaptcha, supabaseCaptcha } from "@/server/captcha";
 import { createSupabaseServer } from "@/server/auth/supabase";
 import { findEmailByUsername, isUsernameTaken } from "@/server/auth/users";
 import { keyHash } from "@/server/hash";
@@ -67,7 +67,8 @@ export async function registerAction(_: FormState, formData: FormData): Promise<
 
     const ip = clientIp(await headers());
     if (!(await hitRateLimit(`register:${ip}`, 3600, 10))) return { error: TOO_MANY, values };
-    if (!(await verifyCaptcha(raw[CAPTCHA_FIELD], ip))) return { error: BAD_CAPTCHA, values };
+    const captcha = await checkCaptcha(raw[CAPTCHA_FIELD], ip);
+    if (!captcha.ok) return { error: BAD_CAPTCHA, values };
 
     // Kiểm tra trước để báo lỗi rõ ràng; trigger tạo profile vẫn là lớp chặn cuối (index duy nhất).
     if (await isUsernameTaken(username)) {
@@ -75,7 +76,11 @@ export async function registerAction(_: FormState, formData: FormData): Promise<
     }
 
     const supabase = await createSupabaseServer();
-    const { error } = await supabase.auth.signUp({ email, password, options: { data: { username } } });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { username }, captchaToken: captcha.captchaToken },
+    });
     if (error) return { error: mapAuthError(error), values };
 
     // Email đã có tài khoản: Supabase trả kết quả "giả thành công" và không gửi mã (chống dò email).
@@ -112,9 +117,11 @@ export async function resendAction(_: FormState, formData: FormData): Promise<Fo
     const ip = clientIp(await headers());
     if (!(await hitRateLimit(`resend:${ip}`, 3600, 10))) return { error: TOO_MANY };
     if (!(await hitRateLimit(`resend-email:${keyHash(email)}`, 3600, 10))) return { error: TOO_MANY };
+    const captcha = await checkCaptcha(Object.fromEntries(formData)[CAPTCHA_FIELD], ip);
+    if (!captcha.ok) return { error: BAD_CAPTCHA };
 
     const supabase = await createSupabaseServer();
-    const { error } = await supabase.auth.resend({ type: "signup", email });
+    const { error } = await supabase.auth.resend({ type: "signup", email, options: { captchaToken: captcha.captchaToken } });
     if (error) return { error: mapAuthError(error) };
     return { notice: "Nếu email hợp lệ, mã mới đã được gửi. Hãy kiểm tra cả thư rác." };
   });
@@ -132,7 +139,8 @@ export async function loginAction(_: FormState, formData: FormData): Promise<For
 
     const ip = clientIp(await headers());
     if (!(await hitRateLimit(`login:${ip}`, 900, 20))) return { error: TOO_MANY, values };
-    if (!(await verifyCaptcha(raw[CAPTCHA_FIELD], ip))) return { error: BAD_CAPTCHA, values };
+    const captcha = await checkCaptcha(raw[CAPTCHA_FIELD], ip);
+    if (!captcha.ok) return { error: BAD_CAPTCHA, values };
     // Giới hạn theo tài khoản để chặn dò mật khẩu từ nhiều IP.
     if (!(await hitRateLimit(`login-id:${keyHash(identifier)}`, 900, 10))) return { error: TOO_MANY, values };
 
@@ -140,11 +148,13 @@ export async function loginAction(_: FormState, formData: FormData): Promise<For
     if (!email) return { error: BAD_LOGIN, values }; // một thông báo chung, không lộ tài khoản có tồn tại
 
     const supabase = await createSupabaseServer();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken: captcha.captchaToken } });
     if (error) {
       if (error.code === "email_not_confirmed") {
         // Chỉ xảy ra khi mật khẩu đúng: gửi lại mã (nếu chưa vượt giới hạn) và chuyển sang trang xác nhận.
-        if (await hitRateLimit(`resend-email:${keyHash(email)}`, 3600, 10)) {
+        // Khi Supabase tự xác minh CAPTCHA thì token đã dùng hết cho lần đăng nhập: không gửi tự động được,
+        // trang xác nhận sẽ cho người dùng bấm "Gửi lại" (kèm CAPTCHA mới).
+        if (!supabaseCaptcha() && (await hitRateLimit(`resend-email:${keyHash(email)}`, 3600, 10))) {
           await supabase.auth.resend({ type: "signup", email });
         }
         return { redirectTo: verifyUrl(email, "unconfirmed") };
@@ -167,11 +177,12 @@ export async function forgotAction(_: FormState, formData: FormData): Promise<Fo
 
     const ip = clientIp(await headers());
     if (!(await hitRateLimit(`forgot:${ip}`, 3600, 10))) return { error: TOO_MANY, values };
-    if (!(await verifyCaptcha(raw[CAPTCHA_FIELD], ip))) return { error: BAD_CAPTCHA, values };
+    const captcha = await checkCaptcha(raw[CAPTCHA_FIELD], ip);
+    if (!captcha.ok) return { error: BAD_CAPTCHA, values };
     if (!(await hitRateLimit(`forgot-email:${keyHash(email)}`, 3600, 3))) return { error: TOO_MANY, values };
 
     const supabase = await createSupabaseServer();
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { captchaToken: captcha.captchaToken });
     if (error && (error.status ?? 0) >= 500) return { error: mapAuthError(error), values };
 
     // Luôn chuyển sang bước nhập mã dù email có tồn tại hay không.

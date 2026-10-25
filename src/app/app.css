@@ -168,6 +168,9 @@ a.lv:hover .lv-name { text-decoration: underline; }
 .pill:hover:not(:disabled) { background: var(--ink-soft); }
 .pill[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
 .pill small { font-weight: 500; opacity: 0.75; margin-left: 4px; }
+a.pill { display: inline-block; text-decoration: none; }
+.pill[aria-current="page"] { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.pill:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .cta-row { display: grid; gap: 12px; grid-template-columns: 1fr; }
 .cta { display: grid; gap: 4px; padding: 16px; border: 1.5px solid var(--ink); border-radius: var(--radius); background: var(--sheet); text-decoration: none; color: inherit; }
 .cta b { font-size: 17px; }
