@@ -120,3 +120,29 @@ describe("hit_rate_limit dọn rác", () => {
     expect(fresh[0].count).toBe(1500); // dọn không đụng tới cửa sổ hiện tại
   }, 60000);
 });
+
+describe("list_new_words: từ cùng freq_rank (rank trống)", () => {
+  it("không xếp theo id/bảng chữ cái, ổn định và phân trang keyset đủ không trùng", async () => {
+    const tie: number[] = [];
+    for (let i = 0; i < 12; i++) {
+      const r = await rows<{ id: number }>(
+        `insert into words (key, en, pos, vi, cefr, domain, rand) values ($1, $2, 'n', $3, 'A1', 'general', $4) returning id`,
+        [`tie${i}:n:1`, `tie${String.fromCharCode(97 + i)}`, `hòa ${i}`, ((i * 7) % 12) / 12 + 0.01],
+      );
+      tie.push(r[0].id);
+    }
+    const all = (await newWords(U2, 1000000000 - 1, 0)).map((r) => r.id).filter((id) => tie.includes(id));
+    expect(all).toHaveLength(12);
+    expect(all).not.toEqual(tie); // không còn theo thứ tự id
+    const seen: number[] = [];
+    let cur: { freq_rank: number; id: number } | null = null;
+    for (;;) {
+      const page: { id: number; freq_rank: number }[] = await newWords(U2, cur?.freq_rank ?? 1000000000 - 1, cur?.id ?? 0, 5);
+      if (!page.length) break;
+      seen.push(...page.map((r) => r.id));
+      cur = page[page.length - 1];
+    }
+    expect(seen.filter((id) => tie.includes(id))).toEqual(all);
+    expect(new Set(seen).size).toBe(seen.length);
+  });
+});

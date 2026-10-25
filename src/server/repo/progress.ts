@@ -2,11 +2,15 @@ import { createAdminClient } from "../db";
 import { RepoError } from "../errors";
 import type { Cefr, LevelCounters, SrsState, Word } from "../../core/types";
 import { CEFR_ORDER } from "../../core/types";
+import { shuffle } from "../../core/questions";
 import { allContentStats, randomWordPicker, type ContentStat } from "./content";
 import type { ResolvedScope } from "./scope";
 import { chunk, toWord, unwrapList, WORD_COLS, type WordRow } from "./shared";
 
 const db = () => createAdminClient();
+
+const DUE_POOL_FACTOR = 3; // lấy dư gấp 3 lần số từ cần rồi chọn ngẫu nhiên
+const DUE_POOL_MIN = 30;
 
 export type ProgressRow = { word_id: number; level: number; bad: number; next_review: string };
 
@@ -31,7 +35,7 @@ async function progressIds(userId: string, ids: number[]): Promise<Set<number>> 
  * Từ ĐẾN HẠN ôn trong phạm vi: lọc cefr/domain/chủ đề NGAY TRONG truy vấn rồi mới LIMIT (mục 5.4) —
  * lấy LIMIT trước rồi lọc sau thì từ đến hạn của cấp khác chiếm hết chỗ. Index (user_id, cefr, domain, next_review).
  */
-async function dueWords(userId: string, scope: ResolvedScope, n: number, now: Date): Promise<Word[]> {
+async function dueWords(userId: string, scope: ResolvedScope, n: number, now: Date, rng: () => number): Promise<Word[]> {
   const topic = scope.topicId !== undefined;
   const embed = topic ? `words!inner(${WORD_COLS},word_topics!inner(topic_id))` : `words!inner(${WORD_COLS})`;
   let q = db()
@@ -43,8 +47,10 @@ async function dueWords(userId: string, scope: ResolvedScope, n: number, now: Da
     .eq("words.status", "active");
   if (topic) q = q.eq("words.word_topics.topic_id", scope.topicId);
   else if (scope.domain !== "all") q = q.eq("domain", scope.domain);
-  const rows = unwrapList<{ words: WordRow }>("progress.due", await q.order("next_review").limit(n));
-  return rows.map((r) => toWord(r.words));
+  // Lấy dư một nhóm từ đến hạn sớm nhất rồi chọn ngẫu nhiên n từ trong đó: nếu chỉ lấy n từ đầu theo next_review
+  // thì các từ học cùng lúc (cùng next_review) luôn ra đúng một bộ, theo thứ tự id = bảng chữ cái.
+  const rows = unwrapList<{ words: WordRow }>("progress.due", await q.order("next_review").limit(Math.max(n * DUE_POOL_FACTOR, DUE_POOL_MIN)));
+  return shuffle(rows.map((r) => toWord(r.words)), rng).slice(0, n);
 }
 
 /** Từ MỚI (chưa có tiến độ): lấy ngẫu nhiên theo rand, lấy dư rồi loại từ đã có tiến độ. */
@@ -84,16 +90,17 @@ export async function pickWords(userId: string, scope: ResolvedScope, n: number,
 
   if (preferNew) {
     add(await newWords(userId, scope, n, new Set(), rng));
-    if (words.length < n) add(await dueWords(userId, scope, n - words.length, now));
+    if (words.length < n) add(await dueWords(userId, scope, n - words.length, now, rng));
   } else {
-    add(await dueWords(userId, scope, n, now));
+    add(await dueWords(userId, scope, n, now, rng));
     if (words.length < n) add(await newWords(userId, scope, n - words.length, new Set(words.map((w) => w.id)), rng));
   }
-  if (words.length > 0) return { words, practice: false };
+  // Xáo lại cả vòng: từ đến hạn và từ mới được ghép nối tiếp, và truy vấn `in (...)` trả theo id (= bảng chữ cái).
+  if (words.length > 0) return { words: shuffle(words, rng), practice: false };
 
   const pick = await randomWordPicker(scope);
   for (let t = 0; t < 3 && words.length < n; t++) add(await pick(n * 2, rng));
-  return { words, practice: true };
+  return { words: shuffle(words, rng), practice: true };
 }
 
 export async function dueCount(userId: string, now: Date): Promise<number> {

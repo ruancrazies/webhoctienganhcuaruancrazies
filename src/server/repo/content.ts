@@ -1,5 +1,6 @@
 import { createAdminClient } from "../db";
 import { ServiceError } from "../errors";
+import { shuffle } from "../../core/questions";
 import type { Cefr, GrammarQ, Sentence, Word } from "../../core/types";
 import { toWord, unwrap, unwrapList, mapLimit, WORD_COLS, type WordRow } from "./shared";
 import type { ResolvedScope } from "./scope";
@@ -261,7 +262,7 @@ export async function pickWordsForExam(cefr: Cefr, domain: string, n: number, ex
   if (out.size < n && exclude.size) {
     for (const w of await pick(n * 2, rng)) if (!out.has(w.id)) out.set(w.id, w);
   }
-  return [...out.values()].slice(0, n);
+  return shuffle([...out.values()], rng).slice(0, n);
 }
 
 // ---------- danh sách học: từ mới / ôn lại (migration 0005) ----------
