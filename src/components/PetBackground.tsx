@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { BREAK_AFTER_MIN, breakReminder, greetingFor } from "@/core/pet-tips";
-import { isPetsOn, petSay, SAY_EVENT, setPetsOn, subscribePets, type PetMessage } from "@/lib/pets";
+import { isPetsOn, openPetChat, petSay, SAY_EVENT, setPetsOn, subscribePets, type PetMessage } from "@/lib/pets";
 
 /**
  * Hoạt ảnh nền: hai nhân vật chibi (Nuonuo, Phoebe) sống dọc đáy màn hình, dùng TOÀN BỘ hoạt ảnh
@@ -269,13 +269,24 @@ export function PetBackground() {
     )}
     <div className="pet-layer" aria-hidden="true">
       {(["nuonuo", "phoebe"] as const).map((who) => (
-        <div key={who} ref={(e) => { els.current[who] = e; }} className="pet" style={{ width: size, height: size }}>
+        <div key={who} ref={(e) => { els.current[who] = e; }} className="pet" style={{ width: size, height: size }} onClick={() => openPetChat(who)}>
           {/* dùng <img> thường: WebP động qua next/image sẽ mất hoạt ảnh */}
           <img src={`/pets/${who}/${anims[who]}.webp`} alt="" width={size} height={size} draggable={false} decoding="async" />
         </div>
       ))}
     </div>
     </>
+  );
+}
+
+/** Nút nhỏ trên thanh trên cùng: mở khung trò chuyện với thú cưng (chỉ hiện khi thú cưng đang bật). */
+export function PetChatButton() {
+  const on = useSyncExternalStore(subscribePets, isPetsOn, () => false);
+  if (!on) return null;
+  return (
+    <button type="button" className="mute" aria-label="Trò chuyện với thú cưng" title="Trò chuyện với thú cưng" onClick={() => openPetChat()}>
+      💬
+    </button>
   );
 }
 

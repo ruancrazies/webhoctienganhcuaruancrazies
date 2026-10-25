@@ -6,5 +6,6 @@ export { getHome } from "./home";
 export { getPracticeOverview, startPractice, submitPractice } from "./practice";
 export { getDailyQuests, claimQuest, recordQuestProgress } from "./quests";
 export { getLeaderboard, getBlitzBoard, clearLeaderboardCache } from "./leaderboard";
+export { chatWithPet } from "./chat";
 export { getLevelStatuses, requireUnlocked } from "./levels";
 export type { Ctx } from "./ctx";

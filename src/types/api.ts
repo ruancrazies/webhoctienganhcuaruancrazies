@@ -174,3 +174,14 @@ export type BlitzBoardResponse = { cefr: Cefr; rows: BoardRow[] };
 
 /** Mã lỗi nghiệp vụ trả về cho client (xem server/errors.ts). */
 export type ApiError = { error: string; code: string } & Record<string, unknown>;
+
+export const chatSchema = z.object({
+  pet: z.enum(["nuonuo", "phoebe"]),
+  message: z.string().trim().min(1).max(500),
+  history: z
+    .array(z.object({ role: z.enum(["user", "pet"]), text: z.string().max(1200) }))
+    .max(20)
+    .default([]),
+});
+export type ChatRequest = z.infer<typeof chatSchema>;
+export type ChatResponse = { reply: string };

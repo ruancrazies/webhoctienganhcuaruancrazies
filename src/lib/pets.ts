@@ -69,3 +69,10 @@ export function petSay(msg: PetMessage): void {
   }
   window.dispatchEvent(new CustomEvent<PetMessage>(SAY_EVENT, { detail: msg }));
 }
+
+/** Mở khung trò chuyện với thú cưng (bấm vào bé hoặc nút 💬 trên thanh trên). `who` bỏ trống = bé đang chọn. */
+export const CHAT_OPEN_EVENT = "eg-pet-chat-open";
+export function openPetChat(who?: PetWho): void {
+  if (typeof window === "undefined" || !isPetsOn()) return;
+  window.dispatchEvent(new CustomEvent<{ who?: PetWho }>(CHAT_OPEN_EVENT, { detail: { who } }));
+}
