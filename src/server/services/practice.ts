@@ -27,15 +27,17 @@ import {
 } from "../repo";
 import { nowOf, rngOf, type Ctx } from "./ctx";
 import { getLevelStatuses } from "./levels";
+import { clientPassagesFor, pickPassageBundles, revealedPassagesFor } from "./passages";
 import { recordQuestProgress } from "./quests";
 
 const OVERFETCH = 2.5; // lấy dư từ vì cloze cần câu ví dụ, không phải từ nào cũng dựng được
 const SENTENCES_PER_WORD = 6;
 const RECENT = 5;
 
-const toStartResponse = (t: PracticeRow, resumed: boolean): PracticeStartResponse => ({
+const toStartResponse = async (t: PracticeRow, resumed: boolean): Promise<PracticeStartResponse> => ({
   testId: t.id,
   items: toClientItems(t.items),
+  passages: await clientPassagesFor(t.items),
   expiresAt: t.expiresAt.toISOString(),
   resumed,
 });
@@ -60,6 +62,8 @@ export async function getPracticeOverview(userId: string, ctx: Ctx = {}): Promis
     hasOpen,
     vocabTotal: cfg.vocab.total,
     grammarTotal: cfg.grammar.total,
+    readingPassages: cfg.passages?.reading ?? 0,
+    listeningPassages: cfg.passages?.listening ?? 0,
     durationMinutes: cfg.durationMinutes,
     recent,
   };
@@ -83,7 +87,7 @@ export async function startPractice(userId: string, ctx: Ctx = {}): Promise<Prac
     await failPractice(userId, open.id); // bỏ dở quá giờ: tính là một lần làm, điểm 0
     open = null;
   }
-  if (open) return toStartResponse(open, true);
+  if (open) return await toStartResponse(open, true);
 
   const learned = await learnedWordIds(userId);
   if (learned.length < PRACTICE_MIN_WORDS) {
@@ -96,26 +100,29 @@ export async function startPractice(userId: string, ctx: Ctx = {}): Promise<Prac
   const words = await wordsByIds(sample(learned, Math.ceil(cfg.exam.vocab.total * OVERFETCH), rng));
   if (words.length === 0) throw new ServiceError(409, "NO_CONTENT", "Chưa đủ nội dung để ra đề");
 
-  const [grammarQuestions, d, sentences] = await Promise.all([
-    grammarLevel(userId).then((lv) => pickGrammar(lv, cfg.exam.grammar.total, rng)),
+  const level = await grammarLevel(userId); // cùng cấp cho ngữ pháp và bài đọc / nghe
+  const [grammarQuestions, d, sentences, passages] = await Promise.all([
+    pickGrammar(level, cfg.exam.grammar.total, rng),
     distractorPools(words, rng),
     sentencesFor(words.map((w) => w.id), SENTENCES_PER_WORD),
+    pickPassageBundles(level, cfg.exam, rng),
   ]);
-  const pools: Pools & { grammarQuestions: typeof grammarQuestions } = {
+  const pools: Pools & { grammarQuestions: typeof grammarQuestions; passages: typeof passages } = {
     viDistractors: d.vi,
     enDistractors: d.en,
     sentences: sentences as Record<number, Sentence[]>,
     grammarQuestions,
+    passages,
   };
   const items = buildExamItems(words, pools, cfg.exam, rng);
   if (items.length === 0) throw new ServiceError(409, "NO_CONTENT", "Chưa đủ nội dung để ra đề");
 
   try {
-    return toStartResponse(await createPractice(userId, items, examDeadline(now, cfg.exam)), false);
+    return await toStartResponse(await createPractice(userId, items, examDeadline(now, cfg.exam)), false);
   } catch (e) {
     if (e instanceof RepoError && e.code === "23505") {
       const winner = await activePractice(userId);
-      if (winner && winner.expiresAt.getTime() > now.getTime()) return toStartResponse(winner, true);
+      if (winner && winner.expiresAt.getTime() > now.getTime()) return await toStartResponse(winner, true);
       throw new ServiceError(409, "TEST_IN_PROGRESS", "Đang có bài kiểm tra chưa nộp");
     }
     throw e;
@@ -141,7 +148,7 @@ export async function submitPractice(req: PracticeSubmitRequest, userId: string,
   const previous = (await recentPracticeResults(userId, 1))[0];
 
   try {
-    await applyPracticeResult(userId, test.id, { total: score.total, vocab: score.vocab, grammar: score.grammar, today: dayNo(now), wrongWords });
+    await applyPracticeResult(userId, test.id, { total: score.total, vocab: score.vocab, grammar: score.grammar, reading: score.reading, listening: score.listening, today: dayNo(now), wrongWords });
   } catch (e) {
     if (hasTag(e, "test_finished_or_invalid")) throw new ServiceError(409, "TEST_INVALID", "Bài kiểm tra đã kết thúc hoặc không hợp lệ");
     throw e;
@@ -152,9 +159,14 @@ export async function submitPractice(req: PracticeSubmitRequest, userId: string,
     scoreTotal: score.total,
     scoreVocab: score.vocab,
     scoreGrammar: score.grammar,
+    scoreReading: score.reading ?? null,
+    scoreListening: score.listening ?? null,
     vocabCount: graded.filter((g) => g.item.part === "vocab").length,
     grammarCount: graded.filter((g) => g.item.part === "grammar").length,
+    readingCount: graded.filter((g) => g.item.part === "reading").length,
+    listeningCount: graded.filter((g) => g.item.part === "listening").length,
     review: reviewList(graded),
+    passages: await revealedPassagesFor(test.items),
     scheduledReview: wrongWords.length,
     questCounted: counted,
     previousTotal: previous ? previous.total : null,

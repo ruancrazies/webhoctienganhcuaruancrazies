@@ -40,6 +40,8 @@ export default async function ExamPage({ params }: { params: Promise<{ cefr: str
   const info: ExamInfo = {
     vocabTotal: c.vocab.total,
     grammarTotal: c.grammar.total,
+    readingPassages: c.passages?.reading ?? 0,
+    listeningPassages: c.passages?.listening ?? 0,
     durationMinutes: c.durationMinutes,
     passTotal: c.passTotal,
     passPart: c.passPart,

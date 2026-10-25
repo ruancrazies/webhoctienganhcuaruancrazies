@@ -14,6 +14,6 @@
     "topics": { "name": "topics", "gid": null },
     "domains": { "name": "domains", "gid": null },
     "passages": { "name": "passages", "gid": null },
-    "passageQuestions": { "name": "passage_questions", "gid": null }
+    "passageQuestions": { "name": "passage_questions", "gid": 183778919 }
   }
 }

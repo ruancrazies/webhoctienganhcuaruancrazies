@@ -2,7 +2,8 @@ import { EXAM_SUBMIT_GRACE_SECONDS } from "./rules";
 import { grammarChoice, buildQuestions, cloze, renumber, shuffle, type Pools, type Rng } from "./questions";
 import { startOfNextVnDay, startOfVnDay } from "./streak";
 import type { GradedItem } from "./grading";
-import type { Cefr, GrammarQ, LevelStatus, StoredItem, Word } from "./types";
+import { passageItems } from "./passages";
+import type { Cefr, GrammarQ, LevelStatus, PassageBundle, StoredItem, Word } from "./types";
 import { GATED_LEVELS } from "./types";
 
 /** Cấu hình bài kiểm tra lên cấp (content/taxonomy/levels.yml → `exam`). */
@@ -14,6 +15,8 @@ export type ExamConfig = {
   passPart: number;
   cooldownMinutes: number;
   maxAttemptsPerDay: number;
+  /** Số đoạn đọc / đoạn nghe mỗi đề (mỗi đoạn kèm toàn bộ câu hỏi active của nó). Thiếu hoặc 0 = không có phần này. */
+  passages?: { reading: number; listening: number };
 };
 
 // ---------- điều kiện được bắt đầu thi (mục 5.13) ----------
@@ -95,6 +98,8 @@ export function isSubmitTooLate(now: Date, expiresAt: Date, graceSeconds = EXAM_
 export type ExamPools = Pools & {
   /** Ngữ pháp của đúng cấp, đã lấy ngẫu nhiên (cột rand). */
   grammarQuestions: GrammarQ[];
+  /** Đoạn đọc / nghe đã bốc (kèm câu hỏi). Thiếu thì đề chỉ có từ vựng + ngữ pháp. */
+  passages?: PassageBundle[];
 };
 
 /**
@@ -103,6 +108,7 @@ export type ExamPools = Pools & {
  *  - gõ từ: KHÔNG gợi ý, KHÔNG chấp nhận gần đúng (strict)
  *  - cloze không có câu ví dụ dùng được → chuyển thành quiz
  *  - không dùng trò listen
+ *  - đoạn đọc / nghe (nếu có) được nối SAU cùng, bài đọc trước bài nghe, các câu của một đoạn liền nhau
  * Có thể trả ít câu hơn cấu hình nếu nội dung quá thiếu; điểm được tính trên số câu thật (xem scoreExam).
  */
 export function buildExamItems(words: Word[], pools: ExamPools, cfg: ExamConfig, rng: Rng = Math.random): StoredItem[] {
@@ -134,30 +140,40 @@ export function buildExamItems(words: Word[], pools: ExamPools, cfg: ExamConfig,
     .slice(0, cfg.grammar.total)
     .map((g) => grammarChoice(g, rng));
 
-  return renumber(shuffle([...vocab.slice(0, cfg.vocab.total), ...grammar], rng));
+  const core = shuffle([...vocab.slice(0, cfg.vocab.total), ...grammar], rng);
+  return renumber([...core, ...passageItems(pools.passages ?? [], rng)]);
 }
 
 // ---------- chấm đề ----------
 
-export type ExamScore = { passed: boolean; total: number; vocab: number; grammar: number };
+export type ExamScore = { passed: boolean; total: number; vocab: number; grammar: number; reading?: number; listening?: number };
 
 const ratio = (right: number, n: number) => (n === 0 ? 0 : right / n);
 const EPS = 1e-9;
 
 /**
- * Điểm bài thi (mục 4.6): tổng ≥ passTotal VÀ từ vựng ≥ passPart VÀ ngữ pháp ≥ passPart.
+ * Điểm bài thi (mục 4.6): tổng ≥ passTotal VÀ từ vựng ≥ passPart VÀ ngữ pháp ≥ passPart,
+ * VÀ (nếu đề có) bài đọc ≥ passPart, bài nghe ≥ passPart.
  * Mẫu số là số câu THỰC có trong đề của từng phần; câu bỏ trống tính là sai.
+ * `reading` / `listening` chỉ có trong kết quả khi đề thật sự có phần đó.
  */
 export function scoreExam(graded: GradedItem[], cfg: ExamConfig): ExamScore {
-  const part = (p: "vocab" | "grammar") => graded.filter((g) => g.item.part === p);
+  const part = (p: "vocab" | "grammar" | "reading" | "listening") => graded.filter((g) => g.item.part === p);
   const right = (xs: GradedItem[]) => xs.filter((g) => g.correct).length;
   const v = part("vocab");
   const g = part("grammar");
+  const r = part("reading");
+  const l = part("listening");
+  const all = [...v, ...g, ...r, ...l];
   const vocab = ratio(right(v), v.length);
   const grammar = ratio(right(g), g.length);
-  const total = ratio(right(v) + right(g), v.length + g.length);
+  const reading = ratio(right(r), r.length);
+  const listening = ratio(right(l), l.length);
+  const total = ratio(right(all), all.length);
   const passed =
     v.length > 0 && g.length > 0 &&
-    total >= cfg.passTotal - EPS && vocab >= cfg.passPart - EPS && grammar >= cfg.passPart - EPS;
-  return { passed, total, vocab, grammar };
+    total >= cfg.passTotal - EPS && vocab >= cfg.passPart - EPS && grammar >= cfg.passPart - EPS &&
+    (r.length === 0 || reading >= cfg.passPart - EPS) &&
+    (l.length === 0 || listening >= cfg.passPart - EPS);
+  return { passed, total, vocab, grammar, ...(r.length ? { reading } : {}), ...(l.length ? { listening } : {}) };
 }

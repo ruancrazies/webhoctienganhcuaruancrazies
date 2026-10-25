@@ -7,7 +7,7 @@ export const GATED_LEVELS = ["A1", "A2", "B1", "B2", "C1"] as const satisfies re
 
 export type GameId = "quiz" | "blitz" | "type" | "scramble" | "cloze" | "listen" | "match" | "flash" | "build" | "tf";
 /** Câu hỏi trong bài thi ngữ pháp có game = "grammar". */
-export type QuestionGame = GameId | "grammar";
+export type QuestionGame = GameId | "grammar" | "passage";
 
 export type Word = {
   id: number;
@@ -44,6 +44,8 @@ export type Question = {
   wordId?: number;
   grammarId?: number;
   sentenceId?: number;
+  /** Câu hỏi thuộc một bài đọc / bài nghe (game = "passage"). */
+  passageId?: number;
   prompt: string;
   options?: string[];
   tokens?: string[];
@@ -57,7 +59,7 @@ export type StoredItem = Question & {
   expected: string | string[];
   /** Đáp án thay thế chấp nhận được (ví dụ từ đồng nghĩa có cùng nghĩa trong vòng). */
   alts?: string[];
-  part?: "vocab" | "grammar";
+  part?: "vocab" | "grammar" | "reading" | "listening";
   /** Không chấp nhận "gần đúng" (bài thi). */
   strict?: boolean;
   explanation?: string;
@@ -76,6 +78,7 @@ export type ReviewItem = {
   en?: string;
   vi?: string;
   wordId?: number;
+  passageId?: number;
 };
 
 export type LevelCounters = { cefr: Cefr; learned: number; total: number };
@@ -88,3 +91,29 @@ export type LevelStatus = {
   learnedCum: number;
   needLearned: number;
 };
+
+// ---------- bài đọc / bài nghe (migration 0009) ----------
+
+export type PassageSkill = "reading" | "listening";
+export type Passage = { id: number; key: string; skill: PassageSkill; level: Cefr; title: string; body: string; audio?: string | null };
+export type PassageQ = {
+  id: number;
+  passageId: number;
+  kind: "mcq" | "tf";
+  question: string;
+  options: string[];
+  /** mcq: số thứ tự đáp án đúng (từ 1). tf: 1 = đúng, 2 = sai. */
+  answer: number;
+  explanation?: string | null;
+  sort: number;
+};
+export type PassageBundle = { passage: Passage; questions: PassageQ[] };
+
+/**
+ * Phần đoạn văn gửi xuống trình duyệt KHI ĐANG LÀM BÀI.
+ *  - reading: `text` để hiển thị.
+ *  - listening: KHÔNG có `text`; có `audioUrl` (nếu sheet khai báo URL) hoặc `speech` (lời thoại cho giọng đọc trình duyệt, không hiển thị).
+ */
+export type ClientPassage = { id: number; skill: PassageSkill; title: string; text?: string; speech?: string; audioUrl?: string };
+/** Đoạn văn đầy đủ, chỉ gửi SAU khi nộp bài. */
+export type RevealedPassage = { id: number; skill: PassageSkill; title: string; body: string };

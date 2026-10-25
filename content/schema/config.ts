@@ -52,6 +52,7 @@ export const LevelsSchema = z
         }),
       }),
       grammar: z.object({ total: z.number().int().positive() }),
+      passages: z.object({ reading: z.number().int().nonnegative(), listening: z.number().int().nonnegative() }).optional(),
       durationMinutes: z.number().positive(),
       passTotal: z.number().gt(0).lte(1),
       passPart: z.number().gt(0).lte(1),

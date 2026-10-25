@@ -85,7 +85,7 @@ export async function failExam(userId: string, examId: string): Promise<boolean>
   return data === true;
 }
 
-export type ExamPayload = { passed: boolean; total: number; vocab: number; grammar: number; today: number };
+export type ExamPayload = { passed: boolean; total: number; vocab: number; grammar: number; reading?: number; listening?: number; today: number };
 
 /** RPC apply_exam_result: đóng bài + (đạt) ghi level_passes + chuỗi ngày, MỘT giao dịch. Không đụng XP/SRS. */
 export async function applyExamResult(userId: string, examId: string, payload: ExamPayload): Promise<{ streak: number; cefr: Cefr; passed: boolean }> {

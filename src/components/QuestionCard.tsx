@@ -11,6 +11,7 @@ const KIND: Record<string, string> = {
   type: "Gõ từ tiếng Anh có nghĩa sau",
   cloze: "Điền từ còn thiếu vào câu",
   grammar: "Chọn đáp án đúng",
+  passage: "Dựa vào bài đọc / bài nghe, chọn đáp án đúng",
   scramble: "Sắp xếp các chữ cái",
   build: "Sắp xếp các từ thành câu",
   tf: "Câu này đúng hay sai?",

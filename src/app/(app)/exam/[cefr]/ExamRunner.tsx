@@ -2,16 +2,19 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PassagePanel, PassageReveal } from "@/components/PassagePanel";
 import { QuestionCard } from "@/components/QuestionCard";
 import { ApiFail, apiPost, errorMessage } from "@/lib/api";
 import { LEVEL_NAMES, fmtClock, fmtNumber, fmtVnTime, pct } from "@/lib/format";
 import { sfx } from "@/lib/sound";
-import type { Cefr, Question } from "@/core/types";
+import type { Cefr, ClientPassage, Question } from "@/core/types";
 import type { ExamResult, ExamStartResponse } from "@/types/api";
 
 export type ExamInfo = {
   vocabTotal: number;
   grammarTotal: number;
+  readingPassages: number;
+  listeningPassages: number;
   durationMinutes: number;
   passTotal: number;
   passPart: number;
@@ -23,8 +26,8 @@ type Gate = { unlocked: boolean; pass: boolean; eligible: boolean; learnedCum: n
 type Phase =
   | { t: "intro" }
   | { t: "starting" }
-  | { t: "running"; examId: string; items: Question[]; expiresAt: number; resumed: boolean }
-  | { t: "submitting"; examId: string; items: Question[]; expiresAt: number; resumed: boolean }
+  | { t: "running"; examId: string; items: Question[]; passages: ClientPassage[]; expiresAt: number; resumed: boolean }
+  | { t: "submitting"; examId: string; items: Question[]; passages: ClientPassage[]; expiresAt: number; resumed: boolean }
   | { t: "result"; result: ExamResult }
   | { t: "expired"; message: string };
 
@@ -69,7 +72,7 @@ export function ExamRunner({ cefr, info, next, gate }: { cefr: Cefr; info: ExamI
     setPhase({ t: "starting" });
     try {
       const r = await apiPost<ExamStartResponse>("/api/exam/start", { cefr });
-      setPhase({ t: "running", examId: r.examId, items: r.items, expiresAt: new Date(r.expiresAt).getTime(), resumed: r.resumed });
+      setPhase({ t: "running", examId: r.examId, items: r.items, passages: r.passages ?? [], expiresAt: new Date(r.expiresAt).getTime(), resumed: r.resumed });
     } catch (e) {
       setStartError(e instanceof ApiFail ? startFailure(e) : errorMessage(e));
       setPhase({ t: "intro" });
@@ -102,6 +105,7 @@ export function ExamRunner({ cefr, info, next, gate }: { cefr: Cefr; info: ExamI
         info={info}
         examId={phase.examId}
         items={phase.items}
+        passages={phase.passages}
         expiresAt={phase.expiresAt}
         resumed={phase.resumed}
         submitting={phase.t === "submitting"}
@@ -149,9 +153,9 @@ export function ExamRunner({ cefr, info, next, gate }: { cefr: Cefr; info: ExamI
       <section className="sheet" aria-labelledby="rule-h">
         <h2 id="rule-h" style={{ marginBottom: 10 }}>Thể lệ</h2>
         <ul className="rules">
-          <li>{info.vocabTotal + info.grammarTotal} câu: {info.vocabTotal} câu từ vựng (chọn nghĩa, điền vào câu, gõ từ) và {info.grammarTotal} câu ngữ pháp.</li>
+          <li>{info.vocabTotal + info.grammarTotal} câu: {info.vocabTotal} câu từ vựng (chọn nghĩa, điền vào câu, gõ từ) và {info.grammarTotal} câu ngữ pháp.{info.readingPassages + info.listeningPassages > 0 ? ` Ngoài ra có ${[info.readingPassages > 0 ? `${info.readingPassages} bài đọc` : "", info.listeningPassages > 0 ? `${info.listeningPassages} bài nghe` : ""].filter(Boolean).join(" và ")} kèm câu hỏi (nếu cấp này đã có bài).` : ""}</li>
           <li>Làm trong {info.durationMinutes} phút. Hết giờ mà chưa nộp thì tính là trượt.</li>
-          <li>Đạt khi tổng điểm từ {pct(info.passTotal)}, và mỗi phần (từ vựng, ngữ pháp) từ {pct(info.passPart)}.</li>
+          <li>Đạt khi tổng điểm từ {pct(info.passTotal)}, và mỗi phần (từ vựng, ngữ pháp, bài đọc, bài nghe nếu đề có) từ {pct(info.passPart)}.</li>
           <li>Câu gõ từ phải đúng chính tả, không có gợi ý. Câu bỏ trống tính là sai.</li>
           <li>Tối đa {info.maxAttemptsPerDay} lượt mỗi ngày. Không đạt thì chờ {info.cooldownMinutes} phút mới thi lại cấp này.</li>
           <li>Bài thi không cộng XP và không ảnh hưởng lịch ôn từ.</li>
@@ -179,6 +183,7 @@ type RunningProps = {
   info: ExamInfo;
   examId: string;
   items: Question[];
+  passages: ClientPassage[];
   expiresAt: number;
   resumed: boolean;
   submitting: boolean;
@@ -188,7 +193,7 @@ type RunningProps = {
   onClosed: (message: string) => void;
 };
 
-function Running({ cefr, examId, items, expiresAt, resumed, submitting, onSubmitting, onBackToRun, onResult, onClosed }: RunningProps) {
+function Running({ cefr, examId, items, passages, expiresAt, resumed, submitting, onSubmitting, onBackToRun, onResult, onClosed }: RunningProps) {
   const saved = useMemo(() => readSaved(examId), [examId]);
   const [answers, setAnswers] = useState<Record<string, string>>(saved.answers);
   const [idx, setIdx] = useState(Math.min(saved.idx, items.length - 1));
@@ -253,6 +258,7 @@ function Running({ cefr, examId, items, expiresAt, resumed, submitting, onSubmit
   }, [expiresAt, submit]);
 
   const q = items[idx];
+  const passage = q.passageId !== undefined ? passages.find((x) => x.id === q.passageId) : undefined;
   const answered = items.filter((it) => (answers[it.qid] ?? "").trim() !== "").length;
   const unanswered = items.length - answered;
   const low = remaining <= 120;
@@ -283,6 +289,8 @@ function Running({ cefr, examId, items, expiresAt, resumed, submitting, onSubmit
 
       {resumed ? <p className="gate">Bạn đang có bài thi dở nên hệ thống mở lại đúng bài đó (không tốn thêm lượt).</p> : null}
       {error ? <p className="err" role="alert">{error}. Bài của bạn vẫn được giữ, hãy thử nộp lại.</p> : null}
+
+      {passage ? <PassagePanel key={passage.id} passage={passage} /> : null}
 
       <section className="sheet" aria-live="polite">
         <QuestionCard key={q.qid} q={q} value={answers[q.qid] ?? ""} onChange={set} disabled={submitting} onEnter={() => (idx < items.length - 1 ? go(idx + 1) : undefined)} />
@@ -370,6 +378,18 @@ function ResultView({ cefr, next, info, result }: { cefr: Cefr; next: Cefr | nul
             <b>{pct(result.scoreGrammar)}</b>
             <span className="muted small">Ngữ pháp (cần {pct(info.passPart)})</span>
           </div>
+          {result.scoreReading !== null ? (
+            <div className={`part ${result.scoreReading >= info.passPart ? "good" : "bad"}`}>
+              <b>{pct(result.scoreReading)}</b>
+              <span className="muted small">Bài đọc (cần {pct(info.passPart)})</span>
+            </div>
+          ) : null}
+          {result.scoreListening !== null ? (
+            <div className={`part ${result.scoreListening >= info.passPart ? "good" : "bad"}`}>
+              <b>{pct(result.scoreListening)}</b>
+              <span className="muted small">Bài nghe (cần {pct(info.passPart)})</span>
+            </div>
+          ) : null}
         </div>
         <p className="muted small" style={{ marginTop: 12 }}>
           Điều kiện đạt: tổng từ {pct(info.passTotal)}, mỗi phần từ {pct(info.passPart)}.
@@ -388,6 +408,8 @@ function ResultView({ cefr, next, info, result }: { cefr: Cefr; next: Cefr | nul
         <Link href="/" className="btn btn-light">Trang chủ</Link>
       </div>
 
+      <PassageReveal passages={result.passages ?? []} />
+
       {result.review.length > 0 ? (
         <section className="stack" aria-labelledby="rv-h">
           <h2 id="rv-h">Các câu làm sai ({result.review.length})</h2>
@@ -401,7 +423,7 @@ function ResultView({ cefr, next, info, result }: { cefr: Cefr; next: Cefr | nul
                 <p className="muted small">
                   Bạn trả lời: {r.yourAnswer !== undefined && asText(r.yourAnswer) !== "" ? <span className="no">{asText(r.yourAnswer)}</span> : "(bỏ trống)"}
                 </p>
-                {r.en && r.vi && r.game !== "grammar" ? <p className="muted small">{r.en} = {r.vi}</p> : null}
+                {r.en && r.vi && r.game !== "grammar" && r.game !== "passage" ? <p className="muted small">{r.en} = {r.vi}</p> : null}
                 {r.explanation ? <p className="small">{r.explanation}</p> : null}
               </article>
             ))}

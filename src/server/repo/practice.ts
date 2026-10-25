@@ -45,7 +45,7 @@ export async function failPractice(userId: string, testId: string): Promise<bool
   return data === true;
 }
 
-export type PracticePayload = { total: number; vocab: number; grammar: number; today: number; wrongWords: number[] };
+export type PracticePayload = { total: number; vocab: number; grammar: number; reading?: number; listening?: number; today: number; wrongWords: number[] };
 
 /** RPC apply_practice_result: đóng bài + ghi điểm + hẹn ôn từ sai + chuỗi ngày, một giao dịch. */
 export async function applyPracticeResult(userId: string, testId: string, payload: PracticePayload): Promise<{ streak: number }> {
@@ -54,21 +54,24 @@ export async function applyPracticeResult(userId: string, testId: string, payloa
   return data as { streak: number };
 }
 
-export type PracticeScore = { finishedAt: string; total: number; vocab: number; grammar: number };
+export type PracticeScore = { finishedAt: string; total: number; vocab: number; grammar: number; reading: number | null; listening: number | null };
 
 /** Các bài đã nộp gần nhất (có điểm), mới nhất trước. Bài bị đóng vì hết giờ không có điểm nên không xuất hiện. */
 export async function recentPracticeResults(userId: string, limit: number): Promise<PracticeScore[]> {
-  const rows = unwrapList<{ finished_at: string; score_total: number | string; score_vocab: number | string; score_grammar: number | string }>(
+  const rows = unwrapList<{ finished_at: string; score_total: number | string; score_vocab: number | string; score_grammar: number | string; score_reading: number | string | null; score_listening: number | string | null }>(
     "practice.recent",
     await db()
       .from("practice_tests")
-      .select("finished_at,score_total,score_vocab,score_grammar")
+      .select("finished_at,score_total,score_vocab,score_grammar,score_reading,score_listening")
       .eq("user_id", userId)
       .not("score_total", "is", null)
       .order("finished_at", { ascending: false })
       .limit(limit),
   );
-  return rows.map((r) => ({ finishedAt: r.finished_at, total: Number(r.score_total), vocab: Number(r.score_vocab), grammar: Number(r.score_grammar) }));
+  return rows.map((r) => ({ finishedAt: r.finished_at, total: Number(r.score_total), vocab: Number(r.score_vocab), grammar: Number(r.score_grammar),
+    reading: r.score_reading === null ? null : Number(r.score_reading),
+    listening: r.score_listening === null ? null : Number(r.score_listening),
+  }));
 }
 
 /** Id các từ ĐÃ HỌC (level ≥ 1) của người dùng — nguồn đề của bài kiểm tra. Tối đa PRACTICE_POOL_MAX. */

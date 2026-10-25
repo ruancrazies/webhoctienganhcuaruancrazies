@@ -17,8 +17,11 @@ exam:
     mix: { quiz: 8, cloze: 6, type: 6 }   # chọn nghĩa / điền vào câu / gõ từ
   grammar:
     total: 10                              # câu ngữ pháp của đúng cấp đó
+  passages:
+    reading: 1                             # số bài đọc mỗi đề (kèm toàn bộ câu hỏi của bài)
+    listening: 1                           # số bài nghe mỗi đề; đặt 0 để tắt
   durationMinutes: 20
   passTotal: 0.80                          # tổng >= 80%
-  passPart: 0.70                           # từ vựng >= 70% VÀ ngữ pháp >= 70%
+  passPart: 0.70                           # từ vựng, ngữ pháp, (và bài đọc / bài nghe nếu đề có) mỗi phần >= 70%
   cooldownMinutes: 60                      # sau lượt không đạt, chờ 1 giờ mới thi lại cấp đó
   maxAttemptsPerDay: 3                     # tối đa 3 lượt/ngày (giờ VN), tính mọi cấp

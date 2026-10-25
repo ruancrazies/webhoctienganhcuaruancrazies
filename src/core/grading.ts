@@ -39,7 +39,8 @@ export function checkAnswer(item: StoredItem, answer: Answer | undefined): Check
     case "quiz":
     case "blitz":
     case "listen":
-    case "grammar": {
+    case "grammar":
+    case "passage": {
       const v = asString(answer.value);
       return { correct: v !== null && typeof expected === "string" && nfc(v) === nfc(expected) };
     }
@@ -156,6 +157,7 @@ export function toReviewItem(g: GradedItem): ReviewItem {
     en: item.meta?.en,
     vi: item.meta?.vi,
     wordId: item.wordId,
+    passageId: item.passageId,
   };
 }
 

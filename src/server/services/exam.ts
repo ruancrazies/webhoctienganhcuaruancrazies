@@ -26,14 +26,16 @@ import {
   type ExamRow,
 } from "../repo";
 import { nowOf, rngOf, type Ctx } from "./ctx";
+import { clientPassagesFor, pickPassageBundles, revealedPassagesFor } from "./passages";
 import { getLevelStatuses } from "./levels";
 
 const OVERFETCH = 2.5; // lấy dư từ vì cloze cần câu ví dụ, không phải từ nào cũng dựng được
 const SENTENCES_PER_WORD = 6;
 
-const toStartResponse = (exam: ExamRow, resumed: boolean): ExamStartResponse => ({
+const toStartResponse = async (exam: ExamRow, resumed: boolean): Promise<ExamStartResponse> => ({
   examId: exam.id,
   items: toClientItems(exam.items),
+  passages: await clientPassagesFor(exam.items),
   expiresAt: exam.expiresAt.toISOString(),
   resumed,
 });
@@ -91,32 +93,34 @@ export async function startExam(req: ExamStartRequest, userId: string, ctx: Ctx 
     cfg: cfg.exam,
   });
   if (!gate.ok) throw gateError(gate);
-  if (gate.resume && open) return toStartResponse(open, true); // không tốn lượt
+  if (gate.resume && open) return await toStartResponse(open, true); // không tốn lượt
 
   // Dựng đề: từ general của cả cấp (không chỉ từ đã học), trừ các từ của lượt thi trước
   const exclude = await lastExamWordIds(userId, req.cefr);
   const words = await pickWordsForExam(req.cefr, "general", Math.ceil(cfg.exam.vocab.total * OVERFETCH), exclude, rng);
-  const [grammarQuestions, d, sentences] = await Promise.all([
+  const [grammarQuestions, d, sentences, passages] = await Promise.all([
     pickGrammar(req.cefr, cfg.exam.grammar.total, rng),
     distractorPools(words, rng),
     sentencesFor(words.map((w) => w.id), SENTENCES_PER_WORD),
+    pickPassageBundles(req.cefr, cfg.exam, rng),
   ]);
-  const pools: Pools & { grammarQuestions: typeof grammarQuestions } = {
+  const pools: Pools & { grammarQuestions: typeof grammarQuestions; passages: typeof passages } = {
     viDistractors: d.vi,
     enDistractors: d.en,
     sentences: sentences as Record<number, Sentence[]>,
     grammarQuestions,
+    passages,
   };
   const items = buildExamItems(words, pools, cfg.exam, rng);
   if (items.length === 0) throw new ServiceError(409, "NO_CONTENT", "Chưa đủ nội dung để ra đề cho cấp này");
 
   try {
-    return toStartResponse(await createExam(userId, req.cefr, items, examDeadline(now, cfg.exam)), false);
+    return await toStartResponse(await createExam(userId, req.cefr, items, examDeadline(now, cfg.exam)), false);
   } catch (e) {
     // Hai request song song: unique partial index (một bài dở/người) chặn request thứ hai → trả lại bài của request thứ nhất.
     if (e instanceof RepoError && e.code === "23505") {
       const winner = await activeExam(userId);
-      if (winner && winner.cefr === req.cefr && winner.expiresAt.getTime() > now.getTime()) return toStartResponse(winner, true);
+      if (winner && winner.cefr === req.cefr && winner.expiresAt.getTime() > now.getTime()) return await toStartResponse(winner, true);
       throw new ServiceError(409, "EXAM_IN_PROGRESS", "Đang có bài thi chưa nộp");
     }
     throw e;
@@ -140,7 +144,7 @@ export async function submitExam(req: ExamSubmitRequest, userId: string, ctx: Ct
   const score = scoreExam(graded, cfg.exam);
 
   try {
-    await applyExamResult(userId, exam.id, { passed: score.passed, total: score.total, vocab: score.vocab, grammar: score.grammar, today: dayNo(now) });
+    await applyExamResult(userId, exam.id, { passed: score.passed, total: score.total, vocab: score.vocab, grammar: score.grammar, reading: score.reading, listening: score.listening, today: dayNo(now) });
   } catch (e) {
     // Thua cuộc đua nộp hai lần (hoặc bài vừa bị đóng vì hết giờ)
     if (hasTag(e, "exam_finished_or_invalid")) throw new ServiceError(409, "EXAM_INVALID", "Bài thi đã kết thúc hoặc không hợp lệ");
@@ -153,7 +157,10 @@ export async function submitExam(req: ExamSubmitRequest, userId: string, ctx: Ct
     scoreTotal: score.total,
     scoreVocab: score.vocab,
     scoreGrammar: score.grammar,
+    scoreReading: score.reading ?? null,
+    scoreListening: score.listening ?? null,
     review: reviewList(graded),
+    passages: await revealedPassagesFor(exam.items),
     nextAttemptAt: score.passed ? undefined : new Date(now.getTime() + cfg.exam.cooldownMinutes * 60_000).toISOString(),
     attemptsLeftToday: left,
   };

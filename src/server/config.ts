@@ -28,6 +28,7 @@ const fileSchema = z.object({
       }),
     }),
     grammar: z.object({ total: z.number().int().positive() }),
+    passages: z.object({ reading: z.number().int().nonnegative(), listening: z.number().int().nonnegative() }).optional(),
     durationMinutes: z.number().positive(),
     passTotal: z.number().min(0).max(1),
     passPart: z.number().min(0).max(1),

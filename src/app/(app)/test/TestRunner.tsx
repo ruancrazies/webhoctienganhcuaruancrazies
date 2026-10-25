@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PassagePanel, PassageReveal } from "@/components/PassagePanel";
 import { QuestionCard } from "@/components/QuestionCard";
 import { ApiFail, apiPost, errorMessage } from "@/lib/api";
 import { fmtClock, fmtNumber, fmtVnTime, pct } from "@/lib/format";
 import { sfx } from "@/lib/sound";
-import type { Question } from "@/core/types";
+import type { ClientPassage, Question } from "@/core/types";
 import type { PracticeOverview, PracticeResult, PracticeStartResponse } from "@/types/api";
 
 type Phase =
   | { t: "intro" }
   | { t: "starting" }
-  | { t: "running"; testId: string; items: Question[]; expiresAt: number; resumed: boolean }
-  | { t: "submitting"; testId: string; items: Question[]; expiresAt: number; resumed: boolean }
+  | { t: "running"; testId: string; items: Question[]; passages: ClientPassage[]; expiresAt: number; resumed: boolean }
+  | { t: "submitting"; testId: string; items: Question[]; passages: ClientPassage[]; expiresAt: number; resumed: boolean }
   | { t: "result"; result: PracticeResult }
   | { t: "expired"; message: string };
 
@@ -46,7 +47,7 @@ export function TestRunner({ overview }: { overview: PracticeOverview }) {
     setPhase({ t: "starting" });
     try {
       const r = await apiPost<PracticeStartResponse>("/api/test/start", {});
-      setPhase({ t: "running", testId: r.testId, items: r.items, expiresAt: new Date(r.expiresAt).getTime(), resumed: r.resumed });
+      setPhase({ t: "running", testId: r.testId, items: r.items, passages: r.passages ?? [], expiresAt: new Date(r.expiresAt).getTime(), resumed: r.resumed });
     } catch (e) {
       setStartError(e instanceof ApiFail ? startFailure(e) : errorMessage(e));
       setPhase({ t: "intro" });
@@ -72,6 +73,7 @@ export function TestRunner({ overview }: { overview: PracticeOverview }) {
         key={phase.testId}
         testId={phase.testId}
         items={phase.items}
+        passages={phase.passages}
         expiresAt={phase.expiresAt}
         resumed={phase.resumed}
         submitting={phase.t === "submitting"}
@@ -107,7 +109,7 @@ export function TestRunner({ overview }: { overview: PracticeOverview }) {
       <section className="sheet" aria-labelledby="rule-h">
         <h2 id="rule-h" style={{ marginBottom: 10 }}>Thể lệ</h2>
         <ul className="rules">
-          <li>{overview.vocabTotal + overview.grammarTotal} câu: {overview.vocabTotal} câu từ vựng (chọn nghĩa, điền vào câu, gõ từ) lấy từ những từ bạn đã học, và {overview.grammarTotal} câu ngữ pháp.</li>
+          <li>{overview.vocabTotal + overview.grammarTotal} câu: {overview.vocabTotal} câu từ vựng (chọn nghĩa, điền vào câu, gõ từ) lấy từ những từ bạn đã học, và {overview.grammarTotal} câu ngữ pháp.{overview.readingPassages + overview.listeningPassages > 0 ? ` Ngoài ra có ${[overview.readingPassages > 0 ? `${overview.readingPassages} bài đọc` : "", overview.listeningPassages > 0 ? `${overview.listeningPassages} bài nghe` : ""].filter(Boolean).join(" và ")} kèm câu hỏi (nếu cấp của bạn đã có bài).` : ""}</li>
           <li>Làm trong {overview.durationMinutes} phút. Câu gõ từ phải đúng chính tả, không có gợi ý. Câu bỏ trống tính là sai.</li>
           <li>Hết giờ, hệ thống tự nộp những gì bạn đã làm và vẫn chấm điểm như thường. Nếu bạn bỏ đi không nộp, bài tính 0 điểm và vẫn là một lần làm.</li>
           <li>Làm lúc nào cũng được, không giới hạn số lần, không có thời gian chờ. Chỉ hiện điểm, không có đạt hay trượt.</li>
@@ -124,7 +126,11 @@ export function TestRunner({ overview }: { overview: PracticeOverview }) {
               <li key={`${r.finishedAt}-${i}`}>
                 <span className="who">
                   <b>{pct(r.total)}</b>
-                  <span className="muted small">Từ vựng {pct(r.vocab)} · Ngữ pháp {pct(r.grammar)}</span>
+                  <span className="muted small">
+                    Từ vựng {pct(r.vocab)} · Ngữ pháp {pct(r.grammar)}
+                    {r.reading !== null ? ` · Đọc ${pct(r.reading)}` : ""}
+                    {r.listening !== null ? ` · Nghe ${pct(r.listening)}` : ""}
+                  </span>
                 </span>
                 <span className="pts small muted">{fmtVnTime(r.finishedAt)}</span>
               </li>
@@ -150,6 +156,7 @@ export function TestRunner({ overview }: { overview: PracticeOverview }) {
 type RunningProps = {
   testId: string;
   items: Question[];
+  passages: ClientPassage[];
   expiresAt: number;
   resumed: boolean;
   submitting: boolean;
@@ -159,7 +166,7 @@ type RunningProps = {
   onClosed: (message: string) => void;
 };
 
-function Running({ testId, items, expiresAt, resumed, submitting, onSubmitting, onBackToRun, onResult, onClosed }: RunningProps) {
+function Running({ testId, items, passages, expiresAt, resumed, submitting, onSubmitting, onBackToRun, onResult, onClosed }: RunningProps) {
   const saved = useMemo(() => readSaved(testId), [testId]);
   const [answers, setAnswers] = useState<Record<string, string>>(saved.answers);
   const [idx, setIdx] = useState(Math.min(saved.idx, items.length - 1));
@@ -218,6 +225,7 @@ function Running({ testId, items, expiresAt, resumed, submitting, onSubmitting, 
   }, [expiresAt, submit]);
 
   const q = items[idx];
+  const passage = q.passageId !== undefined ? passages.find((x) => x.id === q.passageId) : undefined;
   const answered = items.filter((it) => (answers[it.qid] ?? "").trim() !== "").length;
   const unanswered = items.length - answered;
   const low = remaining <= 120;
@@ -245,6 +253,8 @@ function Running({ testId, items, expiresAt, resumed, submitting, onSubmitting, 
 
       {resumed ? <p className="gate">Bạn đang có bài dở nên hệ thống mở lại đúng bài đó.</p> : null}
       {error ? <p className="err" role="alert">{error}. Bài của bạn vẫn được giữ, hãy thử nộp lại.</p> : null}
+
+      {passage ? <PassagePanel key={passage.id} passage={passage} /> : null}
 
       <section className="sheet" aria-live="polite">
         <QuestionCard key={q.qid} q={q} value={answers[q.qid] ?? ""} onChange={set} disabled={submitting} onEnter={() => (idx < items.length - 1 ? go(idx + 1) : undefined)} />
@@ -331,6 +341,18 @@ function ResultView({ result, onAgain }: { result: PracticeResult; onAgain: () =
             <b>{pct(result.scoreGrammar)}</b>
             <span className="muted small">Ngữ pháp ({result.grammarCount} câu)</span>
           </div>
+          {result.scoreReading !== null ? (
+            <div className="part">
+              <b>{pct(result.scoreReading)}</b>
+              <span className="muted small">Bài đọc ({result.readingCount} câu)</span>
+            </div>
+          ) : null}
+          {result.scoreListening !== null ? (
+            <div className="part">
+              <b>{pct(result.scoreListening)}</b>
+              <span className="muted small">Bài nghe ({result.listeningCount} câu)</span>
+            </div>
+          ) : null}
         </div>
         {result.questCounted ? <p className="gate gate-ok" style={{ marginTop: 12 }}>Đã tính vào nhiệm vụ hôm nay. Vào tab Nhiệm vụ để nhận thưởng.</p> : (
           <p className="gate" style={{ marginTop: 12 }}>Bạn trả lời chưa đủ một nửa số câu nên bài này chưa tính vào nhiệm vụ.</p>
@@ -344,6 +366,8 @@ function ResultView({ result, onAgain }: { result: PracticeResult; onAgain: () =
         <Link href="/" className="btn btn-light">Trang chủ</Link>
       </div>
 
+      <PassageReveal passages={result.passages ?? []} />
+
       {result.review.length > 0 ? (
         <section className="stack" aria-labelledby="rv-h">
           <h2 id="rv-h">Các câu làm sai ({result.review.length})</h2>
@@ -355,7 +379,7 @@ function ResultView({ result, onAgain }: { result: PracticeResult; onAgain: () =
                 <p className="muted small">
                   Bạn trả lời: {r.yourAnswer !== undefined && asText(r.yourAnswer) !== "" ? <span className="no">{asText(r.yourAnswer)}</span> : "(bỏ trống)"}
                 </p>
-                {r.en && r.vi && r.game !== "grammar" ? <p className="muted small">{r.en} = {r.vi}</p> : null}
+                {r.en && r.vi && r.game !== "grammar" && r.game !== "passage" ? <p className="muted small">{r.en} = {r.vi}</p> : null}
                 {r.explanation ? <p className="small">{r.explanation}</p> : null}
               </article>
             ))}

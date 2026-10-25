@@ -6,3 +6,4 @@ export * from "./profiles";
 export type { ResolvedScope } from "./scope";
 export * from "./quests";
 export * from "./practice";
+export * from "./passages";

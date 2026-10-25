@@ -276,6 +276,7 @@ export function toClientItems(items: StoredItem[]): Question[] {
     if (it.wordId !== undefined) q.wordId = it.wordId;
     if (it.grammarId !== undefined) q.grammarId = it.grammarId;
     if (it.sentenceId !== undefined) q.sentenceId = it.sentenceId;
+    if (it.passageId !== undefined) q.passageId = it.passageId;
     if (it.options) q.options = it.options;
     if (it.tokens) q.tokens = it.tokens;
     if (it.hint) q.hint = it.hint;

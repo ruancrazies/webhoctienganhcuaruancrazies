@@ -4,7 +4,7 @@
  */
 import { z } from "zod";
 import type { QuestId, QuestView } from "../core/quests";
-import type { Cefr, LevelStatus, Question, ReviewItem } from "../core/types";
+import type { Cefr, ClientPassage, LevelStatus, Question, ReviewItem, RevealedPassage } from "../core/types";
 
 // ---------- request ----------
 
@@ -109,13 +109,18 @@ export type LearnCard = {
 /** `nextCursor` undefined = đã tới cuối; "Làm mới" khi đó quay lại đầu danh sách. */
 export type LearnPage = { items: LearnCard[]; nextCursor?: string; mode: LearnMode };
 
-export type ExamStartResponse = { examId: string; items: Question[]; expiresAt: string; resumed: boolean };
+export type ExamStartResponse = { examId: string; items: Question[]; passages: ClientPassage[]; expiresAt: string; resumed: boolean };
 export type ExamResult = {
   passed: boolean;
   scoreTotal: number;
   scoreVocab: number;
   scoreGrammar: number;
+  /** null = đề không có phần này. */
+  scoreReading: number | null;
+  scoreListening: number | null;
   review: ReviewItem[];
+  /** Bài đọc / bài nghe của đề, kèm lời thoại đầy đủ (chỉ lộ sau khi nộp). */
+  passages: RevealedPassage[];
   nextAttemptAt?: string;
   attemptsLeftToday: number;
 };
@@ -141,14 +146,19 @@ export type QuestsResponse = { day: number; resetAt: string; quests: QuestView[]
 export type ClaimQuestResponse = { quest: QuestId; reward: number; xp: number };
 
 /** Bài kiểm tra thường xuyên. Không có đạt/không đạt: chỉ hiện điểm. */
-export type PracticeStartResponse = { testId: string; items: Question[]; expiresAt: string; resumed: boolean };
+export type PracticeStartResponse = { testId: string; items: Question[]; passages: ClientPassage[]; expiresAt: string; resumed: boolean };
 export type PracticeResult = {
   scoreTotal: number;
   scoreVocab: number;
   scoreGrammar: number;
+  scoreReading: number | null;
+  scoreListening: number | null;
   vocabCount: number;
   grammarCount: number;
+  readingCount: number;
+  listeningCount: number;
   review: ReviewItem[];
+  passages: RevealedPassage[];
   /** Số từ làm sai đã được hẹn ôn lại ngay. */
   scheduledReview: number;
   /** Đã tính vào nhiệm vụ "Làm một bài kiểm tra" hôm nay. */
@@ -164,8 +174,11 @@ export type PracticeOverview = {
   hasOpen: boolean;
   vocabTotal: number;
   grammarTotal: number;
+  /** Số bài đọc / bài nghe mỗi đề (0 = không có). */
+  readingPassages: number;
+  listeningPassages: number;
   durationMinutes: number;
-  recent: { finishedAt: string; total: number; vocab: number; grammar: number }[];
+  recent: { finishedAt: string; total: number; vocab: number; grammar: number; reading: number | null; listening: number | null }[];
 };
 
 export type LeaderboardRow = { rank: number; username: string; avatar: string | null; xp: number; level: Cefr | null; isMe: boolean };

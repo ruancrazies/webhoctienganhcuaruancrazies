@@ -347,3 +347,10 @@ a.game:hover { background: var(--ink-soft); }
   .btn { transition: none; }
   .pet-bubble { animation: none; }
 }
+
+/* ---- bài đọc / bài nghe trong bài kiểm tra ---- */
+.passage { display: grid; gap: 10px; }
+.passage-title { font-size: 18px; font-weight: 800; }
+.passage-text { white-space: pre-line; line-height: 1.7; font-size: 16px; }
+.passage-reveal summary { cursor: pointer; }
+.passage-reveal .passage-text { margin-top: 10px; }
