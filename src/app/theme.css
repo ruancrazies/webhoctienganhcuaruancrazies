@@ -1,0 +1,176 @@
+/* ============ theme.css: lớp giao diện mới, nạp SAU app.css ============
+   Giữ ý tưởng "vở ô ly" nhưng bỏ viền mực dày: giấy kẻ ô nhạt, mực xanh học trò,
+   bút đỏ chấm bài, bút dạ vàng nhấn. Muốn quay về bản cũ: xoá dòng import theme.css.
+   Mọi selector có tiền tố .app để thắng độ ưu tiên của app.css và games.css. */
+
+body .app {
+  --paper: #f2f5fc;
+  --grid: #e1e7f5;
+  --sheet: #ffffff;
+  --ink: #2a3fd0;
+  --ink-dark: #141c45;
+  --ink-soft: #e9edfb;
+  --pencil: #556087;
+  --pencil-light: #8a93b4;
+  --line: #d6def0;
+  --red: #e0453f;
+  --red-soft: #fdebea;
+  --mark: #ffd84a;
+  --good: #14875a;
+  --good-soft: #e3f6ec;
+  --ink-shadow: #1a2a95;
+  --radius: 16px;
+  --shadow: 0 1px 0 rgb(20 28 69 / 0.04), 0 18px 36px -24px rgb(20 28 69 / 0.4);
+  --f-body: var(--font-body), "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --f-display: var(--font-display), var(--f-body);
+
+  font-family: var(--f-body);
+  background-size: 32px 32px;
+  background-attachment: fixed;
+}
+html[data-theme="dark"] body .app {
+  --paper: #0e1226;
+  --grid: #171d38;
+  --sheet: #161b33;
+  --ink: #8ea0ff;
+  --ink-dark: #e8ecff;
+  --ink-soft: #222a4c;
+  --pencil: #a5aecd;
+  --line: #2a3257;
+  --red: #ff7a73;
+  --good: #4cd09a;
+  --ink-shadow: #4453b8;
+  --shadow: 0 18px 36px -24px rgb(0 0 0 / 0.7);
+}
+
+/* ---- chữ ---- */
+.app h1, .app h2, .app h3, .app .lv-code, .app .stat b, .app .q-prompt, .app .wc-en, .app .fc-main, .app .score, .app .verdict, .app .timer, .app .pts, .app .rank {
+  font-family: var(--f-display);
+}
+.app h1 { font-size: clamp(28px, 5.5vw, 40px); font-weight: 700; letter-spacing: -0.02em; }
+.app h2 { font-weight: 650; }
+.app .btn, .app .pill, .app .chip, .app .nav a { font-family: var(--f-display); }
+
+/* ---- khung ---- */
+.app .topbar {
+  background: color-mix(in srgb, var(--sheet) 84%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.app .logo { font-family: var(--f-display); font-weight: 700; }
+.app .logo-mark { border: 0; border-radius: 8px; box-shadow: 0 2px 0 #c9aa00; width: 28px; height: 28px; }
+.app .nav a { font-weight: 500; }
+.app .nav a[aria-current="page"] { box-shadow: 0 3px 0 var(--ink-shadow); }
+
+.app .tabbar {
+  left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom));
+  padding: 6px; gap: 2px;
+  border: 1px solid var(--line); border-radius: 24px;
+  background: color-mix(in srgb, var(--sheet) 92%, transparent);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: 0 14px 32px -12px rgb(20 28 69 / 0.4);
+}
+.app .tabbar a { padding: 4px 2px 5px; font-size: 11.5px; border-radius: 18px; background: none; gap: 2px; }
+.app .tabbar a .ti { width: 48px; height: 28px; border-radius: 999px; display: grid; place-items: center; transition: background 0.15s; }
+.app .tabbar a .ti svg { width: 22px; height: 22px; }
+.app .tabbar a[aria-current="page"] { color: var(--ink-dark); background: none; font-weight: 700; }
+.app .tabbar a[aria-current="page"] .ti { background: var(--mark); color: #141c45; }
+
+/* ---- tờ vở ---- */
+.app .sheet { border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: 22px 22px 22px 40px; }
+.app .sheet::before { left: 22px; opacity: 0.4; }
+.app .sheet-plain { padding-left: 22px; }
+
+/* ---- nút ---- */
+.app .btn { border: 0; border-radius: 14px; padding: 12px 20px; font-weight: 600; box-shadow: 0 4px 0 var(--ink-shadow); }
+.app .btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink-shadow); }
+.app .btn-light { border: 1px solid var(--line); box-shadow: 0 3px 0 var(--line); }
+.app .btn-mark { box-shadow: 0 4px 0 #c9aa00; }
+.app .btn-red { box-shadow: 0 4px 0 #9d2d25; }
+.app .btn-sm { border-radius: 11px; padding: 8px 13px; box-shadow: 0 3px 0 var(--ink-shadow); }
+.app .btn-sm.btn-light { box-shadow: 0 2px 0 var(--line); }
+.app .pill { border-width: 1px; padding: 8px 15px; font-weight: 500; }
+.app .bar { height: 12px; }
+.app .bar-mark > i { box-shadow: none; }
+
+/* ---- trang chủ ---- */
+.app .hello h1 .name { background: linear-gradient(transparent 62%, var(--mark) 62%); padding: 0 6px; margin: 0 -2px; }
+.app .stats { gap: 0; background: var(--sheet); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+.app .stat { border: 0; border-radius: 0; background: none; padding: 14px 16px; }
+.app .stat + .stat { border-left: 1px solid var(--line); }
+.app .stat b { font-weight: 700; font-size: 26px; }
+
+.app .due {
+  border: 1.5px dashed var(--ink); border-radius: 18px; padding: 16px 18px;
+  background: color-mix(in srgb, var(--mark) 16%, var(--sheet));
+}
+
+.app .lv { grid-template-columns: 60px 1fr auto; gap: 16px; padding: 14px 12px; margin: 0 -12px; border-top: 0; border-radius: 16px; transition: background 0.12s; }
+.app .lv:first-child { padding-top: 14px; }
+.app .lv:last-child { padding-bottom: 14px; }
+.app a.lv:hover { background: var(--ink-soft); }
+.app a.lv:hover .lv-name { text-decoration: none; }
+.app .lv-code { display: grid; place-items: center; width: 60px; height: 60px; border-radius: 18px; background: var(--ink-soft); font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.app .lv.locked { opacity: 1; }
+.app .lv.locked .lv-code { background: none; border: 1.5px dashed var(--line); color: var(--pencil-light); }
+.app .lv.locked .lv-name { color: var(--pencil); }
+.app .lv-go { font-size: 26px; color: var(--pencil-light); }
+
+/* ---- trang cấp, trò chơi ---- */
+.app .lvhead .big { font-family: var(--f-display); font-weight: 700; }
+.app .cta { border: 1px solid var(--line); border-radius: 18px; padding: 18px; box-shadow: var(--shadow); }
+.app .cta.is-primary { border: 0; box-shadow: 0 5px 0 var(--ink-shadow); }
+.app .game { border: 1px solid var(--line); border-radius: 18px; padding: 14px; min-height: 120px; box-shadow: var(--shadow); transition: transform 0.12s, border-color 0.12s; }
+.app a.game:hover { background: var(--sheet); border-color: var(--ink); transform: translateY(-2px); }
+.app .game .ge { display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: 4px; border-radius: 14px; background: var(--ink-soft); font-size: 22px; }
+.app .game.off { border: 1.5px dashed var(--line); box-shadow: none; }
+
+/* ---- học từ ---- */
+.app .wc { border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; box-shadow: var(--shadow); }
+.app .wc.s-mastered { border-color: var(--good); }
+.app .wc.s-due { border-color: var(--red); }
+.app .wc-en { font-weight: 700; font-size: 24px; }
+
+/* ---- bài thi, câu hỏi ---- */
+.app .exam-head { border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
+.app .timer { font-weight: 700; border-radius: 10px; }
+.app .q-prompt { font-weight: 700; font-size: clamp(26px, 5vw, 34px); }
+.app .q-prompt.sentence { font-size: 21px; font-weight: 600; }
+.app .opt { border: 1.5px solid var(--line); border-radius: 14px; padding: 14px 16px; transition: border-color 0.12s, background 0.12s; }
+.app .opt .k { width: 28px; height: 28px; font-family: var(--f-display); }
+.app .text-in { border: 1.5px solid var(--line); border-radius: 14px; padding: 14px 16px; font-weight: 500; }
+.app .text-in:focus { border-color: var(--ink); outline: 3px solid color-mix(in srgb, var(--ink) 25%, transparent); }
+.app .qdot { border-radius: 10px; }
+
+.app .score { font-weight: 700; box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--red) 18%, transparent); }
+.app .verdict { font-weight: 700; }
+.app .part { border: 1px solid var(--line); border-radius: 16px; }
+.app .rv { border-radius: 0 14px 14px 0; }
+
+/* ---- trò chơi (ghi đè games.css) ---- */
+.app .tf-btn { border: 1.5px solid var(--line); border-radius: 16px; }
+.app .tile, .app .wtile { border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 3px 0 var(--line); }
+.app .tile:active:not(:disabled), .app .wtile:active:not(:disabled) { box-shadow: 0 1px 0 var(--line); }
+.app .slot.filled { border: 0; border-radius: 10px; box-shadow: 0 2px 0 #c9aa00; }
+.app .sentence-line { border: 1.5px dashed var(--line); border-radius: 14px; background: var(--ink-soft); }
+.app .mt-tile { border-width: 1.5px; border-radius: 14px; }
+.app .fc { border: 1px solid var(--line); border-radius: 26px; box-shadow: 0 6px 0 var(--line), var(--shadow); }
+.app .fc.back { border-color: transparent; box-shadow: 0 6px 0 #c9aa00; }
+.app .fc-main { font-weight: 700; }
+.app .fc-side { text-transform: none; letter-spacing: 0; font-weight: 600; }
+
+/* ---- xếp hạng, hồ sơ, thú cưng ---- */
+.app .avatar { border: 0; border-radius: 18px; box-shadow: 0 3px 0 #c9aa00; }
+.app .jn { border-width: 1px; border-radius: 14px; }
+.app .pet-bubble, .app .pchat { border-width: 1px; border-color: var(--line); }
+.app .pchat { border-radius: 20px; }
+
+@media (min-width: 720px) {
+  .app .page { padding-top: 36px; }
+  .app .logo-mark { width: 30px; height: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app .game, .app .lv, .app .opt, .app .tabbar a .ti { transition: none; }
+  .app a.game:hover { transform: none; }
+}

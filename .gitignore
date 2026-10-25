@@ -16,3 +16,5 @@ content/media/*
 supabase/.temp/
 
 supabase/.temp/
+.vercel
+.env*
