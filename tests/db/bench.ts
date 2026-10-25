@@ -37,7 +37,7 @@ function synth(n: number): ValidationResult["data"] {
     key: `g${i}`, level: CEFR[i % 5], topic: `t${i % 20}`, question: `Q ${i} ___`, options: ["a", "b", "c"], answer: 1 + (i % 3),
     explanation: null, at: { tab: "grammar", row: i + 2 },
   }));
-  return { words, sentences, grammar, topics, domains };
+  return { words, sentences, grammar, passages: [], passageQuestions: [], topics, domains };
 }
 
 const planOf = async (pg: Awaited<ReturnType<typeof freshDb>>["pg"], sql: string, params: unknown[] = []) => {

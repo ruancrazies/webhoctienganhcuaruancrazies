@@ -39,8 +39,37 @@ export const TAB_COLUMNS = {
     required: ["code", "title"],
     optional: ["emoji"],
   },
+  /** Bài đọc / bài nghe: một đoạn văn kèm nhiều câu hỏi (tab `passage_questions`). */
+  passages: {
+    required: ["key", "skill", "level", "title", "text"],
+    optional: ["topic", "audio", "source", "note"],
+  },
+  passageQuestions: {
+    required: ["key", "passage", "kind", "question", "options", "answer"],
+    optional: ["explanation", "note"],
+  },
 } as const;
 export type TabKind = keyof typeof TAB_COLUMNS;
+
+/** Kỹ năng của một đoạn văn (cột `skill` tab `passages`). */
+export const PASSAGE_SKILLS = ["reading", "listening"] as const;
+export type PassageSkill = (typeof PASSAGE_SKILLS)[number];
+
+/** Dạng câu hỏi của đoạn văn (cột `kind` tab `passage_questions`): mcq = chọn đáp án, tf = đúng/sai. */
+export const PASSAGE_KINDS = ["mcq", "tf"] as const;
+export type PassageKind = (typeof PASSAGE_KINDS)[number];
+
+/** Số lựa chọn của câu mcq. */
+export const MCQ_MIN_OPTIONS = 2;
+export const MCQ_MAX_OPTIONS = 6;
+
+/**
+ * Câu tf lưu `answer` dạng số cho thống nhất với câu mcq: 1 = đúng (true), 2 = sai (false).
+ * Trên Sheet được gõ true/false (hoặc đúng/sai).
+ */
+export const TF_TRUE = 1;
+export const TF_FALSE = 2;
+export const TF_WORDS: Record<string, number> = { true: TF_TRUE, đúng: TF_TRUE, false: TF_FALSE, sai: TF_FALSE };
 
 /** `en:pos:n` — chữ thường, không khoảng trắng, `en` không chứa dấu `:`. */
 export const KEY_RE = /^[^\s:]+:[a-z]+:[1-9][0-9]*$/;

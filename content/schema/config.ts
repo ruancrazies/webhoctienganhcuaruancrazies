@@ -20,6 +20,9 @@ export const SheetConfigSchema = z.object({
     grammar: TabRef,
     topics: TabRef,
     domains: TabRef,
+    // Có mặc định để sheet.config.json cũ (chưa khai báo hai tab này) vẫn nạp được.
+    passages: TabRef.default({ name: "passages" }),
+    passageQuestions: TabRef.default({ name: "passage_questions" }),
   }),
 });
 export type SheetConfig = z.infer<typeof SheetConfigSchema>;

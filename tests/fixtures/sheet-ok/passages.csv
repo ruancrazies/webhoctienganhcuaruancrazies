@@ -1,0 +1,6 @@
+key,skill,level,title,text,topic,audio,source,note
+p:r:a1:1,reading,A1,My name is Lan,"My name is Lan. I live in Hanoi with my family. Every morning I walk to school.",family,,,
+p:l:a1:1,listening,A1,At the café,"A: Hello. Can I have a cup of tea, please?
+B: Sure. Would you like some sugar?
+A: No, thank you.",food-drink,cafe-1.mp3,,
+p:r:a2:1,reading,A2,Chưa có câu hỏi,A short text that still has no questions.,,,,

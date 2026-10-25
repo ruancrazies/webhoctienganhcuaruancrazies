@@ -52,6 +52,11 @@ async function main() {
                        from sentences s where s.id > $1::bigint order by s.id limit $2`],
       ["grammar", `select id, key, level, topic, question, options, answer, explanation, status, rand
                      from grammar_questions where id > $1::bigint order by id limit $2`],
+      ["passages", `select id, key, skill, level, title, body, topic, audio, source, status, rand
+                      from passages where id > $1::bigint order by id limit $2`],
+      ["passage_questions", `select q.id, q.key, p.key as passage, q.kind, q.question, q.options, q.answer, q.explanation, q.sort, q.status
+                               from passage_questions q join passages p on p.id = q.passage_id
+                              where q.id > $1::bigint order by q.id limit $2`],
     ];
     for (const [name, sql] of jobs) {
       const file = path.join(out, `${name}.jsonl`);

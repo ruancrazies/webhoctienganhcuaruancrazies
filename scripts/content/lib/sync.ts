@@ -32,6 +32,8 @@ export type SyncReport = {
   words: EntityDiff;
   sentences: EntityDiff;
   grammar: EntityDiff;
+  passages: EntityDiff;
+  passageQuestions: EntityDiff;
 };
 
 const sha = (v: unknown) => createHash("sha256").update(JSON.stringify(v)).digest("hex");
@@ -121,7 +123,17 @@ export async function syncContent(db: Db, data: ValidationResult["data"], opts: 
     answer: g.answer, explanation: g.explanation,
     content_hash: sha([g.level, g.topic, g.question, g.options, g.answer, g.explanation]),
   }));
-  const sheetHash = sha([words, sentences, grammar, data.topics, data.domains]);
+  const passages = data.passages.map((p) => ({
+    key: p.key, skill: p.skill, level: p.level, title: p.title, body: p.body, topic: p.topic, audio: p.audio, source: p.source,
+    content_hash: sha([p.skill, p.level, p.title, p.body, p.topic, p.audio, p.source]),
+  }));
+  const passageQuestions = data.passageQuestions.map((q) => ({
+    key: q.key, passage: q.passage, kind: q.kind, question: q.question, options: q.options, answer: q.answer,
+    explanation: q.explanation, sort: q.sort,
+    content_hash: sha([q.passage, q.kind, q.question, q.options, q.answer, q.explanation, q.sort]),
+  }));
+  // Chưa có bài đọc/nghe nào thì giữ nguyên công thức cũ để băm các lần nạp trước vẫn so sánh được.
+  const sheetHash = sha([words, sentences, grammar, data.topics, data.domains, ...(passages.length || passageQuestions.length ? [passages, passageQuestions] : [])]);
 
   return db.transaction(async (tx) => {
     await tx.query("set local statement_timeout = '15min'");
@@ -139,6 +151,15 @@ export async function syncContent(db: Db, data: ValidationResult["data"], opts: 
       ["answer", "int"], ["explanation", "text"], ["content_hash", "text"],
     ], grammar, batch);
 
+    await stage(tx, "stg_passages", [
+      ["key", "text"], ["skill", "text"], ["level", "text"], ["title", "text"], ["body", "text"], ["topic", "text"],
+      ["audio", "text"], ["source", "text"], ["content_hash", "text"],
+    ], passages, batch);
+    await stage(tx, "stg_pq", [
+      ["key", "text"], ["passage", "text"], ["kind", "text"], ["question", "text"], ["options", "jsonb"],
+      ["answer", "int"], ["explanation", "text"], ["sort", "int"], ["content_hash", "text"],
+    ], passageQuestions, batch);
+
     const report: SyncReport = {
       dryRun: !!opts.dryRun,
       sheetHash,
@@ -147,11 +168,13 @@ export async function syncContent(db: Db, data: ValidationResult["data"], opts: 
       words: await diff(tx, "words", "stg_words", true),
       sentences: await diff(tx, "sentences", "stg_sentences", false),
       grammar: await diff(tx, "grammar_questions", "stg_grammar", false),
+      passages: await diff(tx, "passages", "stg_passages", false),
+      passageQuestions: await diff(tx, "passage_questions", "stg_pq", false),
     };
 
     // Chặn retire hàng loạt do nhầm (xóa/sửa nhầm cả cột trên Sheet) — chỉ khi định retire.
     if (opts.retireMissing && !opts.force) {
-      for (const [name, table] of [["words", "words"], ["sentences", "sentences"], ["grammar", "grammar_questions"]] as const) {
+      for (const [name, table] of [["words", "words"], ["sentences", "sentences"], ["grammar", "grammar_questions"], ["passages", "passages"], ["passageQuestions", "passage_questions"]] as const) {
         const d = report[name];
         const active = await activeCount(tx, table);
         if (d.missing > 0 && d.missing > active * threshold) {
@@ -276,16 +299,48 @@ export async function syncContent(db: Db, data: ValidationResult["data"], opts: 
     }
     if (opts.retireMissing) report.grammar.retired = await retire(tx, "grammar_questions", "stg_grammar");
 
+    // ---- passages (đoạn văn trước, câu hỏi sau vì có khóa ngoại) ----
+    for (let from = 0; from < passages.length; from += batch) {
+      await tx.query(
+        `insert into passages (key, skill, level, title, body, topic, audio, source, status, content_hash, updated_at)
+         select s.key, s.skill, s.level, s.title, s.body, s.topic, s.audio, s.source, 'active', s.content_hash, now()
+           from stg_passages s where s.flagged and s.seq >= $1 and s.seq < $2
+         on conflict (key) do update
+           set skill = excluded.skill, level = excluded.level, title = excluded.title, body = excluded.body,
+               topic = excluded.topic, audio = excluded.audio, source = excluded.source,
+               status = 'active', content_hash = excluded.content_hash, updated_at = now()`, // rand KHÔNG bị ghi đè
+        [from, from + batch],
+      );
+    }
+    for (let from = 0; from < passageQuestions.length; from += batch) {
+      await tx.query(
+        `insert into passage_questions (key, passage_id, kind, question, options, answer, explanation, sort, status, content_hash, updated_at)
+         select s.key, p.id, s.kind, s.question, s.options, s.answer, s.explanation, s.sort, 'active', s.content_hash, now()
+           from stg_pq s join passages p on p.key = s.passage
+          where s.flagged and s.seq >= $1 and s.seq < $2
+         on conflict (key) do update
+           set passage_id = excluded.passage_id, kind = excluded.kind, question = excluded.question,
+               options = excluded.options, answer = excluded.answer, explanation = excluded.explanation,
+               sort = excluded.sort, status = 'active', content_hash = excluded.content_hash, updated_at = now()`,
+        [from, from + batch],
+      );
+    }
+    if (opts.retireMissing) {
+      report.passages.retired = await retire(tx, "passages", "stg_passages");
+      report.passageQuestions.retired = await retire(tx, "passage_questions", "stg_pq");
+    }
+
     // ---- hoàn tất ----
     await tx.query("select refresh_content_stats()");
     if (report.words.added + report.words.changed > 1000) await tx.query("analyze words, sentences, sentence_words, word_topics");
 
-    const added = report.words.added + report.sentences.added + report.grammar.added;
-    const updated = report.words.changed + report.sentences.changed + report.grammar.changed;
-    const retired = report.words.retired + report.sentences.retired + report.grammar.retired;
+    const parts = [report.words, report.sentences, report.grammar, report.passages, report.passageQuestions];
+    const added = parts.reduce((a, d) => a + d.added, 0);
+    const updated = parts.reduce((a, d) => a + d.changed, 0);
+    const retired = parts.reduce((a, d) => a + d.retired, 0);
     await tx.query(
       `insert into content_imports (sheet_hash, added, updated, retired, details) values ($1, $2, $3, $4, $5::jsonb)`,
-      [sheetHash, added, updated, retired, JSON.stringify({ words: report.words, sentences: report.sentences, grammar: report.grammar })],
+      [sheetHash, added, updated, retired, JSON.stringify({ words: report.words, sentences: report.sentences, grammar: report.grammar, passages: report.passages, passageQuestions: report.passageQuestions })],
     );
     return report;
   });
@@ -297,14 +352,15 @@ export function formatReport(r: SyncReport): string {
     (d.moved ? ` · ${d.moved} đổi cấp/lĩnh vực` : "") +
     (d.retired ? ` · ${d.retired} đã retired` : "");
   const out = [`${r.dryRun ? "[DRY-RUN] " : ""}Kết quả đồng bộ (${r.domains} lĩnh vực, ${r.topics} chủ đề)`];
-  for (const [name, d] of [["từ", r.words], ["câu", r.sentences], ["ngữ pháp", r.grammar]] as const) {
+  for (const [name, d] of [["từ", r.words], ["câu", r.sentences], ["ngữ pháp", r.grammar], ["bài đọc/nghe", r.passages], ["câu hỏi bài", r.passageQuestions]] as const) {
     out.push(line(name, d));
     for (const [label, keys] of [["mới", d.samples.added], ["sửa", d.samples.changed], ["vắng", d.samples.missing]] as const) {
       if (keys.length) out.push(`      ${label}: ${keys.join(", ")}${(label === "mới" ? d.added : label === "sửa" ? d.changed : d.missing) > keys.length ? ", …" : ""}`);
     }
   }
-  const missing = r.words.missing + r.sentences.missing + r.grammar.missing;
-  if (missing && !r.words.retired && !r.sentences.retired && !r.grammar.retired && !r.blocked) {
+  const all = [r.words, r.sentences, r.grammar, r.passages, r.passageQuestions];
+  const missing = all.reduce((a, d) => a + d.missing, 0);
+  if (missing && all.every((d) => !d.retired) && !r.blocked) {
     out.push(`  ⚠ ${missing} mục vắng trên Sheet nhưng vẫn active (thêm --retire-missing để ngừng dùng).`);
   }
   if (r.blocked) out.push(`  ✖ DỪNG: ${r.blocked}`);

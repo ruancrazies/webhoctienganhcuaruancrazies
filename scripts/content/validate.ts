@@ -29,7 +29,7 @@ async function main() {
   printIssues(issues);
   const d = result.data;
   console.log(
-    `\nHợp lệ: ${d.words.length}/${result.wordRowCount} từ · ${d.sentences.length} câu · ${d.grammar.length} câu ngữ pháp · ${d.topics.length} chủ đề · ${d.domains.length} lĩnh vực`,
+    `\nHợp lệ: ${d.words.length}/${result.wordRowCount} từ · ${d.sentences.length} câu · ${d.grammar.length} câu ngữ pháp · ${d.passages.length} bài đọc/nghe (${d.passageQuestions.length} câu hỏi) · ${d.topics.length} chủ đề · ${d.domains.length} lĩnh vực`,
   );
   console.log(errors > 0 ? `\n✖ ${errors} lỗi, ${warns} cảnh báo — KHÔNG được nạp.` : `\n✔ Không có lỗi (${warns} cảnh báo).`);
   process.exit(errors > 0 ? 1 : 0);

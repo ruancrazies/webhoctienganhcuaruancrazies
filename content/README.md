@@ -10,12 +10,16 @@ script `content:sync` (Bước 1) kéo CSV từng tab, kiểm tra định dạng
 | `A1` `A2` `B1` `B2` `C1` `C2` (từ vựng, mỗi cấp một tab) | `key, en, vi, pos, cefr, domain, topics` | `vi_alt, ipa, rank, note` |
 | `sentences` | `key, en, words` | `vi, kind, cefr, source, note` |
 | `grammar` | `key, level, question, options, answer` | `topic, explanation, note` |
+| `passages` (bài đọc / bài nghe) | `key, skill, level, title, text` | `topic, audio, source, note` |
+| `passage_questions` (câu hỏi của bài) | `key, passage, kind, question, options, answer` | `explanation, note` |
 | `topics` | `slug, title, cefr, domain` | `emoji, sort` |
 | `domains` | `code, title` | `emoji` |
 
 Hàng 1 là tiêu đề; **tên cột là hợp đồng**. Cột thừa bị cảnh báo và bỏ qua; thiếu cột bắt buộc là lỗi.
 Tab không có trong `content/sheet.config.json` (ví dụ `Nguon_va_ghi_chu`) không được nạp.
-`domains` và `topics` là bắt buộc; `sentences` và `grammar` có thể chưa có (chỉ cảnh báo).
+`domains` và `topics` là bắt buộc; `sentences`, `grammar`, `passages`, `passage_questions` có thể chưa có (chỉ cảnh báo).
+**Trước khi chạy `content:sync` lần đầu sau khi có hai tab mới, hãy tạo hai tab `passages` và `passage_questions` trên Sheet** (chỉ cần hàng tiêu đề):
+nếu tab không tồn tại, Google trả về tab đầu tiên thay vì báo lỗi, và việc kiểm tra sẽ báo thiếu cột.
 
 ## Quy ước từng cột (tab từ vựng)
 
@@ -31,6 +35,23 @@ Tab không có trong `content/sheet.config.json` (ví dụ `Nguon_va_ghi_chu`) k
 
 `sentences.words`: các `key` từ xuất hiện trong câu, ngăn cách bằng `,`.
 `grammar.options`: các lựa chọn ngăn cách bằng `|`; `answer` là số thứ tự (từ 1) hoặc đúng văn bản của một lựa chọn.
+
+## Bài đọc và bài nghe (`passages`, `passage_questions`)
+
+Một đoạn văn (`passages`) có nhiều câu hỏi (`passage_questions`), nối nhau bằng cột `passage` = `key` của đoạn.
+
+- `key`: tự đặt, duy nhất, không chứa khoảng trắng (gợi ý `p:r:a1:1` = bài đọc A1 số 1, `p:l:b1:2` = bài nghe B1 số 2; câu hỏi `pq:r:a1:1:3`).
+- `skill`: `reading` hoặc `listening`. `level`: một cấp CEFR (A1…C2).
+- `text`: bài đọc thì hiển thị cho người học; **bài nghe thì là lời thoại để đọc to** (giọng đọc của trình duyệt), chỉ lộ sau khi nộp bài.
+  Nhiều người nói: mỗi người một dòng (`A: …` / `B: …`), xuống dòng ngay trong ô.
+- `audio` (tùy chọn): tên file / URL audio. Để trống thì dùng giọng đọc của trình duyệt.
+- `kind`: `mcq` (chọn đáp án) hoặc `tf` (đúng/sai).
+  - `mcq`: `options` 2–6 lựa chọn ngăn cách bằng `|`; `answer` là số thứ tự (từ 1) hoặc đúng văn bản của một lựa chọn.
+  - `tf`: để trống `options`; `answer` là `true`/`false` (hoặc `đúng`/`sai`).
+- Thứ tự câu hỏi trong một bài theo thứ tự dòng trên Sheet.
+- Bài chưa có câu hỏi hợp lệ nào chỉ bị cảnh báo (`NO_QUESTIONS`) và sẽ không được dùng ra đề.
+- Hai bảng này chứa đáp án nên giống `grammar_questions`: trình duyệt không đọc trực tiếp, chỉ server.
+- Bộ mẫu để dán vào Sheet: `content/seed/passages.csv` và `content/seed/passage_questions.csv` (mỗi cấp A1–C1 một bài đọc và một bài nghe).
 
 ## Lệnh
 
@@ -68,4 +89,5 @@ npm run content:export                            # DB → content/backup/*.json
 - `taxonomy/levels.yml`: ngưỡng số từ để được thi, cấu hình bài kiểm tra lên cấp.
 - `sheet.config.json`: ID Sheet, tên tab, `gid` (không chứa khóa bí mật).
 - `schema/`: hợp đồng cột và Zod schema cho cấu hình.
+- `seed/`: bộ bài đọc/bài nghe mẫu (CSV), có commit.
 - `import/`, `sources/`, `media/`: không commit. `backup/`: JSONL do `export.ts` (Bước 1) dump, có commit.

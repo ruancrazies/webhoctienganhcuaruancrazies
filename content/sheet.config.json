@@ -12,6 +12,8 @@
     "sentences": { "name": "sentences", "gid": null },
     "grammar": { "name": "grammar", "gid": null },
     "topics": { "name": "topics", "gid": null },
-    "domains": { "name": "domains", "gid": null }
+    "domains": { "name": "domains", "gid": null },
+    "passages": { "name": "passages", "gid": null },
+    "passageQuestions": { "name": "passage_questions", "gid": null }
   }
 }

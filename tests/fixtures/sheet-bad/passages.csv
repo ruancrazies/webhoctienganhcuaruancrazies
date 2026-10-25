@@ -1,0 +1,9 @@
+key,skill,level,title,text
+p:ok:1,reading,A1,Good,Some text
+p:ok:1,reading,A1,Dup,Text
+,reading,A1,No key,Text
+p bad,reading,A1,Spaces,Text
+p:skill:1,writing,A1,Skill,Text
+p:lvl:1,reading,A0,Level,Text
+p:empty:1,reading,A1,,
+p:noq:1,listening,B1,No questions,Hello there

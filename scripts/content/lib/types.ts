@@ -57,6 +57,36 @@ export type GrammarRec = {
   at: At;
 };
 
+export type PassageRec = {
+  key: string;
+  skill: string;
+  level: string;
+  title: string;
+  /** Bài đọc: nội dung hiển thị. Bài nghe: lời thoại/văn bản để đọc to (chỉ lộ sau khi nộp). */
+  body: string;
+  topic: string | null;
+  /** Tên file / URL audio; trống thì trình duyệt đọc `body` bằng giọng đọc (TTS). */
+  audio: string | null;
+  source: string | null;
+  at: At;
+};
+
+export type PassageQuestionRec = {
+  key: string;
+  /** key của đoạn văn. */
+  passage: string;
+  kind: string;
+  question: string;
+  /** mcq: 2–6 lựa chọn. tf: rỗng. */
+  options: string[];
+  /** mcq: số thứ tự đáp án đúng (từ 1). tf: 1 = đúng, 2 = sai. */
+  answer: number;
+  explanation: string | null;
+  /** Thứ tự trong đoạn văn, theo thứ tự dòng trên Sheet (bắt đầu từ 1). */
+  sort: number;
+  at: At;
+};
+
 export type TopicRec = {
   slug: string;
   title: string;
@@ -78,6 +108,8 @@ export type ValidationResult = {
     words: WordRec[];
     sentences: SentenceRec[];
     grammar: GrammarRec[];
+    passages: PassageRec[];
+    passageQuestions: PassageQuestionRec[];
     topics: TopicRec[];
     domains: DomainRec[];
   };

@@ -1,0 +1,6 @@
+key,passage,kind,question,options,answer,explanation
+pq:1,p:r:a1:1,mcq,Where does Lan live?,In Hanoi|In Hue|In Da Nang,1,"Bài viết nói: ""I live in Hanoi""."
+pq:2,p:r:a1:1,mcq,How does Lan go to school?,By bus|On foot|By bike,On foot,Đáp án ghi bằng văn bản của lựa chọn.
+pq:3,p:r:a1:1,tf,Lan lives with her family.,,true,
+pq:4,p:l:a1:1,tf,The customer wants sugar.,,Sai,"Khách trả lời ""No, thank you""."
+pq:5,p:l:a1:1,mcq,What does the customer drink?,Coffee|Tea|Milk,2,

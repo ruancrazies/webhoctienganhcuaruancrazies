@@ -1,0 +1,13 @@
+key,passage,kind,question,options,answer
+q:1,p:ok:1,mcq,Q?,a|b|c,2
+q:2,p:nowhere:1,mcq,Q?,a|b,1
+q:3,p:ok:1,essay,Q?,a|b,1
+q:4,p:ok:1,mcq,Q?,only,1
+q:5,p:ok:1,mcq,Q?,a|b,3
+q:6,p:ok:1,mcq,Q?,a|b,c
+q:7,p:ok:1,tf,Q?,,maybe
+q:8,p:ok:1,mcq,Q?,a|a|b,1
+q:1,p:ok:1,tf,Q?,,true
+q:9,p:skill:1,tf,Q?,,true
+q:10,p:ok:1,tf,Q?,a|b,đúng
+q:11,,tf,Q?,,true

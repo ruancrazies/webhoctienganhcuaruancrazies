@@ -3,15 +3,22 @@ import {
   CEFR,
   FREQ_RANK_DEFAULT,
   KEY_RE,
+  MCQ_MAX_OPTIONS,
+  MCQ_MIN_OPTIONS,
+  PASSAGE_KINDS,
+  PASSAGE_SKILLS,
   POS,
   SENTENCE_KINDS,
   TAB_COLUMNS,
+  TF_WORDS,
   type TabKind,
 } from "../../../content/schema/constants";
 import type {
   DomainRec,
   GrammarRec,
   Issue,
+  PassageQuestionRec,
+  PassageRec,
   SentenceRec,
   TabData,
   TopicRec,
@@ -65,7 +72,7 @@ export function validateContent(tabs: Map<string, TabData>, cfg: SheetConfig): V
     const name = cfg.otherTabs[kind].name;
     if (!tabs.has(name)) E(name, undefined, "MISSING_TAB", `Thiếu tab bắt buộc "${name}"`);
   }
-  for (const kind of ["sentences", "grammar"] as const) {
+  for (const kind of ["sentences", "grammar", "passages", "passageQuestions"] as const) {
     const name = cfg.otherTabs[kind].name;
     if (!tabs.has(name)) W(name, undefined, "MISSING_TAB", `Chưa có tab "${name}"`);
   }
@@ -306,12 +313,125 @@ export function validateContent(tabs: Map<string, TabData>, cfg: SheetConfig): V
     }
   }
 
+
+  // ---------- passages (bài đọc / bài nghe) ----------
+  const passages: PassageRec[] = [];
+  const allPassageKeys = new Set<string>(); // mọi key đã thấy (kể cả dòng lỗi) — để câu hỏi không báo lỗi dây chuyền
+  const goodPassageKeys = new Set<string>();
+  let passagesOk = false;
+  const passageTab = tabs.get(cfg.otherTabs.passages.name);
+  if (passageTab && checkColumns(passageTab, "passages")) {
+    passagesOk = true;
+    const seenKeys = new Set<string>();
+    for (const r of passageTab.rows) {
+      const { key, skill, level, title, text, topic, audio, source } = r.v;
+      let bad = false;
+      const fail = (code: string, msg: string) => {
+        E(r.tab, r.row, code, msg);
+        bad = true;
+      };
+      if (!key) fail("NO_KEY", "Thiếu key");
+      else if (/\s/.test(key)) fail("BAD_KEY", `key "${key}" không được chứa khoảng trắng`);
+      else {
+        if (seenKeys.has(key)) fail("DUP_KEY", `key "${key}" bị trùng`);
+        seenKeys.add(key);
+        allPassageKeys.add(key);
+      }
+      if (!(PASSAGE_SKILLS as readonly string[]).includes(skill)) {
+        fail("INVALID_SKILL", `skill "${skill}" không hợp lệ (chỉ nhận ${PASSAGE_SKILLS.join(" | ")})`);
+      }
+      if (!isCefr(level)) fail("INVALID_CEFR", `level "${level}" không hợp lệ`);
+      if (!title) fail("EMPTY_FIELD", "Thiếu title");
+      if (!text) fail("EMPTY_FIELD", "Thiếu text");
+
+      if (!bad) {
+        goodPassageKeys.add(key);
+        passages.push({
+          key, skill, level, title,
+          body: text.replace(/\r\n?/g, "\n"),
+          topic: topic || null, audio: audio || null, source: source || null,
+          at: { tab: r.tab, row: r.row },
+        });
+      }
+    }
+  }
+
+  // ---------- passage_questions ----------
+  const passageQuestions: PassageQuestionRec[] = [];
+  const pqTab = tabs.get(cfg.otherTabs.passageQuestions.name);
+  const pqColumnsOk = !!pqTab && checkColumns(pqTab, "passageQuestions");
+  if (pqTab && pqColumnsOk && passagesOk) {
+    const seenKeys = new Set<string>();
+    const sortOf = new Map<string, number>();
+    for (const r of pqTab.rows) {
+      const { key, passage, kind, question, options: optRaw, answer: ansRaw, explanation } = r.v;
+      let bad = false;
+      const fail = (code: string, msg: string) => {
+        E(r.tab, r.row, code, msg);
+        bad = true;
+      };
+      if (!key) fail("NO_KEY", "Thiếu key");
+      else if (/\s/.test(key)) fail("BAD_KEY", `key "${key}" không được chứa khoảng trắng`);
+      else if (seenKeys.has(key)) fail("DUP_KEY", `key "${key}" bị trùng`);
+      else seenKeys.add(key);
+
+      if (!passage) fail("EMPTY_FIELD", "Thiếu passage (key của bài đọc/bài nghe)");
+      else if (!allPassageKeys.has(passage)) fail("UNKNOWN_PASSAGE", `passage "${passage}" không có trong tab ${cfg.otherTabs.passages.name}`);
+      else if (!goodPassageKeys.has(passage)) bad = true; // bỏ dòng, không báo thêm: lỗi gốc đã báo ở tab passages
+
+      if (!question) fail("EMPTY_FIELD", "Thiếu question");
+      const isKind = (PASSAGE_KINDS as readonly string[]).includes(kind);
+      if (!isKind) fail("INVALID_KIND", `kind "${kind}" không hợp lệ (chỉ nhận ${PASSAGE_KINDS.join(" | ")})`);
+
+      const options = splitList(optRaw, "|");
+      let answer = 0;
+      if (kind === "mcq") {
+        if (options.length < MCQ_MIN_OPTIONS || options.length > MCQ_MAX_OPTIONS) {
+          fail("BAD_OPTIONS", `câu mcq cần ${MCQ_MIN_OPTIONS}–${MCQ_MAX_OPTIONS} lựa chọn, ngăn cách bằng "|" (đang có ${options.length})`);
+        } else {
+          if (new Set(options).size !== options.length) fail("BAD_OPTIONS", "options có lựa chọn trùng nhau");
+          if (/^\d+$/.test(ansRaw)) {
+            const n = Number(ansRaw);
+            if (n >= 1 && n <= options.length) answer = n;
+            else fail("BAD_ANSWER", `answer ${n} nằm ngoài khoảng 1…${options.length}`);
+          } else if (ansRaw) {
+            const i = options.indexOf(ansRaw);
+            if (i >= 0) answer = i + 1;
+            else fail("BAD_ANSWER", `answer "${ansRaw}" không khớp văn bản của lựa chọn nào`);
+          } else fail("BAD_ANSWER", "Thiếu answer");
+        }
+      } else if (kind === "tf") {
+        if (options.length > 0) W(r.tab, r.row, "TF_OPTIONS_IGNORED", "Câu tf không dùng options — cột này bị bỏ qua");
+        const n = TF_WORDS[ansRaw.toLowerCase()];
+        if (n) answer = n;
+        else fail("BAD_ANSWER", `câu tf cần answer là true | false (hoặc đúng | sai), nhận "${ansRaw}"`);
+      }
+
+      if (!bad) {
+        const sort = (sortOf.get(passage) ?? 0) + 1;
+        sortOf.set(passage, sort);
+        passageQuestions.push({
+          key, passage, kind, question,
+          options: kind === "mcq" ? options : [],
+          answer, explanation: explanation || null, sort,
+          at: { tab: r.tab, row: r.row },
+        });
+      }
+    }
+  }
+  if (passagesOk && pqColumnsOk) {
+    const withQuestions = new Set(passageQuestions.map((q) => q.passage));
+    for (const p of passages) {
+      if (!withQuestions.has(p.key)) W(p.at.tab, p.at.row, "NO_QUESTIONS", `Bài "${p.title}" (${p.key}) chưa có câu hỏi hợp lệ nào — sẽ không được dùng ra đề`);
+    }
+  }
+
   const errorCount = issues.filter((i) => i.level === "error").length;
   return {
     issues,
     errorCount,
     warnCount: issues.length - errorCount,
-    data: { words, sentences, grammar, topics, domains },
+    data: { words, sentences, grammar, passages, passageQuestions, topics, domains },
     wordRowCount,
   };
 }

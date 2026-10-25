@@ -10,7 +10,7 @@ export type TabSource = { name: string; kind: TabKind; gid?: string | number | n
 /** Mọi tab được nạp, theo thứ tự trong sheet.config.json. Tab không có ở đây bị bỏ qua. */
 export function tabSources(cfg: SheetConfig): TabSource[] {
   const words = cfg.wordTabs.map((t) => ({ name: t.name, kind: "word" as const, gid: t.gid }));
-  const others = (["domains", "topics", "sentences", "grammar"] as const).map((kind) => ({
+  const others = (["domains", "topics", "sentences", "grammar", "passages", "passageQuestions"] as const).map((kind) => ({
     name: cfg.otherTabs[kind].name,
     kind,
     gid: cfg.otherTabs[kind].gid,

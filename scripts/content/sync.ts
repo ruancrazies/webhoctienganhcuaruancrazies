@@ -47,7 +47,7 @@ async function main() {
     console.error(`\n✖ ${errors} lỗi định dạng — dừng, chưa ghi gì vào DB. Sửa trên Sheet rồi chạy lại.`);
     process.exit(1);
   }
-  console.log(`Hợp lệ: ${result.data.words.length} từ · ${result.data.sentences.length} câu · ${result.data.grammar.length} ngữ pháp (${issues.length} cảnh báo)`);
+  console.log(`Hợp lệ: ${result.data.words.length} từ · ${result.data.sentences.length} câu · ${result.data.grammar.length} ngữ pháp · ${result.data.passages.length} bài đọc/nghe (${result.data.passageQuestions.length} câu hỏi) (${issues.length} cảnh báo)`);
 
   const db = connectPg(resolveDatabaseUrl(target));
   try {
