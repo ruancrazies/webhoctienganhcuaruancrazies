@@ -82,7 +82,21 @@ type PetState = {
   goal: { x: number; face: 1 | -1 } | null;
   scene: Step | null; // cảnh đôi đang tham gia
   waiting: boolean; // đã tới điểm hẹn, chờ bạn
+  y: number; // độ cao so với mặt đất (px) khi bị nhấc lên / đang rơi
+  vy: number;
+  falling: boolean;
+  drag: Grab | null; // đang bị bạn giữ
+  stretch: number; // độ giãn má 0..1 (lò xo kéo về 0 khi thả)
+  sv: number;
 };
+
+/** Một lần bấm giữ lên bé: "move" = nhấc bé đi chỗ khác, "cheek" = kéo má. */
+type Grab = { kind: "move" | "cheek"; pid: number; gx: number; gy: number; sx: number; sy: number; moved: boolean };
+
+/** Vùng má trên hình (toạ độ 0..1 trong khung 224×224, chưa lật). */
+const CHEEK = { x0: 0.26, x1: 0.74, y0: 0.44, y1: 0.7 };
+const MOVE_PX = 6; // kéo quá ngần này px mới tính là kéo (dưới ngưỡng = chỉ bấm)
+const GRAVITY = 2400; // px/s²
 
 export function PetBackground() {
   const on = useSyncExternalStore(subscribePets, isPetsOn, () => false);
@@ -90,6 +104,10 @@ export function PetBackground() {
   const [anims, setAnims] = useState<Record<Who, string>>({ nuonuo: "idle", phoebe: "idle" });
   const els = useRef<Record<Who, HTMLDivElement | null>>({ nuonuo: null, phoebe: null });
   const bubbleEl = useRef<HTMLDivElement>(null);
+  type Ptr = React.PointerEvent<HTMLDivElement>;
+  const ctl = useRef<{ down: (w: Who, e: Ptr) => void; move: (w: Who, e: Ptr) => void; up: (w: Who, e: Ptr) => void }>({
+    down: () => {}, move: () => {}, up: () => {},
+  });
   const [bubble, setBubble] = useState<{ text: string; who: Who; key: number } | null>(null);
 
   useEffect(() => {
@@ -123,6 +141,7 @@ export function PetBackground() {
     const mk = (who: Who, frac: number): PetState => ({
       who, x: maxX() * frac, dir: Math.random() < 0.5 ? 1 : -1, anim: "idle",
       steps: [T("idle", 800, 1500)], stepEnd: performance.now() + 1200, speed: 0, goal: null, scene: null, waiting: false,
+      y: 0, vy: 0, falling: false, drag: null, stretch: 0, sv: 0,
     });
     const nu = mk("nuonuo", 0.2);
     const ph = mk("phoebe", 0.75);
@@ -162,6 +181,80 @@ export function PetBackground() {
         p.steps = [...pickScript(p.who).steps];
       }
       startStep(p, now);
+    };
+    // Đang diễn cảnh đôi mà bạn nhấc một bé: huỷ cảnh để bé còn lại không đứng chờ mãi.
+    const abortScene = () => {
+      for (const q of pets) {
+        if (!q.scene && !q.goal && !q.waiting) continue;
+        q.scene = null; q.goal = null; q.waiting = false;
+        if (!q.drag) { q.steps = [T("idle", 400, 800)]; startStep(q, performance.now()); }
+      }
+    };
+    const petOf = (who: Who) => (who === "nuonuo" ? nu : ph);
+    const groundBottom = () => els.current.nuonuo?.parentElement?.getBoundingClientRect().bottom ?? window.innerHeight;
+
+    // Bấm vào má → giữ và kéo để giãn má; bấm chỗ khác → nhấc bé đi nơi khác; bấm nhanh không kéo → mở chat.
+    ctl.current.down = (who, e) => {
+      if (e.button !== 0) return;
+      const p = petOf(who);
+      if (p.drag) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const rx0 = (e.clientX - rect.left) / rect.width;
+      const rx = p.dir === 1 ? rx0 : 1 - rx0; // về toạ độ hình gốc (chưa lật)
+      const ry = (e.clientY - rect.top) / rect.height;
+      const onCheek = rx >= CHEEK.x0 && rx <= CHEEK.x1 && ry >= CHEEK.y0 && ry <= CHEEK.y1;
+      e.currentTarget.setPointerCapture(e.pointerId);
+      e.preventDefault();
+      abortScene();
+      p.drag = { kind: onCheek ? "cheek" : "move", pid: e.pointerId, gx: e.clientX - rect.left, gy: e.clientY - rect.top, sx: e.clientX, sy: e.clientY, moved: false };
+      p.speed = 0; p.falling = false; p.vy = 0;
+      p.stepEnd = Infinity;
+      if (onCheek) {
+        // má bên trái hình: "pinch"; má bên phải: Phoebe có "pinch_right", Nuonuo thì lật bé lại cho má cần kéo nằm bên trái
+        if (rx > 0.5) { if (who === "phoebe") show(p, "pinch_right"); else { p.dir = (p.dir * -1) as 1 | -1; show(p, "pinch"); } }
+        else show(p, "pinch");
+      } else show(p, "drag");
+    };
+    ctl.current.move = (who, e) => {
+      const p = petOf(who);
+      const g = p.drag;
+      if (!g || g.pid !== e.pointerId) return;
+      if (!g.moved && Math.hypot(e.clientX - g.sx, e.clientY - g.sy) > MOVE_PX) g.moved = true;
+      if (!g.moved) return;
+      if (g.kind === "cheek") {
+        p.stretch = Math.min(1, Math.hypot(e.clientX - g.sx, e.clientY - g.sy) / 120);
+        p.sv = 0;
+      } else {
+        p.x = Math.min(Math.max(e.clientX - g.gx, 0), maxX());
+        p.y = Math.min(Math.max(groundBottom() - size - (e.clientY - g.gy), 0), window.innerHeight - size - 8);
+      }
+    };
+    ctl.current.up = (who, e) => {
+      const p = petOf(who);
+      const g = p.drag;
+      if (!g || g.pid !== e.pointerId) return;
+      p.drag = null;
+      const now = performance.now();
+      if (!g.moved) {
+        // chỉ bấm, không kéo: quay lại việc cũ và mở chat
+        p.steps = [T("idle", 300, 500)];
+        startStep(p, now);
+        openPetChat(who);
+        return;
+      }
+      if (g.kind === "cheek") {
+        p.sv = 0; // thả tay: lò xo kéo má về, hơi nảy
+        p.steps = who === "phoebe" ? [S("recoil"), S("gloat")] : [S("satisfied")];
+        startStep(p, now);
+      } else if (p.y > 2) {
+        p.falling = true; p.vy = 0;
+        p.steps = [T("fall", 60000, 60000)];
+        startStep(p, now);
+      } else {
+        p.y = 0;
+        p.steps = [T("idle", 400, 900)];
+        startStep(p, now);
+      }
     };
     const startScene = () => {
       const sc = PAIR_SCENES[Math.floor(Math.random() * PAIR_SCENES.length)];
@@ -203,7 +296,17 @@ export function PetBackground() {
       if (!nu.scene && !ph.scene && now >= nextScene) startScene();
 
       for (const p of pets) {
-        if (p.goal) {
+        if (p.drag) {
+          // đang bị giữ: không chạy kịch bản
+        } else if (p.falling) {
+          p.vy += GRAVITY * dt;
+          p.y -= p.vy * dt;
+          if (p.y <= 0) {
+            p.y = 0; p.vy = 0; p.falling = false;
+            p.steps = [S("land")]; // chạm đất → hoạt ảnh tiếp đất, rồi quay lại kịch bản thường
+            startStep(p, now);
+          }
+        } else if (p.goal) {
           const dx = p.goal.x - p.x;
           if (Math.abs(dx) <= 3) {
             p.x = p.goal.x;
@@ -233,8 +336,17 @@ export function PetBackground() {
             else if (p.x >= maxX()) { p.x = maxX(); p.dir = -1; }
           }
         }
+        if (!p.drag && (p.stretch !== 0 || p.sv !== 0)) {
+          p.sv += (-220 * p.stretch - 14 * p.sv) * dt; // lò xo: kéo má về, hơi nảy
+          p.stretch += p.sv * dt;
+          if (Math.abs(p.stretch) < 0.002 && Math.abs(p.sv) < 0.05) { p.stretch = 0; p.sv = 0; }
+        }
         const el = els.current[p.who];
-        if (el) el.style.transform = `translate3d(${p.x.toFixed(1)}px,0,0) scaleX(${p.dir})`;
+        if (el) {
+          const sx = 1 + 0.22 * p.stretch;
+          const sy = 1 - 0.06 * p.stretch;
+          el.style.transform = `translate3d(${p.x.toFixed(1)}px,${(-p.y).toFixed(1)}px,0) scaleX(${p.dir}) scale(${sx.toFixed(3)},${sy.toFixed(3)})`;
+        }
         if (speaking && speaking.who === p.who && bubbleEl.current) {
           // bong bóng rộng 200px bám theo bé, kẹp trong màn hình; đuôi trỏ đúng đầu bé
           const bw = 200;
@@ -253,6 +365,7 @@ export function PetBackground() {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener(SAY_EVENT, onSay);
+      ctl.current = { down: () => {}, move: () => {}, up: () => {} };
       setBubble(null);
     };
   }, [on, size]);
@@ -269,7 +382,7 @@ export function PetBackground() {
     )}
     <div className="pet-layer" aria-hidden="true">
       {(["nuonuo", "phoebe"] as const).map((who) => (
-        <div key={who} ref={(e) => { els.current[who] = e; }} className="pet" style={{ width: size, height: size }} onClick={() => openPetChat(who)}>
+        <div key={who} ref={(e) => { els.current[who] = e; }} className="pet" style={{ width: size, height: size }} onPointerDown={(e) => ctl.current.down(who, e)} onPointerMove={(e) => ctl.current.move(who, e)} onPointerUp={(e) => ctl.current.up(who, e)} onPointerCancel={(e) => ctl.current.up(who, e)}>
           {/* dùng <img> thường: WebP động qua next/image sẽ mất hoạt ảnh */}
           <img src={`/pets/${who}/${anims[who]}.webp`} alt="" width={size} height={size} draggable={false} decoding="async" />
         </div>
