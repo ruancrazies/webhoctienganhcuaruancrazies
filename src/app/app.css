@@ -334,7 +334,7 @@ a.game:hover { background: var(--ink-soft); }
   .nav { display: flex; }
   .tabbar { display: none; }
   .page { padding-top: 30px; gap: 26px; }
-  .cta-row { grid-template-columns: repeat(2, 1fr); }
+  .cta-row { grid-template-columns: repeat(3, 1fr); }
   .games { grid-template-columns: repeat(3, 1fr); }
   .stats .stat b { font-size: 28px; }
   .sticky-act { bottom: 16px; }

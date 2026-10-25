@@ -71,6 +71,10 @@ export function LevelScopePicker({ cefr, domains, topics }: { cefr: string; doma
           <b>🔁 Ôn lại từ cũ</b>
           <span className="muted">Xem lại các từ đã học, từ đến hạn ôn hiện lên trước</span>
         </Link>
+        <Link href="/test" className="cta">
+          <b>📝 Kiểm tra</b>
+          <span className="muted">Kiểm tra xem bạn còn nhớ bao nhiêu trong số những từ đã học</span>
+        </Link>
       </section>
 
       <section className="stack" aria-labelledby="g-h">
