@@ -7,7 +7,6 @@ import { PetChat } from "@/components/PetChat";
 import { ThemeButton } from "@/components/ThemeToggle";
 import { requireUser } from "@/server/auth/session";
 import "../app.css";
-import "../theme.css";
 
 /** Khung chung của mọi trang sau đăng nhập. Lớp bảo vệ thật là requireUser() (proxy chỉ là tiện lợi). */
 export default async function AppLayout({ children }: { children: ReactNode }) {

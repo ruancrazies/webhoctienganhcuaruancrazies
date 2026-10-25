@@ -3,13 +3,13 @@
   --card: #ffffff;
   --text: #1f2937;
   --muted: #6b7280;
-  --primary: #2a3fd0;
-  --primary-dark: #1f31ad;
+  --primary: #4f46e5;
+  --primary-dark: #4338ca;
   --danger: #b91c1c;
   --danger-bg: #fef2f2;
   --ok: #166534;
   --ok-bg: #f0fdf4;
-  --border: #d6def0;
+  --border: #d1d5db;
   --on-primary: #ffffff;
   color-scheme: light;
 }
@@ -29,7 +29,7 @@ html[data-theme="dark"] {
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-body), "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.5; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5; }
 .auth-shell { min-height: 100dvh; display: grid; place-items: center; padding: 16px; }
 .card { width: 100%; max-width: 420px; background: var(--card); border-radius: 16px; padding: 28px 24px; box-shadow: 0 4px 24px rgb(0 0 0 / 0.06); }
 .brand { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--primary); letter-spacing: 0.02em; }
@@ -57,23 +57,3 @@ a { color: var(--primary); }
 
 .captcha { display: flex; justify-content: center; min-height: 0; }
 .note { margin: 0; padding: 10px 12px; border-radius: 10px; font-size: 13px; line-height: 1.5; background: var(--ok-bg); color: var(--text); border: 1px dashed var(--border); }
-
-/* ---- đăng nhập / đăng ký: cùng giấy ô ly với phần app ---- */
-.auth-shell {
-  background-color: var(--bg);
-  background-image: linear-gradient(#e1e7f5 1px, transparent 1px), linear-gradient(90deg, #e1e7f5 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-html[data-theme="dark"] .auth-shell { background-image: linear-gradient(#171d38 1px, transparent 1px), linear-gradient(90deg, #171d38 1px, transparent 1px); }
-.card { position: relative; max-width: 440px; padding: 32px 28px 28px 44px; border: 1px solid var(--border); border-radius: 22px; box-shadow: 0 1px 0 rgb(20 28 69 / 0.04), 0 28px 48px -28px rgb(20 28 69 / 0.45); }
-.card::before { content: ""; position: absolute; top: 0; bottom: 0; left: 26px; border-left: 2px solid #e0453f; opacity: 0.4; }
-.brand { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; font-family: var(--font-display), var(--font-body), sans-serif; font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
-.brand-mark { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: #ffd84a; color: #141c45; font-size: 13px; font-weight: 800; transform: rotate(-4deg); box-shadow: 0 2px 0 #c9aa00; }
-h1 { font-family: var(--font-display), var(--font-body), sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
-.field input { padding: 12px 14px; border-width: 1.5px; border-radius: 12px; }
-.field input:focus { outline: 3px solid color-mix(in srgb, var(--primary) 25%, transparent); outline-offset: 0; }
-button { border-radius: 14px; padding: 13px 16px; font-family: var(--font-display), var(--font-body), sans-serif; font-weight: 600; box-shadow: 0 4px 0 var(--primary-dark); }
-button:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--primary-dark); }
-.link-button { box-shadow: none; padding: 6px 0; }
-.link-button:active:not(:disabled) { transform: none; }
-@media (prefers-reduced-motion: reduce) { button:active:not(:disabled) { transform: none; } }
