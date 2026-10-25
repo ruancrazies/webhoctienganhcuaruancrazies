@@ -1,9 +1,7 @@
 import Link from "next/link";
-import { DailyQuests } from "@/components/DailyQuests";
-import { LevelProgress } from "@/components/LevelProgress";
 import { LEVEL_NAMES, fmtNumber, ratio } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
-import { getDailyQuests, getHome } from "@/server/services";
+import { getHome } from "@/server/services";
 import type { HomeLevel } from "@/types/api";
 
 export const metadata = { title: "Trang chủ · Web học từ vựng" };
@@ -56,7 +54,7 @@ function LevelRow({ l }: { l: HomeLevel }) {
 
 export default async function HomePage() {
   const user = await requireUser();
-  const [home, quests] = await Promise.all([getHome(user.id), getDailyQuests(user.id)]);
+  const home = await getHome(user.id);
   const { profile, levels, dueCount } = home;
 
   const current = levels.find((l) => l.unlocked && !l.pass) ?? levels[levels.length - 1];
@@ -82,7 +80,6 @@ export default async function HomePage() {
             <span>cấp hiện tại</span>
           </div>
         </div>
-        <LevelProgress xp={profile.xp} />
         <div className="today">
           <div className="spread small">
             <span>XP hôm nay</span>
@@ -93,8 +90,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-      <DailyQuests initial={quests} />
 
       <section className="due" aria-label="Ôn tập">
         <div>

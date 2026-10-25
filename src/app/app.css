@@ -79,7 +79,7 @@ html[data-theme="dark"] .app {
 .mute { width: 38px; height: 38px; padding: 0; background: transparent; color: var(--ink); border: 1.5px solid var(--line); font-size: 17px; }
 .mute:hover:not(:disabled) { background: var(--ink-soft); }
 
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--sheet); border-top: 1.5px solid var(--ink); display: grid; grid-template-columns: repeat(3, 1fr); padding-bottom: env(safe-area-inset-bottom); }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--sheet); border-top: 1.5px solid var(--ink); display: grid; grid-template-columns: repeat(4, 1fr); padding-bottom: env(safe-area-inset-bottom); }
 .tabbar a { display: grid; justify-items: center; gap: 0; padding: 8px 4px 9px; text-decoration: none; color: var(--pencil); font-size: 12px; font-weight: 600; }
 .tabbar a .ti { font-size: 21px; line-height: 1.2; }
 .tabbar a[aria-current="page"] { color: var(--ink); background: linear-gradient(var(--mark), var(--mark)) top / 100% 4px no-repeat; }
