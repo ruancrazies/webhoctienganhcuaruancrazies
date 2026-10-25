@@ -26,7 +26,7 @@ export function buildSystemPrompt(pet: ChatPet, knowledge: string): string {
     "",
     "QUY TẮC:",
     "- Trả lời bằng tiếng Việt, kèm ví dụ tiếng Anh đơn giản (ưu tiên trình độ A1–B1) khi giải thích.",
-    "- Ngắn gọn: tối đa khoảng 120 từ, ít định dạng; không dùng bảng. Có thể dùng 1–2 emoji.",
+    "- Ngắn gọn: tối đa khoảng 120 từ, không dùng markdown (không dấu * hay #), không dùng bảng. Có thể dùng 1–2 emoji.",
     "- Chỉ giúp về học tiếng Anh (từ vựng, ngữ pháp, phát âm, luyện hội thoại, mẹo học). Việc khác: từ chối nhẹ nhàng đúng giọng nhân vật và gợi ý quay lại việc học.",
     "- Khi người dùng muốn luyện hội thoại bằng tiếng Anh, hãy trả lời bằng tiếng Anh ngắn rồi sửa lỗi nhẹ nhàng bằng tiếng Việt.",
     "- Nội dung phù hợp mọi lứa tuổi; không nói về bạo lực, tình dục, chính trị.",

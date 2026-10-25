@@ -13,6 +13,9 @@ const HELLO: Record<ChatPet, string> = {
   phoebe: "Hế lô! Phoebe đây. Có gì khó cứ hỏi, mình giải thích cho — nhưng đừng mong mình dễ dãi nha 😏",
 };
 
+/** Bỏ ký hiệu markdown (**đậm**, *nghiêng*) vì khung chat hiển thị văn bản thuần. */
+const plain = (t: string) => t.replace(/\*+/g, "");
+
 /** Khung trò chuyện với thú cưng. Mở bằng cách bấm vào bé hoặc nút 💬; hội thoại giữ trong bộ nhớ trình duyệt (mất khi tải lại trang). */
 export function PetChat() {
   const [open, setOpen] = useState(false);
@@ -87,11 +90,11 @@ export function PetChat() {
         <button type="button" className="pchat-x" aria-label="Đóng" onClick={() => setOpen(false)}>✕</button>
       </div>
       <div className="pchat-log" ref={logEl} aria-live="polite">
-        <div className="pchat-msg pet">{HELLO[pet]}</div>
+        <div className="pchat-msg is-pet">{HELLO[pet]}</div>
         {log.map((b) => (
-          <div key={b.id} className={`pchat-msg ${b.error ? "err" : b.role}`}>{b.text}</div>
+          <div key={b.id} className={`pchat-msg ${b.error ? "err" : b.role === "user" ? "is-user" : "is-pet"}`}>{b.error ? b.text : plain(b.text)}</div>
         ))}
-        {busy && <div className="pchat-msg pet">…</div>}
+        {busy && <div className="pchat-msg is-pet">…</div>}
       </div>
       <form className="pchat-form" onSubmit={(e) => { e.preventDefault(); void send(); }}>
         <input ref={inputEl} value={text} maxLength={CHAT_MAX_CHARS} onChange={(e) => setText(e.target.value)} placeholder={`Hỏi ${name} về tiếng Anh…`} aria-label="Tin nhắn" autoComplete="off" />
