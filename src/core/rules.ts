@@ -70,3 +70,12 @@ export const EXAM_START_PER_HOUR = 10;
 export function minRoundSeconds(rule: GameRule, answerCount: number): number {
   return rule.minSecondsPerAnswer * answerCount;
 }
+
+// ---- Bài kiểm tra thường xuyên (practice test) ----
+/** Số từ đã học tối thiểu để có chất liệu ra đề. */
+export const PRACTICE_MIN_WORDS = 20;
+/** Lấy tối đa ngần này id từ đã học để bốc ngẫu nhiên ra đề. */
+export const PRACTICE_POOL_MAX = 5000;
+/** Phải trả lời ít nhất tỉ lệ này số câu thì mới tính cho nhiệm vụ "Làm một bài kiểm tra" (chống nộp bài trống để lấy thưởng). */
+export const PRACTICE_QUEST_MIN_ANSWERED = 0.5;
+export const PRACTICE_START_PER_HOUR = 30;

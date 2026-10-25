@@ -11,8 +11,8 @@ const DAY = 20_000;
 
 const one = async <T extends object>(sql: string, params: unknown[] = []) => (await pg.query<T>(sql, params)).rows[0];
 const defs = JSON.stringify(ALL_QUESTS.map((q) => ({ quest: q.id, target: q.target, reward: q.reward })));
-const bump = (user: string, day: number, learn = 0, review = 0, play = 0) =>
-  pg.query(`select bump_quests($1, $2, $3::jsonb, $4, $5, $6)`, [user, day, defs, learn, review, play]);
+const bump = (user: string, day: number, learn = 0, review = 0, play = 0, test = 0) =>
+  pg.query(`select bump_quests($1, $2, $3::jsonb, $4, $5, $6, $7)`, [user, day, defs, learn, review, play, test]);
 const claim = async (user: string, day: number, quest: string) =>
   (await one<{ r: { reward: number; xp: number } }>(`select claim_quest($1, $2, $3) as r`, [user, day, quest])).r;
 const rowOf = async (user: string, day: number, quest: string) =>
@@ -31,15 +31,16 @@ beforeAll(async () => {
 afterAll(() => pg.close());
 
 describe("bump_quests", () => {
-  it("tạo đủ 4 dòng của ngày với mục tiêu/thưởng chốt từ định nghĩa", async () => {
+  it("tạo đủ 5 dòng của ngày với mục tiêu/thưởng chốt từ định nghĩa", async () => {
     await bump(U1, DAY, 5, 0, 0);
     const rows = (await pg.query<{ quest: string; target: number; reward: number }>(
       `select quest, target, reward from daily_quests where user_id = $1 and day = $2 order by quest`, [U1, DAY])).rows;
     expect(rows).toEqual([
-      { quest: "all", target: 3, reward: 300 },
+      { quest: "all", target: 4, reward: 300 },
       { quest: "learn", target: 20, reward: 60 },
       { quest: "play", target: 1, reward: 80 },
       { quest: "review", target: 20, reward: 60 },
+      { quest: "test", target: 1, reward: 150 },
     ]);
     expect((await rowOf(U1, DAY, "learn"))!.progress).toBe(5);
   });
@@ -52,7 +53,7 @@ describe("bump_quests", () => {
   });
 
   it("số âm / null không làm giảm tiến độ", async () => {
-    await pg.query(`select bump_quests($1, $2, $3::jsonb, -5, null, 0)`, [U1, DAY, defs]);
+    await pg.query(`select bump_quests($1, $2, $3::jsonb, -5, null, 0, 0)`, [U1, DAY, defs]);
     expect((await rowOf(U1, DAY, "learn"))!.progress).toBe(20);
     expect((await rowOf(U1, DAY, "review"))!.progress).toBe(0);
   });
@@ -63,6 +64,9 @@ describe("bump_quests", () => {
     expect((await rowOf(U1, DAY, "all"))!.progress).toBe(2);
     await bump(U1, DAY, 0, 0, 1);
     expect((await rowOf(U1, DAY, "all"))!.progress).toBe(3);
+    await bump(U1, DAY, 0, 0, 0, 1);
+    expect((await rowOf(U1, DAY, "test"))!.progress).toBe(1);
+    expect((await rowOf(U1, DAY, "all"))!.progress).toBe(4);
   });
 
   it("mỗi người, mỗi ngày độc lập", async () => {
@@ -116,8 +120,15 @@ describe("claim_quest", () => {
     expect((await xpOf(U1)).xp).toBe(before.xp);
   });
 
-  it("'all' nhận được khi cả ba đã đủ (không cần nhận từng cái trước) → +300", async () => {
-    // U1 đã đủ learn/review/play; review và play chưa nhận
+  it("nhiệm vụ 'test' nhận được +150", async () => {
+    const before = await xpOf(U1);
+    const r = await claim(U1, DAY, "test");
+    expect(r.reward).toBe(150);
+    expect(Number((await xpOf(U1)).xp)).toBe(Number(before.xp) + 150);
+  });
+
+  it("'all' nhận được khi cả bốn đã đủ (không cần nhận từng cái trước) → +300", async () => {
+    // U1 đã đủ learn/review/play/test; review và play chưa nhận
     const before = await xpOf(U1);
     const r = await claim(U1, DAY, "all");
     expect(r.reward).toBe(300);
@@ -125,9 +136,9 @@ describe("claim_quest", () => {
     await expect(claim(U1, DAY, "all")).rejects.toThrow(/quest_already_claimed/);
   });
 
-  it("'all' chưa nhận được khi mới xong hai trong ba, dù cột progress bị sửa tay", async () => {
-    await bump(U2, DAY + 3, 20, 20, 0); // learn + review đủ, play chưa
-    await pg.query(`update daily_quests set progress = 3 where user_id = $1 and day = $2 and quest = 'all'`, [U2, DAY + 3]);
+  it("'all' chưa nhận được khi mới xong ba trong bốn, dù cột progress bị sửa tay", async () => {
+    await bump(U2, DAY + 3, 20, 20, 1, 0); // learn + review + play đủ, test chưa
+    await pg.query(`update daily_quests set progress = 4 where user_id = $1 and day = $2 and quest = 'all'`, [U2, DAY + 3]);
     await expect(claim(U2, DAY + 3, "all")).rejects.toThrow(/quest_not_ready/);
   });
 

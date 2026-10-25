@@ -20,7 +20,7 @@ export async function getDailyQuests(userId: string, ctx: Ctx = {}): Promise<Que
  * lỗi ở đây không được làm hỏng kết quả vòng chơi đã lưu (chấp nhận mất tiến độ nhiệm vụ trong trường hợp hiếm đó).
  */
 export async function recordQuestProgress(userId: string, delta: QuestDelta, ctx: Ctx = {}): Promise<void> {
-  if (delta.learn <= 0 && delta.review <= 0 && delta.play <= 0) return;
+  if (delta.learn <= 0 && delta.review <= 0 && delta.play <= 0 && delta.test <= 0) return;
   try {
     await bumpQuests(userId, dayNo(nowOf(ctx)), delta);
   } catch (e) {

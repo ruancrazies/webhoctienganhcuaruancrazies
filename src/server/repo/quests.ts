@@ -26,6 +26,7 @@ export async function bumpQuests(userId: string, day: number, delta: QuestDelta)
     p_learn: delta.learn,
     p_review: delta.review,
     p_play: delta.play,
+    p_test: delta.test,
   });
   if (error) throw new RepoError("rpc.bump_quests", error.message, error.code);
 }

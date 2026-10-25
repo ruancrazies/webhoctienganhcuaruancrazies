@@ -9,18 +9,19 @@ import type { SrsState } from "./types";
  * (giới hạn đó chỉ áp cho XP từ trò chơi), nên người đã chạm trần vẫn nhận được thưởng nhiệm vụ.
  */
 
-export type QuestId = "learn" | "review" | "play" | "all";
+export type QuestId = "learn" | "review" | "play" | "test" | "all";
 
 export type QuestDef = { id: QuestId; title: string; target: number; reward: number };
 
-/** Ba nhiệm vụ cơ bản. */
+/** Bốn nhiệm vụ cơ bản. */
 export const BASE_QUESTS: readonly QuestDef[] = [
   { id: "learn", title: "Học 20 từ mới", target: 20, reward: 60 },
   { id: "review", title: "Ôn 20 từ cũ", target: 20, reward: 60 },
   { id: "play", title: "Chơi một trò chơi bất kỳ", target: 1, reward: 80 },
+  { id: "test", title: "Làm một bài kiểm tra", target: 1, reward: 150 },
 ];
 
-/** Thưởng khi hoàn thành cả ba nhiệm vụ cơ bản (không cần nhận thưởng từng cái trước). `target` = số nhiệm vụ cơ bản. */
+/** Thưởng khi hoàn thành cả các nhiệm vụ cơ bản (không cần nhận thưởng từng cái trước). `target` = số nhiệm vụ cơ bản. */
 export const BONUS_QUEST: QuestDef = { id: "all", title: "Hoàn thành tất cả nhiệm vụ", target: BASE_QUESTS.length, reward: 300 };
 
 export const ALL_QUESTS: readonly QuestDef[] = [...BASE_QUESTS, BONUS_QUEST];
@@ -30,7 +31,7 @@ export function isQuestId(x: unknown): x is QuestId {
 }
 
 /** Số tăng tiến độ sau một sự kiện (vòng chơi / lần bấm "Đã học"). */
-export type QuestDelta = { learn: number; review: number; play: number };
+export type QuestDelta = { learn: number; review: number; play: number; test: number };
 
 type Step = { before: Pick<SrsState, "level"> | null; after: Pick<SrsState, "level"> };
 
@@ -49,7 +50,7 @@ export function roundQuestDelta(steps: Iterable<Step>): QuestDelta {
     if (wasKnown) review++;
     else if (s.after.level >= 1) learn++;
   }
-  return { learn, review, play: 1 };
+  return { learn, review, play: 1, test: 0 };
 }
 
 // ---------- hiển thị ----------

@@ -81,6 +81,6 @@ export async function markLearned(req: MarkLearnedRequest, userId: string, ctx: 
   }
 
   const marked = await repoMarkLearned(userId, ids);
-  await recordQuestProgress(userId, { learn: marked, review: 0, play: 0 }, { now: nowOf(ctx) });
+  await recordQuestProgress(userId, { learn: marked, review: 0, play: 0, test: 0 }, { now: nowOf(ctx) });
   return { marked };
 }

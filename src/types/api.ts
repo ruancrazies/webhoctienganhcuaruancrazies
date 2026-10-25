@@ -58,8 +58,15 @@ export const markLearnedSchema = z.object({
 });
 export type MarkLearnedRequest = z.infer<typeof markLearnedSchema>;
 
-export const claimQuestSchema = z.object({ quest: z.enum(["learn", "review", "play", "all"]) });
+export const claimQuestSchema = z.object({ quest: z.enum(["learn", "review", "play", "test", "all"]) });
 export type ClaimQuestRequest = z.infer<typeof claimQuestSchema>;
+
+export const practiceStartSchema = z.object({});
+export const practiceSubmitSchema = z.object({
+  testId: z.uuid(),
+  answers: z.array(answerSchema).max(100),
+});
+export type PracticeSubmitRequest = z.infer<typeof practiceSubmitSchema>;
 
 export const examStartSchema = z.object({ cefr: cefrSchema });
 export type ExamStartRequest = z.infer<typeof examStartSchema>;
@@ -132,6 +139,34 @@ export type HomeResponse = {
 /** Nhiệm vụ hôm nay. `bonus` là thưởng hoàn thành cả ba nhiệm vụ cơ bản. */
 export type QuestsResponse = { day: number; resetAt: string; quests: QuestView[]; bonus: QuestView };
 export type ClaimQuestResponse = { quest: QuestId; reward: number; xp: number };
+
+/** Bài kiểm tra thường xuyên. Không có đạt/không đạt: chỉ hiện điểm. */
+export type PracticeStartResponse = { testId: string; items: Question[]; expiresAt: string; resumed: boolean };
+export type PracticeResult = {
+  scoreTotal: number;
+  scoreVocab: number;
+  scoreGrammar: number;
+  vocabCount: number;
+  grammarCount: number;
+  review: ReviewItem[];
+  /** Số từ làm sai đã được hẹn ôn lại ngay. */
+  scheduledReview: number;
+  /** Đã tính vào nhiệm vụ "Làm một bài kiểm tra" hôm nay. */
+  questCounted: boolean;
+  /** Điểm tổng của bài trước (0..1), null nếu đây là bài đầu. */
+  previousTotal: number | null;
+};
+export type PracticeOverview = {
+  learnedWords: number;
+  minWords: number;
+  canStart: boolean;
+  /** Đang có bài dở còn hạn (bấm bắt đầu sẽ mở lại đúng bài đó). */
+  hasOpen: boolean;
+  vocabTotal: number;
+  grammarTotal: number;
+  durationMinutes: number;
+  recent: { finishedAt: string; total: number; vocab: number; grammar: number }[];
+};
 
 export type LeaderboardRow = { rank: number; username: string; avatar: string | null; xp: number; level: Cefr | null; isMe: boolean };
 export type LeaderboardResponse = { rows: LeaderboardRow[] };
