@@ -24,7 +24,6 @@
   --on-mark: #121d4d;     /* chữ trên nền --mark (vàng) */
   --ink-shadow: #121d4d;  /* bóng "đáy" của nút */
 
-  isolation: isolate; /* để lớp thú cưng nền (z-index âm) nằm trên giấy ô li nhưng dưới nội dung */
   min-height: 100dvh;
   background-color: var(--paper);
   background-image:
@@ -298,8 +297,8 @@ a.game:hover { background: var(--ink-soft); }
 @keyframes sk { to { background-position: -200% 0; } }
 .err { padding: 12px 14px; border-radius: 10px; background: var(--red-soft); color: var(--red); font-weight: 600; font-size: 14.5px; }
 
-/* ---- thú cưng nền (PetBackground): chỉ trang trí, không nhận chuột, nằm sau nội dung ---- */
-.pet-layer { position: fixed; left: 0; right: 0; bottom: 72px; height: 130px; z-index: var(--pet-z, -1); pointer-events: none; overflow: hidden; }
+/* ---- thú cưng (PetBackground): đi trên cùng nội dung nhưng dưới thanh trên/dưới (z 20); không nhận chuột ---- */
+.pet-layer { position: fixed; left: 0; right: 0; bottom: 72px; height: 130px; z-index: 12; pointer-events: none; overflow: hidden; }
 .pet { position: absolute; left: 0; bottom: 0; will-change: transform; filter: drop-shadow(0 2px 2px rgb(18 29 77 / 0.18)); }
 .pet-bubble-layer { position: fixed; left: 0; right: 0; bottom: calc(72px + var(--pet-size, 104px) + 4px); height: 0; z-index: 15; pointer-events: none; }
 .pet-bubble { position: absolute; left: 0; bottom: 0; width: 200px; padding: 9px 12px; border: 1.5px solid var(--ink); border-radius: 12px; background: var(--sheet); color: var(--ink-dark); font-size: 14px; font-weight: 600; line-height: 1.4; box-shadow: 0 3px 0 var(--line); pointer-events: auto; cursor: pointer; animation: pet-pop .25s ease-out; }

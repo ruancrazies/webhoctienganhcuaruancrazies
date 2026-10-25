@@ -9,7 +9,7 @@ import { isPetsOn, petSay, SAY_EVENT, setPetsOn, subscribePets, type PetMessage 
  * (public/pets/manifest.json). Mỗi bé tự chọn "kịch bản" (chuỗi hoạt ảnh) ngẫu nhiên; thỉnh thoảng
  * cả hai chạy lại gần nhau và cùng diễn một cảnh đôi (pair_*).
  * Nguồn hình: JiuNuoDesktopPet (xem public/pets/CREDITS.md) — dùng phi thương mại, có sự cho phép của tác giả.
- * Chỉ trang trí: aria-hidden, pointer-events: none, nằm sau nội dung.
+ * Chỉ trang trí: aria-hidden, pointer-events: none, đi phía trên nội dung (không chặn bấm chuột).
  */
 
 type Who = "nuonuo" | "phoebe";
