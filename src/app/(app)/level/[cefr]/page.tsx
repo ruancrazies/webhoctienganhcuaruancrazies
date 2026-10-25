@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ cefr: string }> }) {
   const { cefr } = await params;
-  return { title: `Cấp ${cefr.toUpperCase()} · English Game` };
+  return { title: `Cấp ${cefr.toUpperCase()} · Web học từ vựng` };
 }
 
 export default async function LevelPage({ params }: { params: Promise<{ cefr: string }> }) {

@@ -16,7 +16,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         <div className="topbar-in">
           <Link href="/" className="logo">
             <span className="logo-mark" aria-hidden="true">Aa</span>
-            English Game
+            Web học từ vựng
           </Link>
           <TopNav />
           <ThemeButton />

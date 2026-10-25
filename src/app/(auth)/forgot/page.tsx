@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ForgotForm } from "../_components/ForgotForm";
 
-export const metadata = { title: "Quên mật khẩu · English Game" };
+export const metadata = { title: "Quên mật khẩu · Web học từ vựng" };
 
 export default function ForgotPage() {
   return (

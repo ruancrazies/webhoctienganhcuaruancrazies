@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
-export const metadata: Metadata = { title: "English Game", description: "Học tiếng Anh qua trò chơi" };
+export const metadata: Metadata = { title: "Web học từ vựng", description: "Học từ vựng tiếng Anh qua trò chơi" };
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

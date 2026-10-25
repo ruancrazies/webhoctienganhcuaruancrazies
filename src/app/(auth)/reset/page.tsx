@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ResetForm } from "../_components/ResetForm";
 import { first, type SearchParams } from "../search-params";
 
-export const metadata = { title: "Đặt lại mật khẩu · English Game" };
+export const metadata = { title: "Đặt lại mật khẩu · Web học từ vựng" };
 
 export default async function ResetPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;

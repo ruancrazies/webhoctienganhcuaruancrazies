@@ -4,7 +4,7 @@ import { fmtNumber } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { getLeaderboard } from "@/server/services";
 
-export const metadata = { title: "Xếp hạng · English Game" };
+export const metadata = { title: "Xếp hạng · Web học từ vựng" };
 export const dynamic = "force-dynamic";
 
 export default async function LeaderboardPage() {

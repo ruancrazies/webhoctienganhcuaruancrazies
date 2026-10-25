@@ -288,6 +288,7 @@ a.game:hover { background: var(--ink-soft); }
 .av-opt input:checked + span { border-color: var(--ink); box-shadow: 0 0 0 3px var(--ink); }
 .av-opt input:focus-visible + span { outline: 3px solid var(--mark); outline-offset: 2px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.row-gap { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
 /* ---- trạng thái ---- */
@@ -300,10 +301,15 @@ a.game:hover { background: var(--ink-soft); }
 /* ---- thú cưng nền (PetBackground): chỉ trang trí, không nhận chuột, nằm sau nội dung ---- */
 .pet-layer { position: fixed; left: 0; right: 0; bottom: 72px; height: 130px; z-index: var(--pet-z, -1); pointer-events: none; overflow: hidden; }
 .pet { position: absolute; left: 0; bottom: 0; will-change: transform; filter: drop-shadow(0 2px 2px rgb(18 29 77 / 0.18)); }
+.pet-bubble-layer { position: fixed; left: 0; right: 0; bottom: calc(72px + var(--pet-size, 104px) + 4px); height: 0; z-index: 15; pointer-events: none; }
+.pet-bubble { position: absolute; left: 0; bottom: 0; width: 200px; padding: 9px 12px; border: 1.5px solid var(--ink); border-radius: 12px; background: var(--sheet); color: var(--ink-dark); font-size: 14px; font-weight: 600; line-height: 1.4; box-shadow: 0 3px 0 var(--line); pointer-events: auto; cursor: pointer; animation: pet-pop .25s ease-out; }
+.pet-bubble::after { content: ""; position: absolute; left: calc(var(--tail, 100px) - 7px); bottom: -8px; width: 12px; height: 12px; background: var(--sheet); border-right: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); transform: rotate(45deg); }
+@keyframes pet-pop { from { opacity: 0; margin-bottom: -6px; } to { opacity: 1; margin-bottom: 0; } }
 .pet img { display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; }
 
 @media (min-width: 720px) {
   .pet-layer { bottom: 0; height: 150px; }
+  .pet-bubble-layer { bottom: calc(var(--pet-size, 112px) + 4px); }
   .app { padding-bottom: 0; }
   .nav { display: flex; }
   .tabbar { display: none; }
@@ -318,4 +324,5 @@ a.game:hover { background: var(--ink-soft); }
 @media (prefers-reduced-motion: reduce) {
   .skeleton, .timer.low { animation: none; }
   .btn { transition: none; }
+  .pet-bubble { animation: none; }
 }

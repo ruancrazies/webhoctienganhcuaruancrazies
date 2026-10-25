@@ -3,7 +3,7 @@ import { safeNext } from "@/core/auth";
 import { LoginForm } from "../_components/LoginForm";
 import { first, type SearchParams } from "../search-params";
 
-export const metadata = { title: "Đăng nhập · English Game" };
+export const metadata = { title: "Đăng nhập · Web học từ vựng" };
 
 export default async function LoginPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;

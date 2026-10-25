@@ -1,5 +1,5 @@
 /** Nội dung mail tiếng Việt cho từng loại hành động của Supabase Auth (mục 5.10). */
-export const APP_NAME = "English Game";
+export const APP_NAME = "Web học từ vựng";
 export const CODE_VALID_MINUTES = 60; // khớp [auth.email] otp_expiry = 3600 trong supabase/config.toml
 
 export type BuiltMail = { subject: string; html: string };

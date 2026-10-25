@@ -4,7 +4,7 @@ import { requireUser } from "@/server/auth/session";
 import { getHome } from "@/server/services";
 import type { HomeLevel } from "@/types/api";
 
-export const metadata = { title: "Trang chủ · English Game" };
+export const metadata = { title: "Trang chủ · Web học từ vựng" };
 export const dynamic = "force-dynamic";
 
 function statusChip(l: HomeLevel) {

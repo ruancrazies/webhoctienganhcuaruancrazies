@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { RegisterForm } from "../_components/RegisterForm";
 
-export const metadata = { title: "Đăng ký · English Game" };
+export const metadata = { title: "Đăng ký · Web học từ vựng" };
 
 export default function RegisterPage() {
   return (

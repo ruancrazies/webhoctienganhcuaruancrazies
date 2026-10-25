@@ -15,7 +15,7 @@ const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v
 
 export async function generateMetadata({ params }: { params: Promise<{ game: string }> }) {
   const { game } = await params;
-  return { title: `${gameById(game)?.name ?? "Trò chơi"} · English Game` };
+  return { title: `${gameById(game)?.name ?? "Trò chơi"} · Web học từ vựng` };
 }
 
 /** Trang chơi: /play/<trò>?cefr=A1&domain=general hoặc &topic=<slug>. Việc tạo vòng và chấm điểm do API lo. */
