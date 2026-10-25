@@ -18,7 +18,8 @@ const find = (issues: { code: string; tab: string; row?: number }[], code: strin
 describe("cấu hình", () => {
   it("levels.yml hợp lệ", () => {
     const l = loadLevels();
-    expect(l.examMinWords.A1).toBe(1000);
+    expect(l.examMinWords.A1).toBe(100);
+    expect(l.examMinWords.A2).toBe(100);
     expect(l.exam.vocab.total + l.exam.grammar.total).toBe(30);
   });
 });

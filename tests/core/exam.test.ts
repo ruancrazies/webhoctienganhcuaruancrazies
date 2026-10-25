@@ -11,7 +11,7 @@ import { at, grammarQ, seeded, sentence, word } from "./helpers";
 const cfg: ExamConfig = loadLevels().exam;
 
 const status = (extra: Partial<LevelStatus> = {}): LevelStatus => ({
-  cefr: "A1", pass: false, unlocked: true, eligible: true, learnedCum: 1200, needLearned: 1000, ...extra,
+  cefr: "A1", pass: false, unlocked: true, eligible: true, learnedCum: 1200, needLearned: 100, ...extra,
 });
 const gate = (extra: Partial<ExamGateInput> = {}) =>
   checkExamStart({ status: status(), attemptsToday: [], now: at("2026-10-24T05:00:00Z"), cfg, ...extra });

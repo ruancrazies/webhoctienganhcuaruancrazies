@@ -490,8 +490,8 @@ Khoảng ôn lại theo level mới: [0, 0, 0, 4, 7, 14] ngày
 
   | Cấp | Vốn từ tối thiểu để được thi (cộng dồn, từ đã học) | Cơ sở |
   |---|---|---|
-  | A1 | **1.000** | Ước lượng: Milton & Alexiou chỉ nêu A1 là *dưới 1.500*, không có mốc dưới; lấy giữa khoảng ~500–1.500 |
-  | A2 | **2.000** | Trung bình của khoảng 1.500–2.500 (Milton & Alexiou 2009) |
+  | A1 | **100** | Chủ dự án chọn mốc thấp (A1 rất cơ bản) để người mới sớm được thi; Milton & Alexiou chỉ nêu A1 là *dưới 1.500* |
+  | A2 | **100** | Chủ dự án chọn mốc thấp (A2 cũng cơ bản). Vì tính CỘNG DỒN từ A1 nên A2 = 100 nghĩa là qua A1 xong là được thi A2 ngay; muốn buộc học thêm ở A2 thì tăng số này (ví dụ 200 = 100 từ A1 + 100 từ A2) |
   | B1 | **3.000** | Trung bình của khoảng 2.750–3.250 |
   | B2 | **3.500** | Trung bình của khoảng 3.250–3.750 |
   | C1 | **4.100** | Trung bình của khoảng 3.750–4.500 (4.125, làm tròn) |
@@ -519,8 +519,8 @@ Cấu hình đặt ở `content/taxonomy/levels.yml` (đọc vào `core/exam.ts`
 
 ```
 examMinWords:                 # số từ general đã học, CỘNG DỒN từ A1, tối thiểu để được thi cấp đó
-  A1: 1000
-  A2: 2000
+  A1: 100
+  A2: 100
   B1: 3000
   B2: 3500
   C1: 4100
@@ -1076,7 +1076,7 @@ Bước 8 (SAU, ngoài đợt này): Ảnh và âm thanh trên R2 — Độ ph�
 |---|---|---|
 | G1 | Giữ đúng 10 trò chơi và các giá trị XP/giới hạn ở mục 4.1 | Bạn cho danh sách trò/XP mong muốn; chỉ sửa `rules.ts` và `registry.ts` |
 | G2 | Dùng SRS với level 0–5 và khoảng ôn `[0,0,0,4,7,14]` ngày như mục 4.2 | Cho mình quy tắc khác; chỉ sửa `core/srs.ts` |
-| G3 | **Qua cấp bằng bài kiểm tra** (mục 4.6): 30 câu (150 từ + 50 ngữ pháp), 60 phút, đạt khi tổng ≥ 80% và mỗi phần ≥ 70%; **được thi khi tổng từ general đã học (cộng dồn từ A1) đạt ngưỡng tuyệt đối: A1 1.000 · A2 2.000 · B1 3.000 · B2 3.500 · C1 4.100** (trung bình khoảng của Milton & Alexiou); không thi nhảy cấp; chờ 1 giờ sau lượt trượt, tối đa 3 lượt/ngày | Chỉnh các số trong `levels.yml`; bỏ khóa cấp thì bỏ kiểm tra ở `startRound`/`listLearn` |
+| G3 | **Qua cấp bằng bài kiểm tra** (mục 4.6): 30 câu (150 từ + 50 ngữ pháp), 60 phút, đạt khi tổng ≥ 80% và mỗi phần ≥ 70%; **được thi khi tổng từ general đã học (cộng dồn từ A1) đạt ngưỡng tuyệt đối: A1 100 · A2 100 · B1 3.000 · B2 3.500 · C1 4.100** (trung bình khoảng của Milton & Alexiou); không thi nhảy cấp; chờ 1 giờ sau lượt trượt, tối đa 3 lượt/ngày | Chỉnh các số trong `levels.yml`; bỏ khóa cấp thì bỏ kiểm tra ở `startRound`/`listLearn` |
 | G4 | Cấp độ chỉ A1–C1 để khóa/mở; C2 có từ nhưng không có cổng | Nếu muốn có C2 làm cổng thì thêm vào `levels.yml` |
 | G5 | Chỉ từ lĩnh vực `general` tính cho điều kiện được thi và đề thi | Nêu lĩnh vực khác cũng tính nếu muốn |
 | G6 | Không có trang quản trị riêng; **Google Sheet đóng vai trang quản trị**: thêm/sửa/ngừng dùng từ trên Sheet rồi chạy `content:sync` | Nếu cần trang quản trị thật thì thêm một đợt riêng |

@@ -3,6 +3,7 @@
  * Không import gì phía server → dùng được ở cả Route Handler lẫn client component.
  */
 import { z } from "zod";
+import type { QuestId, QuestView } from "../core/quests";
 import type { Cefr, LevelStatus, Question, ReviewItem } from "../core/types";
 
 // ---------- request ----------
@@ -56,6 +57,9 @@ export const markLearnedSchema = z.object({
   wordIds: z.array(z.number().int().positive()).min(1).max(50),
 });
 export type MarkLearnedRequest = z.infer<typeof markLearnedSchema>;
+
+export const claimQuestSchema = z.object({ quest: z.enum(["learn", "review", "play", "all"]) });
+export type ClaimQuestRequest = z.infer<typeof claimQuestSchema>;
 
 export const examStartSchema = z.object({ cefr: cefrSchema });
 export type ExamStartRequest = z.infer<typeof examStartSchema>;
@@ -124,6 +128,10 @@ export type HomeResponse = {
   dueCount: number;
   levels: HomeLevel[];
 };
+
+/** Nhiệm vụ hôm nay. `bonus` là thưởng hoàn thành cả ba nhiệm vụ cơ bản. */
+export type QuestsResponse = { day: number; resetAt: string; quests: QuestView[]; bonus: QuestView };
+export type ClaimQuestResponse = { quest: QuestId; reward: number; xp: number };
 
 export type LeaderboardRow = { rank: number; username: string; avatar: string | null; xp: number; level: Cefr | null; isMe: boolean };
 export type LeaderboardResponse = { rows: LeaderboardRow[] };

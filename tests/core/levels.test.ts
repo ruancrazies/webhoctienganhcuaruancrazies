@@ -3,7 +3,7 @@ import { loadLevels } from "../../content/schema/config";
 import { highestPassedLevel, levelStatus, statusOf } from "../../src/core/levels";
 import type { Cefr, LevelCounters } from "../../src/core/types";
 
-const cfg = loadLevels(); // A1 1000 · A2 2000 · B1 3000 · B2 3500 · C1 4100
+const cfg = loadLevels(); // A1 100 · A2 100 · B1 3000 · B2 3500 · C1 4100
 const c = (cefr: Cefr, learned: number, total: number): LevelCounters => ({ cefr, learned, total });
 const big = (learned: Partial<Record<Cefr, number>> = {}): LevelCounters[] =>
   (["A1", "A2", "B1", "B2", "C1", "C2"] as Cefr[]).map((x) => c(x, learned[x] ?? 0, 2000));
@@ -43,24 +43,30 @@ describe("levelStatus — mở khóa", () => {
 });
 
 describe("levelStatus — điều kiện được vào thi", () => {
-  it("A1: đủ 1.000 từ đã học mới được thi (999 chưa)", () => {
-    expect(statusOf(levelStatus(big({ A1: 999 }), passes(), cfg), "A1").eligible).toBe(false);
-    const ok = statusOf(levelStatus(big({ A1: 1000 }), passes(), cfg), "A1");
-    expect(ok).toMatchObject({ eligible: true, needLearned: 1000, learnedCum: 1000 });
+  it("A1: đủ 100 từ đã học mới được thi (99 chưa)", () => {
+    expect(statusOf(levelStatus(big({ A1: 99 }), passes(), cfg), "A1").eligible).toBe(false);
+    const ok = statusOf(levelStatus(big({ A1: 100 }), passes(), cfg), "A1");
+    expect(ok).toMatchObject({ eligible: true, needLearned: 100, learnedCum: 100 });
   });
 
-  it("tính CỘNG DỒN từ A1: A2 cần 2.000 tổng cộng", () => {
+  it("A2 cũng chỉ cần 100 từ (cộng dồn): đã qua A1 với ≥ 100 từ thì được thi A2 ngay", () => {
     const base = passes("A1");
-    expect(statusOf(levelStatus(big({ A1: 1200, A2: 799 }), base, cfg), "A2").eligible).toBe(false);
-    const ok = statusOf(levelStatus(big({ A1: 1200, A2: 800 }), base, cfg), "A2");
-    expect(ok).toMatchObject({ eligible: true, learnedCum: 2000, needLearned: 2000 });
+    expect(statusOf(levelStatus(big({ A1: 99 }), base, cfg), "A2").eligible).toBe(false);
+    expect(statusOf(levelStatus(big({ A1: 100 }), base, cfg), "A2")).toMatchObject({ eligible: true, learnedCum: 100, needLearned: 100 });
+  });
+
+  it("tính CỘNG DỒN từ A1: B1 cần 3.000 tổng cộng", () => {
+    const base = passes("A1", "A2");
+    expect(statusOf(levelStatus(big({ A1: 1200, A2: 1000, B1: 799 }), base, cfg), "B1").eligible).toBe(false);
+    const ok = statusOf(levelStatus(big({ A1: 1200, A2: 1000, B1: 800 }), base, cfg), "B1");
+    expect(ok).toMatchObject({ eligible: true, learnedCum: 3000, needLearned: 3000 });
   });
 
   it("ngưỡng tự hạ khi nội dung chưa đủ, để không bị kẹt", () => {
-    const small = [c("A1", 300, 300), c("A2", 0, 0), c("B1", 0, 0), c("B2", 0, 0), c("C1", 0, 0), c("C2", 0, 0)];
+    const small = [c("A1", 60, 60), c("A2", 0, 0), c("B1", 0, 0), c("B2", 0, 0), c("C1", 0, 0), c("C2", 0, 0)];
     const s = statusOf(levelStatus(small, passes(), cfg), "A1");
-    expect(s).toMatchObject({ needLearned: 300, eligible: true });
-    const short = [c("A1", 299, 300)];
+    expect(s).toMatchObject({ needLearned: 60, eligible: true });
+    const short = [c("A1", 59, 60)];
     expect(statusOf(levelStatus(short, passes(), cfg), "A1").eligible).toBe(false);
   });
 
@@ -75,11 +81,11 @@ describe("levelStatus — điều kiện được vào thi", () => {
   });
 
   it("counters thiếu một cấp coi như 0 (A2 chưa có nội dung → ngưỡng hạ về tổng hiện có)", () => {
-    const s = levelStatus([c("A1", 1000, 1000)], passes("A1"), cfg);
-    expect(statusOf(s, "A2")).toMatchObject({ learnedCum: 1000, needLearned: 1000, eligible: true });
-    // nhưng khi A2 có nội dung thì ngưỡng 2.000 có hiệu lực
-    const s2 = levelStatus([c("A1", 1000, 1000), c("A2", 0, 1500)], passes("A1"), cfg);
-    expect(statusOf(s2, "A2")).toMatchObject({ needLearned: 2000, eligible: false });
+    const s = levelStatus([c("A1", 60, 60)], passes("A1"), cfg);
+    expect(statusOf(s, "A2")).toMatchObject({ learnedCum: 60, needLearned: 60, eligible: true });
+    // nhưng khi nội dung đủ lớn thì ngưỡng 100 có hiệu lực
+    const s2 = levelStatus([c("A1", 60, 1000), c("A2", 0, 1500)], passes("A1"), cfg);
+    expect(statusOf(s2, "A2")).toMatchObject({ needLearned: 100, eligible: false });
   });
 });
 

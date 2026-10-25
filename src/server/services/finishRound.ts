@@ -9,14 +9,17 @@ import {
   type GradedItem,
 } from "../../core/grading";
 import { BLITZ_LIVES, GAME_RULES, PLAY_FINISH_PER_HOUR } from "../../core/rules";
+import { roundQuestDelta } from "../../core/quests";
 import { nextSrsState } from "../../core/srs";
 import { dayNo } from "../../core/streak";
+import type { SrsState } from "../../core/types";
 import type { FinishRequest, FinishResponse } from "../../types/api";
 import { hasTag, ServiceError } from "../errors";
 import { HOUR } from "../limits";
 import { hitRateLimit } from "../ratelimit";
 import { applyRoundResult, getProfile, getRound, progressFor, type RoundPayload } from "../repo";
 import { nowOf, type Ctx } from "./ctx";
+import { recordQuestProgress } from "./quests";
 
 /**
  * Câu được tính của vòng Blitz: duyệt theo thứ tự, dừng ở câu chưa trả lời hoặc khi mất mạng thứ 3
@@ -58,12 +61,14 @@ export async function finishRound(req: FinishRequest, userId: string, ctx: Ctx =
 
   // SRS (mỗi từ một lần; đúng khi MỌI lượt của từ đó đều đúng)
   const updates: RoundPayload["updates"] = [];
+  const questSteps: { before: SrsState | null; after: SrsState }[] = [];
   if (rule.srs) {
     const perWord = perWordResults(results);
     const currents = await progressFor(userId, [...perWord.keys()]);
     for (const [wordId, ok] of perWord) {
       const s = nextSrsState(currents.get(wordId) ?? null, ok, now);
       updates.push({ word_id: wordId, level: s.level, bad: s.bad, next_review: s.nextReview.toISOString() });
+      questSteps.push({ before: currents.get(wordId) ?? null, after: s });
     }
   }
 
@@ -93,6 +98,9 @@ export async function finishRound(req: FinishRequest, userId: string, ctx: Ctx =
     if (hasTag(e, "round_finished_or_invalid")) throw new ServiceError(409, "ROUND_INVALID", "Vòng đã kết thúc hoặc không hợp lệ");
     throw e;
   }
+
+  // Nhiệm vụ ngày: sau khi vòng đã được ghi nhận; lỗi ở đây không làm hỏng kết quả vòng.
+  await recordQuestProgress(userId, roundQuestDelta(questSteps), ctx);
 
   return {
     xpGained: xp,

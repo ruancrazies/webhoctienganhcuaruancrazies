@@ -5,8 +5,8 @@
 # Nếu nội dung hiện có ít hơn ngưỡng, ngưỡng tự hạ xuống bằng tổng số từ general active (tránh kẹt).
 # Cơ sở: trung bình các khoảng của Milton & Alexiou (2009), xem mục 6.6.
 examMinWords:
-  A1: 1000
-  A2: 2000
+  A1: 100
+  A2: 100
   B1: 3000
   B2: 3500
   C1: 4100

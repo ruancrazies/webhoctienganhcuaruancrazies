@@ -4,7 +4,9 @@ import { ServiceError } from "../errors";
 import { HOUR, LEARN_MARK_PER_HOUR, LEARN_LIST_PER_MINUTE, MINUTE } from "../limits";
 import { hitRateLimit } from "../ratelimit";
 import { listNewWords, listReviewWords, markLearned as repoMarkLearned, progressFor, resolveScope, sentencesFor, wordMeta } from "../repo";
+import { nowOf, type Ctx } from "./ctx";
 import { getLevelStatuses, requireUnlocked } from "./levels";
+import { recordQuestProgress } from "./quests";
 
 /** Mỗi lần hiển thị 50 từ; muốn xem tiếp thì bấm "Làm mới" (thay danh sách, không nối dài). */
 export const LEARN_PAGE_SIZE = 50;
@@ -62,7 +64,7 @@ export async function listLearn(query: LearnQuery, userId: string): Promise<Lear
  * Chỉ cho đánh dấu từ của cấp ĐÃ MỞ: nếu không, người dùng có thể "học" từ cấp khóa để tăng vốn từ cộng dồn
  * và được vào thi sớm.
  */
-export async function markLearned(req: MarkLearnedRequest, userId: string): Promise<{ marked: number }> {
+export async function markLearned(req: MarkLearnedRequest, userId: string, ctx: Ctx = {}): Promise<{ marked: number }> {
   const ids = [...new Set(req.wordIds)];
   if (ids.length === 0 || ids.length > 50) throw new ServiceError(400, "BAD_REQUEST", "Mỗi lần đánh dấu tối đa 50 từ");
 
@@ -78,5 +80,7 @@ export async function markLearned(req: MarkLearnedRequest, userId: string): Prom
     if (!unlocked.has(m.cefr)) throw new ServiceError(403, "LEVEL_LOCKED", "Có từ thuộc cấp đang khóa", { wordId: id, cefr: m.cefr });
   }
 
-  return { marked: await repoMarkLearned(userId, ids) };
+  const marked = await repoMarkLearned(userId, ids);
+  await recordQuestProgress(userId, { learn: marked, review: 0, play: 0 }, { now: nowOf(ctx) });
+  return { marked };
 }

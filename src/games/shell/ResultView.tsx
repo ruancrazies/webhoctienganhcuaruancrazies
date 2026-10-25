@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { xpLevelOf } from "@/core/xpLevel";
 import { fmtNumber } from "@/lib/format";
 import { speak } from "@/lib/sound";
 import { learnHref } from "../registry";
@@ -67,6 +68,9 @@ export function ResultView({ meta, result, answered, total, cefr, scope, onRepla
   const graded = meta.id !== "flash" && meta.id !== "match";
   const wrong = result.review.length;
   const right = Math.max(0, answered - wrong);
+  const lvAfter = xpLevelOf(result.xp);
+  const lvBefore = xpLevelOf(result.xp - result.xpGained);
+  const leveledUp = lvAfter.level > lvBefore.level;
   const unit = meta.id === "flash" ? "thẻ" : meta.id === "match" ? "cặp" : "câu";
 
   return (
@@ -83,12 +87,17 @@ export function ResultView({ meta, result, answered, total, cefr, scope, onRepla
             {result.perfect ? "Đúng hết! Thưởng thêm 20% XP" : wrong === 0 && graded ? "Làm tốt lắm!" : "XP"}
           </p>
           {result.newBest ? <p className="chip chip-mark">🏅 Kỷ lục mới của bạn!</p> : null}
+          {leveledUp ? <p className="chip chip-good" role="status">🎉 Lên Level {lvAfter.level}!</p> : null}
         </div>
 
-        <div className="stats" style={{ marginTop: 12 }}>
+        <div className="stats" style={{ marginTop: 12, gridTemplateColumns: "repeat(2, 1fr)" }}>
           <div className="stat">
             <b>{fmtNumber(result.xp)}</b>
             <span>Tổng XP</span>
+          </div>
+          <div className="stat">
+            <b>Lv {lvAfter.level}</b>
+            <span>{lvAfter.maxed ? "Tối đa" : `Còn ${fmtNumber(lvAfter.toNext)} XP`}</span>
           </div>
           <div className="stat">
             <b>🔥 {result.streak}</b>

@@ -1,5 +1,6 @@
 import { BlitzBoard } from "./BlitzBoard";
 import { Avatar } from "@/components/Avatar";
+import { xpLevelOf } from "@/core/xpLevel";
 import { fmtNumber } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { getLeaderboard } from "@/server/services";
@@ -35,7 +36,7 @@ export default async function LeaderboardPage() {
                   <Avatar avatar={r.avatar} username={r.username} size="sm" />
                   <span className="who">
                     <b>{r.username}{r.isMe ? " (bạn)" : ""}</b>
-                    <span className="muted small">{r.level ? `Đã qua cấp ${r.level}` : "Chưa qua cấp nào"}</span>
+                    <span className="muted small">Level {xpLevelOf(r.xp).level} · {r.level ? `Đã qua cấp ${r.level}` : "Chưa qua cấp nào"}</span>
                   </span>
                 </span>
                 <span className="pts">{fmtNumber(r.xp)} XP</span>

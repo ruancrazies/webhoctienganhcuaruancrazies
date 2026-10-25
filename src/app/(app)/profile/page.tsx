@@ -1,5 +1,6 @@
 import { logoutAction } from "@/app/(auth)/actions";
 import { Avatar } from "@/components/Avatar";
+import { LevelProgress } from "@/components/LevelProgress";
 import { MuteToggle } from "@/components/MuteButton";
 import { PetSettings } from "@/components/PetSettings";
 import { ThemePicker } from "@/components/ThemeToggle";
@@ -33,6 +34,10 @@ export default async function ProfilePage() {
         <div className="stat"><b>{fmtNumber(profile.xp)}</b><span>tổng XP</span></div>
         <div className="stat"><b>🔥 {profile.streak}</b><span>chuỗi hiện tại</span></div>
         <div className="stat"><b>{profile.bestStreak}</b><span>chuỗi dài nhất</span></div>
+      </section>
+
+      <section className="sheet" aria-label="Level">
+        <LevelProgress xp={profile.xp} />
       </section>
 
       <section className="sheet" aria-labelledby="td-h">
