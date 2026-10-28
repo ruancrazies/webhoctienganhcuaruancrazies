@@ -23,6 +23,9 @@ export const SheetConfigSchema = z.object({
     // Có mặc định để sheet.config.json cũ (chưa khai báo hai tab này) vẫn nạp được.
     passages: TabRef.default({ name: "passages" }),
     passageQuestions: TabRef.default({ name: "passage_questions" }),
+    // Tab bài đọc riêng (cột khác `passages`). Tùy chọn: không có trên Sheet thì bỏ qua.
+    reading: TabRef.default({ name: "reading" }),
+    readingQuestions: TabRef.default({ name: "reading_questions" }),
   }),
 });
 export type SheetConfig = z.infer<typeof SheetConfigSchema>;

@@ -48,6 +48,19 @@ export const TAB_COLUMNS = {
     required: ["key", "passage", "kind", "question", "options", "answer"],
     optional: ["explanation", "note"],
   },
+  /**
+   * Bài đọc viết riêng (tab `reading`): cột khác `passages`, được `scripts/content/lib/reading.ts` chuyển thành
+   * bản ghi `passages` (skill = reading) lúc đọc Sheet. `cefr` → level, `license` được nối vào `source`.
+   */
+  reading: {
+    required: ["key", "title", "cefr", "text"],
+    optional: ["level_src", "topic", "words", "source", "license", "note"],
+  },
+  /** Câu hỏi của tab `reading` (tab `reading_questions`): `type` → kind; đáp án mcq có thể là chữ hoặc số thứ tự. */
+  readingQuestions: {
+    required: ["key", "passage", "type", "question", "options", "answer"],
+    optional: ["level", "explanation", "note"],
+  },
 } as const;
 export type TabKind = keyof typeof TAB_COLUMNS;
 

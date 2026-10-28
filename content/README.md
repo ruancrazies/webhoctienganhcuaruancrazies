@@ -12,6 +12,8 @@ script `content:sync` (Bước 1) kéo CSV từng tab, kiểm tra định dạng
 | `grammar` | `key, level, question, options, answer` | `topic, explanation, note` |
 | `passages` (bài đọc / bài nghe) | `key, skill, level, title, text` | `topic, audio, source, note` |
 | `passage_questions` (câu hỏi của bài) | `key, passage, kind, question, options, answer` | `explanation, note` |
+| `reading` (bài đọc, cột riêng) | `key, title, cefr, text` | `level_src, topic, words, source, license, note` |
+| `reading_questions` (câu hỏi của `reading`) | `key, passage, type, question, options, answer` | `level, explanation, note` |
 | `topics` | `slug, title, cefr, domain` | `emoji, sort` |
 | `domains` | `code, title` | `emoji` |
 
@@ -53,6 +55,19 @@ Một đoạn văn (`passages`) có nhiều câu hỏi (`passage_questions`), n�
 - Hai bảng này chứa đáp án nên giống `grammar_questions`: trình duyệt không đọc trực tiếp, chỉ server.
 - Bộ mẫu để dán vào Sheet: `content/seed/passages.csv` và `content/seed/passage_questions.csv` (mỗi cấp A1–C1 một bài đọc và một bài nghe).
 
+## Tab `reading` / `reading_questions` (bài đọc có cột riêng)
+
+Hai tab này là nơi nhập bài đọc dài (ví dụ từ OneStopEnglish). Cột khác `passages`, nhưng lúc đọc Sheet code tự chuyển
+chúng thành bài đọc (`skill = reading`) và gộp chung với `passages` / `passage_questions`: cùng bảng DB, cùng bài thi,
+cùng `content:validate` / `content:sync`. Không cần nhập hai lần. Tab không có trên Sheet thì bị bỏ qua.
+
+- `reading`: `cefr` → cấp (A1…C2); `license` được nối vào `source` (giữ ghi công CC BY-SA); `level_src`, `words` chỉ để tham khảo.
+- `reading_questions`: `type` = `mcq` hoặc `tf`. Câu `tf` ghi `answer` là `true`/`false`, không cần `options`.
+- `answer` của `mcq`: ghi **đúng chữ của lựa chọn** (kể cả số như `1949`) hoặc số thứ tự từ 1. Chữ được ưu tiên; nếu một số vừa là chữ
+  của lựa chọn này vừa là số thứ tự của lựa chọn khác thì có cảnh báo `AMBIGUOUS_ANSWER`.
+- `key` của `reading` / `reading_questions` không được trùng `key` trong `passages` / `passage_questions` (dùng chung một không gian key).
+- Lỗi được báo theo tab gốc (`reading dòng 7`).
+
 ## Lệnh
 
 ```bash
@@ -67,7 +82,7 @@ npm run content:genkeys  -- --from-dir content/import --write   # điền key th
 ```
 
 Đặt ID Sheet trong `content/sheet.config.json` (`sheetId`) hoặc biến môi trường `CONTENT_SHEET_ID` (`.env.local`).
-Sheet cần chia sẻ **"ai có link: chỉ đọc"**. Nếu một tab có `gid` thì điền vào `sheet.config.json` (tải ổn định hơn theo tên tab).
+Sheet cần chia sẻ **"ai có link: chỉ đọc"**. Nếu một tab có `gid` thì điền vào `sheet.config.json` (tải ổn định hơn theo tên tab). **Tab có cột lẫn kiểu — `passage_questions` và `reading_questions` (cột `answer` có cả số lẫn TRUE/FALSE) — bắt buộc phải điền `gid`**: tải theo tên tab thì Google để trống các ô khác kiểu và câu đúng/sai mất đáp án. `gid` là số sau `#gid=` trên URL khi bạn mở tab đó.
 
 ## Đồng bộ vào Postgres
 

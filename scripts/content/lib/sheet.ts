@@ -3,6 +3,7 @@ import path from "node:path";
 import type { SheetConfig } from "../../../content/schema/config";
 import type { TabKind } from "../../../content/schema/constants";
 import { parseTab } from "./csv";
+import { adaptReading } from "./reading";
 import type { Issue, TabData } from "./types";
 
 export type TabSource = { name: string; kind: TabKind; gid?: string | number | null };
@@ -10,7 +11,7 @@ export type TabSource = { name: string; kind: TabKind; gid?: string | number | n
 /** Mọi tab được nạp, theo thứ tự trong sheet.config.json. Tab không có ở đây bị bỏ qua. */
 export function tabSources(cfg: SheetConfig): TabSource[] {
   const words = cfg.wordTabs.map((t) => ({ name: t.name, kind: "word" as const, gid: t.gid }));
-  const others = (["domains", "topics", "sentences", "grammar", "passages", "passageQuestions"] as const).map((kind) => ({
+  const others = (["domains", "topics", "sentences", "grammar", "passages", "passageQuestions", "reading", "readingQuestions"] as const).map((kind) => ({
     name: cfg.otherTabs[kind].name,
     kind,
     gid: cfg.otherTabs[kind].gid,
@@ -18,11 +19,16 @@ export function tabSources(cfg: SheetConfig): TabSource[] {
   return [...words, ...others];
 }
 
+/**
+ * Tab có gid → /export?format=csv (giá trị đúng như hiển thị trên Sheet).
+ * Tab chỉ có tên → /gviz (Google tự đoán KIỂU từng cột và để TRỐNG ô khác kiểu: cột `answer` lẫn số với TRUE/FALSE
+ * sẽ mất đáp án đúng/sai). Vì vậy tab có cột lẫn kiểu (passage_questions, reading_questions) PHẢI điền gid.
+ */
 export function csvUrl(sheetId: string, src: TabSource): string {
   const base = `https://docs.google.com/spreadsheets/d/${sheetId}`;
   return src.gid != null && src.gid !== ""
     ? `${base}/export?format=csv&gid=${encodeURIComponent(String(src.gid))}`
-    : `${base}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(src.name)}`;
+    : `${base}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(src.name)}`; // headers=1: đúng 1 dòng tiêu đề, không để Google tự đoán rồi gộp dòng
 }
 
 async function fetchText(url: string, name: string): Promise<string> {
@@ -96,5 +102,7 @@ export async function loadContent(cfg: SheetConfig, opts: { fromDir?: string } =
       endsCleanly: /\r?\n$/.test(text),
     });
   }
+  // Tab `reading` / `reading_questions` (cột riêng) → gộp vào bản ghi passages / passage_questions để validate + sync dùng chung.
+  loadIssues.push(...adaptReading(tabs, cfg));
   return { tabs, loadIssues, meta, missing };
 }

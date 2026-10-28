@@ -1,0 +1,5 @@
+key,passage,level,type,question,options,answer,explanation,note
+rq:t:1,r:t-001,B1,mcq,When did Lego start plastic bricks?,1970|1949|2003|1994,1949,Năm 1949,
+rq:t:2,r:t-001,B1,mcq,Which year did profits rise?,2013|2014|2015,2,Năm 2014,
+rq:t:3,r:t-001,B1,tf,Profits fell.,True|False,FALSE,Lợi nhuận tăng,
+rq:t:4,r:t-001,B1,mcq,Pick one,1|2|3,2,,

@@ -1,5 +1,5 @@
 {
-  "sheetId": "REPLACE_WITH_SHEET_ID",
+  "sheetId": "1TZ1y8DuMWK5fBf0uDTsjIdlomdgU3UKeRjVxGEQThCY",
   "wordTabs": [
     { "name": "A1", "gid": null },
     { "name": "A2", "gid": null },
@@ -14,6 +14,8 @@
     "topics": { "name": "topics", "gid": null },
     "domains": { "name": "domains", "gid": null },
     "passages": { "name": "passages", "gid": null },
-    "passageQuestions": { "name": "passage_questions", "gid": 183778919 }
+    "passageQuestions": { "name": "passage_questions", "gid": null },
+    "reading": { "name": "reading", "gid": null },
+    "readingQuestions": { "name": "reading_questions", "gid": null }
   }
 }
