@@ -164,7 +164,12 @@ export function GameRunner({ game, scope, label }: Props) {
       try {
         const res = await apiPost<FinishResponse>("/api/play/finish", {
           roundId: r.roundId,
-          answers: answers.map((a) => ({ qid: a.qid, value: a.value, ...(a.attempts !== undefined ? { attempts: a.attempts } : {}) })),
+          answers: answers.map((a) => ({
+            qid: a.qid,
+            value: a.value,
+            ...(a.attempts !== undefined ? { attempts: a.attempts } : {}),
+            ...(a.responseMs !== undefined ? { responseMs: a.responseMs } : {}),
+          })),
         });
         sfx(res.perfect ? "levelup" : "done");
         setResult({ res, answered: answers.length, total: r.items.length });

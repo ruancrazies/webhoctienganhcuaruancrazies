@@ -17,6 +17,7 @@ export function passageItem(passage: Passage, q: PassageQ, rng: Rng): StoredItem
     expected,
     options,
     passageId: passage.id,
+    passageQuestionId: q.id,
     part: passage.skill,
     explanation: q.explanation ?? undefined,
   };

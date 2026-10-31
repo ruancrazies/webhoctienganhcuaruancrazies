@@ -1,6 +1,7 @@
 import { createAdminClient } from "../db";
 import { RepoError } from "../errors";
 import { PRACTICE_POOL_MAX } from "../../core/rules";
+import type { AnswerEvent, StoredAnswer } from "../../core/events";
 import type { StoredItem } from "../../core/types";
 import { unwrap, unwrapList } from "./shared";
 
@@ -45,7 +46,19 @@ export async function failPractice(userId: string, testId: string): Promise<bool
   return data === true;
 }
 
-export type PracticePayload = { total: number; vocab: number; grammar: number; reading?: number; listening?: number; today: number; wrongWords: number[] };
+export type PracticePayload = {
+  total: number;
+  vocab: number;
+  grammar: number;
+  reading?: number;
+  listening?: number;
+  today: number;
+  wrongWords: number[];
+  /** Đáp án đã chọn → practice_tests.answers, để xem lại bài. */
+  answers: StoredAnswer[];
+  /** Sự kiện của MỌI câu (câu bỏ trống tính sai) → answer_events. */
+  events: AnswerEvent[];
+};
 
 /** RPC apply_practice_result: đóng bài + ghi điểm + hẹn ôn từ sai + chuỗi ngày, một giao dịch. */
 export async function applyPracticeResult(userId: string, testId: string, payload: PracticePayload): Promise<{ streak: number }> {

@@ -1,5 +1,6 @@
 import { createAdminClient } from "../db";
 import { RepoError } from "../errors";
+import type { AnswerEvent, StoredAnswer } from "../../core/events";
 import type { Cefr, StoredItem } from "../../core/types";
 import { unwrap, unwrapList } from "./shared";
 
@@ -85,7 +86,19 @@ export async function failExam(userId: string, examId: string): Promise<boolean>
   return data === true;
 }
 
-export type ExamPayload = { passed: boolean; total: number; vocab: number; grammar: number; reading?: number; listening?: number; today: number };
+export type ExamPayload = {
+  passed: boolean;
+  total: number;
+  vocab: number;
+  grammar: number;
+  reading?: number;
+  listening?: number;
+  today: number;
+  /** Đáp án đã chọn (đóng băng kết quả chấm) → level_exams.answers, để xem lại bài. */
+  answers: StoredAnswer[];
+  /** Sự kiện của MỌI câu (câu bỏ trống tính sai) → answer_events. */
+  events: AnswerEvent[];
+};
 
 /** RPC apply_exam_result: đóng bài + (đạt) ghi level_passes + chuỗi ngày, MỘT giao dịch. Không đụng XP/SRS. */
 export async function applyExamResult(userId: string, examId: string, payload: ExamPayload): Promise<{ streak: number; cefr: Cefr; passed: boolean }> {

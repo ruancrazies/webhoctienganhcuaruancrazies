@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnswerList, ScoreSummary, scoreParts, scoresOfResult } from "@/components/AttemptView";
 import { PassagePanel, PassageReveal } from "@/components/PassagePanel";
 import { QuestionCard } from "@/components/QuestionCard";
 import { ApiFail, apiPost, errorMessage } from "@/lib/api";
+import { useDwell } from "@/lib/useDwell";
 import { LEVEL_NAMES, fmtClock, fmtNumber, fmtVnTime, pct } from "@/lib/format";
 import { sfx } from "@/lib/sound";
 import type { Cefr, ClientPassage, Question } from "@/core/types";
@@ -203,6 +205,8 @@ function Running({ cefr, examId, items, passages, expiresAt, resumed, submitting
   const sent = useRef(false);
   const answersRef = useRef(answers);
   answersRef.current = answers;
+  // responseMs của mỗi câu = tổng thời gian câu hiện trên màn hình (cộng dồn khi đi lại giữa các câu, không tính lúc bỏ tab)
+  const dwell = useDwell();
 
   // lưu tạm để tải lại trang không mất bài đang làm
   useEffect(() => {
@@ -229,7 +233,7 @@ function Running({ cefr, examId, items, passages, expiresAt, resumed, submitting
     setError(null);
     onSubmitting();
     const payload = items
-      .map((q) => ({ qid: q.qid, value: (answersRef.current[q.qid] ?? "").trim() }))
+      .map((q) => ({ qid: q.qid, value: (answersRef.current[q.qid] ?? "").trim(), responseMs: dwell.ms(q.qid) }))
       .filter((a) => a.value !== "");
     try {
       const result = await apiPost<ExamResult>("/api/exam/submit", { examId, answers: payload });
@@ -243,7 +247,7 @@ function Running({ cefr, examId, items, passages, expiresAt, resumed, submitting
       setError(errorMessage(e));
       onBackToRun();
     }
-  }, [examId, items, onBackToRun, onClosed, onResult, onSubmitting]);
+  }, [dwell, examId, items, onBackToRun, onClosed, onResult, onSubmitting]);
 
   // đếm ngược theo giờ máy chủ gửi về (expiresAt); hết giờ thì tự nộp
   useEffect(() => {
@@ -258,6 +262,9 @@ function Running({ cefr, examId, items, passages, expiresAt, resumed, submitting
   }, [expiresAt, submit]);
 
   const q = items[idx];
+  useEffect(() => {
+    dwell.show(q.qid);
+  }, [dwell, q.qid]);
   const passage = q.passageId !== undefined ? passages.find((x) => x.id === q.passageId) : undefined;
   const answered = items.filter((it) => (answers[it.qid] ?? "").trim() !== "").length;
   const unanswered = items.length - answered;
@@ -352,45 +359,20 @@ function Running({ cefr, examId, items, passages, expiresAt, resumed, submitting
 
 /* ------------------------------------------------------------------------------------------------ */
 
-const asText = (v: string | string[] | undefined) => (Array.isArray(v) ? v.join(" ") : (v ?? ""));
-
 function ResultView({ cefr, next, info, result }: { cefr: Cefr; next: Cefr | null; info: ExamInfo; result: ExamResult }) {
-  const total = Math.round(result.scoreTotal * 100);
-  const vocabOk = result.scoreVocab >= info.passPart;
-  const grammarOk = result.scoreGrammar >= info.passPart;
-
   return (
     <div className="stack" style={{ gap: 20 }}>
-      <section className="sheet" aria-labelledby="res-h">
-        <div className="grade">
-          <h1 id="res-h" className="verdict-wrap" style={{ fontSize: 14, fontWeight: 600, color: "var(--pencil)" }}>Kết quả thi cấp {cefr}</h1>
-          <div className={`score${result.passed ? "" : " fail"}`} aria-label={`Điểm tổng ${total} phần trăm`}>{total}%</div>
-          <p className={`verdict${result.passed ? " pass" : ""}`}>{result.passed ? `Đạt! Bạn đã qua cấp ${cefr}` : "Chưa đạt"}</p>
-          {result.passed && next ? <p className="muted">Cấp {next} đã được mở.</p> : null}
-          {result.passed && !next ? <p className="muted">Bạn đã hoàn thành lộ trình.</p> : null}
-        </div>
-        <div className="parts">
-          <div className={`part ${vocabOk ? "good" : "bad"}`}>
-            <b>{pct(result.scoreVocab)}</b>
-            <span className="muted small">Từ vựng (cần {pct(info.passPart)})</span>
-          </div>
-          <div className={`part ${grammarOk ? "good" : "bad"}`}>
-            <b>{pct(result.scoreGrammar)}</b>
-            <span className="muted small">Ngữ pháp (cần {pct(info.passPart)})</span>
-          </div>
-          {result.scoreReading !== null ? (
-            <div className={`part ${result.scoreReading >= info.passPart ? "good" : "bad"}`}>
-              <b>{pct(result.scoreReading)}</b>
-              <span className="muted small">Bài đọc (cần {pct(info.passPart)})</span>
-            </div>
-          ) : null}
-          {result.scoreListening !== null ? (
-            <div className={`part ${result.scoreListening >= info.passPart ? "good" : "bad"}`}>
-              <b>{pct(result.scoreListening)}</b>
-              <span className="muted small">Bài nghe (cần {pct(info.passPart)})</span>
-            </div>
-          ) : null}
-        </div>
+      <ScoreSummary
+        heading={`Kết quả thi cấp ${cefr}`}
+        total={result.scoreTotal}
+        failed={!result.passed}
+        verdict={result.passed ? `Đạt! Bạn đã qua cấp ${cefr}` : "Chưa đạt"}
+        passVerdict={result.passed}
+        parts={scoreParts(scoresOfResult(result), { passPart: info.passPart })}
+        aboveParts={
+          result.passed ? <p className="muted">{next ? `Cấp ${next} đã được mở.` : "Bạn đã hoàn thành lộ trình."}</p> : null
+        }
+      >
         <p className="muted small" style={{ marginTop: 12 }}>
           Điều kiện đạt: tổng từ {pct(info.passTotal)}, mỗi phần từ {pct(info.passPart)}.
         </p>
@@ -400,7 +382,12 @@ function ResultView({ cefr, next, info, result }: { cefr: Cefr; next: Cefr | nul
             Hôm nay còn {result.attemptsLeftToday} lượt thi.
           </p>
         ) : null}
-      </section>
+        {result.resultId ? (
+          <p className="small" style={{ marginTop: 12 }}>
+            <Link href={`/results/exam/${result.resultId}`}>Xem lại toàn bộ bài làm (cả câu đúng)</Link> · <Link href="/results">Lịch sử kết quả</Link>
+          </p>
+        ) : null}
+      </ScoreSummary>
 
       <div className="row">
         {result.passed && next ? <Link href={`/level/${next}`} className="btn btn-mark">Vào cấp {next}</Link> : null}
@@ -413,21 +400,7 @@ function ResultView({ cefr, next, info, result }: { cefr: Cefr; next: Cefr | nul
       {result.review.length > 0 ? (
         <section className="stack" aria-labelledby="rv-h">
           <h2 id="rv-h">Các câu làm sai ({result.review.length})</h2>
-          <div className="review">
-            {result.review.map((r) => (
-              <article key={r.qid} className="rv">
-                <p className="q">{r.prompt.replace("___", "_____")}</p>
-                <p>
-                  Đáp án đúng: <span className="ok">{asText(r.expected)}</span>
-                </p>
-                <p className="muted small">
-                  Bạn trả lời: {r.yourAnswer !== undefined && asText(r.yourAnswer) !== "" ? <span className="no">{asText(r.yourAnswer)}</span> : "(bỏ trống)"}
-                </p>
-                {r.en && r.vi && r.game !== "grammar" && r.game !== "passage" ? <p className="muted small">{r.en} = {r.vi}</p> : null}
-                {r.explanation ? <p className="small">{r.explanation}</p> : null}
-              </article>
-            ))}
-          </div>
+          <AnswerList items={result.review} labelledBy="rv-h" />
         </section>
       ) : (
         <p className="muted">Bạn không sai câu nào.</p>

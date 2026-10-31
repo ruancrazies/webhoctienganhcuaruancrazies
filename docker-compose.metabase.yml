@@ -1,0 +1,58 @@
+# Metabase cho quản trị English Game (giai đoạn 1a). Chạy cục bộ; KHÔNG nằm trong bundle của app và không chạy trên Vercel.
+#
+#   cp docs/metabase.env.example .env.metabase      # rồi sửa mật khẩu (.env.* đã nằm trong .gitignore)
+#   docker compose -f docker-compose.metabase.yml --env-file .env.metabase up -d
+#   mở http://localhost:3000
+#
+# Gồm hai container: Metabase và một Postgres NHỎ RIÊNG để lưu metadata của Metabase (dashboard, tài khoản, cấu hình).
+# Không dùng chung với CSDL của app, không dùng H2 mặc định cho bản chạy lâu dài.
+# Dữ liệu của app (schema `analytics`) là nguồn dữ liệu thứ ba, kết nối trong giao diện Metabase bằng role metabase_ro (docs/metabase.md).
+
+services:
+  metabase-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: metabase
+      POSTGRES_USER: metabase
+      POSTGRES_PASSWORD: ${MB_DB_PASS:?đặt MB_DB_PASS trong .env.metabase}
+    volumes:
+      - metabase-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metabase -d metabase"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  metabase:
+    # Ghim phiên bản sau lần chạy đầu: đặt METABASE_VERSION=v0.xx.y (xem số phiên bản ở Admin → Settings → Updates)
+    # để cập nhật là việc chủ động, không phải kéo `latest` lúc nào đó.
+    image: metabase/metabase:${METABASE_VERSION:-latest}
+    restart: unless-stopped
+    depends_on:
+      metabase-db:
+        condition: service_healthy
+    ports:
+      # Chỉ mở cho máy này. Muốn người khác xem: đặt sau HTTPS (reverse proxy), đừng mở thẳng cổng 3000 ra Internet.
+      - "127.0.0.1:3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_HOST: metabase-db
+      MB_DB_PORT: "5432"
+      MB_DB_DBNAME: metabase
+      MB_DB_USER: metabase
+      MB_DB_PASS: ${MB_DB_PASS}
+      MB_SITE_URL: ${MB_SITE_URL:-http://localhost:3000}
+      JAVA_OPTS: ${MB_JAVA_OPTS:--Xmx1g}
+    extra_hosts:
+      # Để container gọi được Supabase local (cổng 54322 của `supabase start`) qua host.docker.internal trên Linux.
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s http://localhost:3000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 90s
+
+volumes:
+  metabase-pgdata:

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { sfx } from "@/lib/sound";
+import { useDwell } from "@/lib/useDwell";
 import type { Answer, Question } from "@/core/types";
 import { DONT_KNOW, type GameProps } from "./types";
 
@@ -53,7 +54,15 @@ export function StepGame({ items, onFinish, render, multi, isReady, autoAdvance,
   const valueRef = useRef<StepValue>(value);
   valueRef.current = value;
 
+  // responseMs: thời gian câu hiện trên màn hình. Trò tự chuyển câu (trắc nghiệm) chốt ngay lúc chọn,
+  // không tính 320 ms hiệu ứng chờ; trò gõ/ghép chốt lúc bấm Tiếp/Enter.
+  const dwell = useDwell();
+  const pickedMs = useRef<number | undefined>(undefined);
+
   const q = items[idx];
+  useEffect(() => {
+    dwell.show(q.qid);
+  }, [dwell, q.qid]);
   const ready = isReady ? isReady(q, value) : nonEmpty(value);
   const last = idx >= items.length - 1;
 
@@ -63,7 +72,10 @@ export function StepGame({ items, onFinish, render, multi, isReady, autoAdvance,
     (v: StepValue) => {
       if (doneRef.current) return;
       const i = idxRef.current;
-      answers.current.push({ qid: items[i].qid, value: v });
+      const qid = items[i].qid;
+      const responseMs = pickedMs.current ?? dwell.ms(qid);
+      pickedMs.current = undefined;
+      answers.current.push({ qid, value: v, ...(responseMs !== undefined ? { responseMs } : {}) });
       sfx("tap");
       advancingRef.current = false;
       setAdvancing(false);
@@ -76,7 +88,7 @@ export function StepGame({ items, onFinish, render, multi, isReady, autoAdvance,
       setIdx(i + 1);
       setValueState(empty());
     },
-    [items, onFinish, empty],
+    [items, onFinish, empty, dwell],
   );
 
   const setValue = useCallback(
@@ -88,10 +100,11 @@ export function StepGame({ items, onFinish, render, multi, isReady, autoAdvance,
         advancingRef.current = true;
         setAdvancing(true);
         sfx("tap");
+        pickedMs.current = dwell.ms(items[idxRef.current].qid);
         timer.current = setTimeout(() => commit(v), 320);
       }
     },
-    [autoAdvance, commit, items],
+    [autoAdvance, commit, items, dwell],
   );
 
   const submit = useCallback(() => {

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Avatar } from "@/components/Avatar";
 import { LevelProgress } from "@/components/LevelProgress";
@@ -36,6 +37,8 @@ export default async function ProfilePage() {
         <div className="stat"><b>{profile.bestStreak}</b><span>chuỗi dài nhất</span></div>
       </section>
 
+      <Link href="/insights" className="btn btn-light">📊 Hồ sơ năng lực của tôi</Link>
+
       <section className="sheet" aria-label="Level">
         <LevelProgress xp={profile.xp} />
       </section>
@@ -70,6 +73,14 @@ export default async function ProfilePage() {
         <p className="muted small">
           Tổng cộng đã học {fmtNumber(learned)} từ, đã thuộc {fmtNumber(mastered)} từ (từ phổ thông, mọi cấp).
         </p>
+      </section>
+
+      <section className="sheet sheet-plain stack" aria-labelledby="rs-h">
+        <div className="spread">
+          <h2 id="rs-h">Kết quả bài kiểm tra</h2>
+          <Link href="/results" className="btn btn-light btn-sm">Xem lịch sử</Link>
+        </div>
+        <p className="muted small">Mở lại các bài thi lên cấp và bài kiểm tra đã nộp để xem đáp án của bạn.</p>
       </section>
 
       <section className="sheet sheet-plain stack" aria-labelledby="ac-h">

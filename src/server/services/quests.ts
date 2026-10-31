@@ -6,6 +6,7 @@ import { HOUR, QUEST_CLAIM_PER_HOUR } from "../limits";
 import { hitRateLimit } from "../ratelimit";
 import { bumpQuests, claimQuestRpc, questRows } from "../repo";
 import { nowOf, type Ctx } from "./ctx";
+import { logActivity } from "./activity";
 
 /** Nhiệm vụ hôm nay (giờ VN) của người dùng. Chỉ đọc: chưa có dòng thì hiển thị tiến độ 0. */
 export async function getDailyQuests(userId: string, ctx: Ctx = {}): Promise<QuestsResponse> {
@@ -35,6 +36,7 @@ export async function claimQuest(req: ClaimQuestRequest, userId: string, ctx: Ct
   }
   try {
     const r = await claimQuestRpc(userId, dayNo(nowOf(ctx)), req.quest);
+    await logActivity(userId, "quests/claim", { quest: req.quest });
     return { quest: req.quest, reward: r.reward, xp: r.xp };
   } catch (e) {
     if (hasTag(e, "quest_already_claimed")) throw new ServiceError(409, "QUEST_CLAIMED", "Bạn đã nhận thưởng nhiệm vụ này rồi");

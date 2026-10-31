@@ -62,11 +62,20 @@ export type StoredItem = Question & {
   part?: "vocab" | "grammar" | "reading" | "listening";
   /** Không chấp nhận "gần đúng" (bài thi). */
   strict?: boolean;
+  /** passage_questions.id của câu (game = "passage"). Chỉ để thống kê; đề tạo trước khi có trường này thì không có. */
+  passageQuestionId?: number;
   explanation?: string;
   meta?: { en?: string; vi?: string };
 };
 
-export type Answer = { qid: string; value: string | string[]; hintUsed?: boolean; attempts?: number };
+export type Answer = {
+  qid: string;
+  value: string | string[];
+  hintUsed?: boolean;
+  attempts?: number;
+  /** Mili-giây câu hỏi hiện trên màn hình trước khi trả lời. Do trình duyệt đo → chỉ là tín hiệu mềm, không ảnh hưởng điểm. */
+  responseMs?: number;
+};
 
 export type ReviewItem = {
   qid: string;

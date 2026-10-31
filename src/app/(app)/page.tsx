@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { CoachNote } from "@/components/CoachNote";
+import { TodayActions } from "@/components/TodayActions";
 import { LEVEL_NAMES, fmtNumber, ratio } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { getHome } from "@/server/services";
@@ -55,7 +57,7 @@ function LevelRow({ l }: { l: HomeLevel }) {
 export default async function HomePage() {
   const user = await requireUser();
   const home = await getHome(user.id);
-  const { profile, levels, dueCount } = home;
+  const { profile, levels, dueCount, actions } = home;
 
   const current = levels.find((l) => l.unlocked && !l.pass) ?? levels[levels.length - 1];
   const todayRatio = ratio(profile.xpToday, profile.dailyXpCap);
@@ -109,6 +111,9 @@ export default async function HomePage() {
           {dueCount > 0 ? "Ôn ngay" : `Vào cấp ${current.cefr}`}
         </Link>
       </section>
+
+      <CoachNote />
+      <TodayActions actions={actions} />
 
       <section className="sheet" aria-labelledby="lv-h">
         <div className="spread" style={{ marginBottom: 8 }}>

@@ -3,7 +3,9 @@
  * Không import gì phía server → dùng được ở cả Route Handler lẫn client component.
  */
 import { z } from "zod";
+import type { InsightMetrics, ReasonCode } from "../core/insights";
 import type { QuestId, QuestView } from "../core/quests";
+import type { PartTally, ReviewedItem } from "../core/results";
 import type { Cefr, ClientPassage, LevelStatus, Question, ReviewItem, RevealedPassage } from "../core/types";
 
 // ---------- request ----------
@@ -24,6 +26,11 @@ export const answerSchema = z.object({
   value: z.union([z.string().max(300), z.array(z.string().max(100)).max(40)]),
   hintUsed: z.boolean().optional(),
   attempts: z.number().int().min(0).max(1000).optional(),
+  /**
+   * Mili-giây câu hiện trên màn hình trước khi trả lời. Chỉ là tín hiệu mềm cho phân tích (không ảnh hưởng điểm/XP).
+   * Schema cố ý rộng: client lỗi/tab treo không được làm hỏng việc nộp bài; server tự kẹp về 0–120.000 (core/events).
+   */
+  responseMs: z.number().int().min(0).max(86_400_000).optional(),
 });
 
 export const startRequestSchema = z.object({
@@ -58,6 +65,9 @@ export const markLearnedSchema = z.object({
 });
 export type MarkLearnedRequest = z.infer<typeof markLearnedSchema>;
 
+export const markReviewedSchema = markLearnedSchema;
+export type MarkReviewedRequest = z.infer<typeof markReviewedSchema>;
+
 export const claimQuestSchema = z.object({ quest: z.enum(["learn", "review", "play", "test", "all"]) });
 export type ClaimQuestRequest = z.infer<typeof claimQuestSchema>;
 
@@ -76,6 +86,25 @@ export const examSubmitSchema = z.object({
   answers: z.array(answerSchema).max(100),
 });
 export type ExamSubmitRequest = z.infer<typeof examSubmitSchema>;
+
+// ---------- xem lại kết quả (giai đoạn 1b) ----------
+
+/** "exam" = thi lên cấp (level_exams) · "practice" = kiểm tra thường xuyên (practice_tests). */
+export const resultTypeSchema = z.enum(["exam", "practice"]);
+export type ResultType = z.infer<typeof resultTypeSchema>;
+
+export const resultsQuerySchema = z.object({
+  type: resultTypeSchema.optional(),
+  /** Chỉ có ở bài thi lên cấp; đặt cấp thì bài kiểm tra thường xuyên không xuất hiện. */
+  cefr: cefrSchema.optional(),
+  /** "<finished_at>|<id>" của dòng cuối trang trước (xem core/results). */
+  cursor: z.string().min(1).max(80).optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+export type ResultsQuery = z.infer<typeof resultsQuerySchema>;
+
+export const resultRefSchema = z.object({ type: resultTypeSchema, id: z.uuid() });
+export type ResultRef = z.infer<typeof resultRefSchema>;
 
 // ---------- response ----------
 
@@ -123,6 +152,8 @@ export type ExamResult = {
   passages: RevealedPassage[];
   nextAttemptAt?: string;
   attemptsLeftToday: number;
+  /** Id bài vừa nộp, để mở trang xem lại (/results/exam/<id>). */
+  resultId?: string;
 };
 
 export type HomeDomain = { code: string; title: string; emoji?: string | null; total: number; learned: number; mastered: number };
@@ -139,6 +170,20 @@ export type HomeResponse = {
   profile: { username: string; avatar: string | null; xp: number; streak: number; bestStreak: number; xpToday: number; dailyXpCap: number };
   dueCount: number;
   levels: HomeLevel[];
+  /** "Hôm nay nên học gì": tối đa 3 hành động theo luật, mỗi hành động có mã lý do (giai đoạn 2). */
+  actions: ActionView[];
+};
+
+/** Một gợi ý: tiêu đề + lý do (số liệu lấy từ hồ sơ mà người học cũng thấy ở /insights) + liên kết nội bộ. */
+export type ActionView = { reason: ReasonCode; title: string; why: string; href: string };
+
+/** GET /api/insights/me. */
+export type InsightsResponse = {
+  metrics: InsightMetrics;
+  actions: ActionView[];
+  level: { cefr: Cefr; eligible: boolean; missingWords: number; learnedCum: number };
+  dueCount: number;
+  streak: number;
 };
 
 /** Nhiệm vụ hôm nay. `bonus` là thưởng hoàn thành cả ba nhiệm vụ cơ bản. */
@@ -165,6 +210,8 @@ export type PracticeResult = {
   questCounted: boolean;
   /** Điểm tổng của bài trước (0..1), null nếu đây là bài đầu. */
   previousTotal: number | null;
+  /** Id bài vừa nộp, để mở trang xem lại (/results/practice/<id>). */
+  resultId?: string;
 };
 export type PracticeOverview = {
   learnedWords: number;
@@ -181,6 +228,51 @@ export type PracticeOverview = {
   recent: { finishedAt: string; total: number; vocab: number; grammar: number; reading: number | null; listening: number | null }[];
 };
 
+export type ResultScores = { total: number; vocab: number; grammar: number; reading: number | null; listening: number | null };
+export type ResultListItem = {
+  type: ResultType;
+  id: string;
+  /** null với bài kiểm tra thường xuyên. */
+  cefr: Cefr | null;
+  finishedAt: string;
+  /** null với bài kiểm tra thường xuyên (không có đạt/không đạt). */
+  passed: boolean | null;
+  scores: ResultScores;
+  /** false = làm trước khi có tính năng xem lại, hoặc bị đóng vì hết giờ: không có đáp án đã chọn. */
+  hasDetail: boolean;
+};
+/** Mới nhất trước. `nextCursor` undefined = đã hết. */
+export type ResultsPage = { items: ResultListItem[]; nextCursor?: string };
+
+export type ResultDetail = {
+  type: ResultType;
+  id: string;
+  cefr: Cefr | null;
+  startedAt: string;
+  finishedAt: string;
+  passed: boolean | null;
+  scores: ResultScores;
+  /** Điều kiện đạt của bài thi lên cấp (0..1); null với bài kiểm tra thường xuyên. */
+  passMarks: { total: number; part: number } | null;
+  /** Số câu và số câu đúng theo phần (từ vựng, ngữ pháp, đọc, nghe). */
+  parts: PartTally[];
+  items: ReviewedItem[];
+  passages: RevealedPassage[];
+  /** Phần có tỉ lệ đúng thấp nhất; null nếu làm đúng hết. */
+  weakPart: PartTally["part"] | null;
+  /** Cấp để gợi ý luyện: cấp của bài thi, hoặc cấp đang học với bài kiểm tra. */
+  studyCefr: Cefr;
+  /** Số từ làm sai có thể hẹn ôn lại. */
+  wrongWords: number;
+};
+
+export type ScheduleReviewResponse = {
+  /** Số từ làm sai của bài. */
+  wrongWords: number;
+  /** Số từ thực sự được đưa về "đến hạn ôn" (từ chưa học, hoặc đã đến hạn sẵn, không tính). */
+  scheduled: number;
+};
+
 export type LeaderboardRow = { rank: number; username: string; avatar: string | null; xp: number; level: Cefr | null; isMe: boolean };
 export type LeaderboardResponse = { rows: LeaderboardRow[] };
 export type BlitzBoardResponse = { cefr: Cefr; rows: BoardRow[] };
@@ -195,6 +287,19 @@ export const chatSchema = z.object({
     .array(z.object({ role: z.enum(["user", "pet"]), text: z.string().max(1200) }))
     .max(20)
     .default([]),
+  /** Cho phép gửi bản tóm tắt ẩn danh về kết quả học sang Gemini để pet trả lời đúng chỗ người học yếu (giai đoạn 3). Mặc định bật; người học tắt được ở khung chat. */
+  personalize: z.boolean().default(true),
 });
 export type ChatRequest = z.infer<typeof chatSchema>;
 export type ChatResponse = { reply: string };
+
+/** GET /api/insights/coach?ai=0|1. `ai=0`: người học tắt cá nhân hoá → chỉ trả câu theo luật, không gọi Gemini. */
+export const coachQuerySchema = z.object({ ai: z.enum(["0", "1"]).default("1") });
+/** `source`: "ai" = Gemini viết (đã qua kiểm tra số liệu), "rule" = câu dự phòng theo luật. */
+export type CoachResponse = { message: string; source: "ai" | "rule"; day: number };
+
+/** POST /api/results/explain: giải thích vì sao một câu trong bài ĐÃ NỘP của chính người dùng bị sai. */
+export const explainSchema = resultRefSchema.extend({ qid: z.string().min(1).max(64) });
+export type ExplainRequest = z.infer<typeof explainSchema>;
+/** `source`: "ai" = vừa viết, "cache" = lấy từ lần giải thích trước của cùng câu và cùng đáp án sai, "rule" = giải thích có sẵn trong đề. */
+export type ExplainResponse = { text: string; source: "ai" | "cache" | "rule" };

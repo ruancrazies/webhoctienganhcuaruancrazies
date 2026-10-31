@@ -5,8 +5,11 @@ import type { StartRequest, StartResponse } from "../../types/api";
 import { ServiceError } from "../errors";
 import { HOUR } from "../limits";
 import { hitRateLimit } from "../ratelimit";
+import { weakGrammarTopics } from "../../core/insights";
 import { createRound, distractorPools, pickGrammar, pickWords, resolveScope, sentencesFor } from "../repo";
+import { logActivity } from "./activity";
 import { nowOf, rngOf, type Ctx } from "./ctx";
+import { getWeakProfile } from "./insights";
 import { requireUnlocked } from "./levels";
 
 const SENTENCES_PER_WORD = 12; // core chọn ngẫu nhiên trong số này
@@ -32,15 +35,18 @@ export async function startRound(req: StartRequest, userId: string, ctx: Ctx = {
 
   const n = Math.max(1, Math.min(req.n ?? rule.defaultN, rule.cap));
 
+  // Weak-first (giai đoạn 2): hồ sơ yếu đã lưu (1 truy vấn); lỗi hoặc chưa có → rỗng, vòng chơi chạy như cũ.
+  const weak = await getWeakProfile(userId);
+
   let items: StoredItem[];
   let practice = false;
 
   if (req.game === "tf") {
     // tf không dùng từ: câu ngữ pháp của cấp
-    const grammar = await pickGrammar(scope.cefr, n + GRAMMAR_EXTRA, rng);
+    const grammar = await pickGrammar(scope.cefr, n + GRAMMAR_EXTRA, rng, weakGrammarTopics(weak, scope.cefr));
     items = buildQuestions("tf", [], { grammar }, { rng }).slice(0, n);
   } else {
-    const picked = await pickWords(userId, scope, n, req.game === "flash", rng, now);
+    const picked = await pickWords(userId, scope, n, req.game === "flash", rng, now, weak);
     practice = picked.practice;
     items = buildQuestions(req.game, picked.words, await buildPools(req.game, picked.words, scope.cefr, rng), { rng });
   }
@@ -50,6 +56,7 @@ export async function startRound(req: StartRequest, userId: string, ctx: Ctx = {
   }
 
   const { id } = await createRound(userId, req.game, { v: 1, cefr: scope.cefr, practice, items });
+  await logActivity(userId, "play/start", { game: req.game, cefr: scope.cefr, n: items.length, practice });
   return { roundId: id, items: toClientItems(items), practice };
 }
 

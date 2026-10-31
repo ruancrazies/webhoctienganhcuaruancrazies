@@ -27,6 +27,10 @@ export function LearnList({ cefr, topic, domain, mode }: Props) {
   /** Từ vừa bấm "Đã học" nhưng chưa gửi lên server: wordId → trạng thái trước đó (để hoàn lại nếu lỗi). */
   const pending = useRef(new Map<number, LearnState>());
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  /** Chế độ Ôn lại: từ đã bấm "Đã ôn" (hiển thị ngay) và danh sách chờ gửi lên server. */
+  const [reviewed, setReviewed] = useState<Set<number>>(() => new Set());
+  const pendingReview = useRef(new Set<number>());
+  const reviewTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const query = useCallback(
     (c?: string) => {
@@ -54,6 +58,7 @@ export function LearnList({ cefr, topic, domain, mode }: Props) {
         const page = await apiGet<LearnPage>(query(c));
         if (id !== reqId.current) return;
         setItems(page.items);
+        setReviewed(new Set());
         setCursor(page.nextCursor);
         setFromStart(!c);
         if (isRefresh) window.scrollTo({ top: 0, behavior: "smooth" });
@@ -78,6 +83,11 @@ export function LearnList({ cefr, topic, domain, mode }: Props) {
 
   const markable = useMemo(() => items.filter((w) => w.state === "new" || w.state === "due"), [items]);
   const learnedCount = items.length - markable.length;
+  /** Ôn lại: từ đã có tiến độ (level ≥ 1) mà chưa bấm "Đã ôn" trong lượt hiển thị này. */
+  const reviewable = useMemo(
+    () => (mode === "review" ? items.filter((w) => (w.state === "learned" || w.state === "mastered") && !reviewed.has(w.wordId)) : []),
+    [items, mode, reviewed],
+  );
 
   /** Gửi các từ đang chờ lên server (gom lô ≤ 50 từ/lần để không chạm giới hạn tần suất). */
   const flush = useCallback(async () => {
@@ -103,6 +113,43 @@ export function LearnList({ cefr, topic, domain, mode }: Props) {
     }
   }, []);
 
+  /** Gửi các từ "Đã ôn" đang chờ (lô ≤ 50). Lỗi → bỏ dấu để người dùng bấm lại. */
+  const flushReview = useCallback(async () => {
+    clearTimeout(reviewTimer.current);
+    const ids = [...pendingReview.current];
+    pendingReview.current.clear();
+    if (ids.length === 0) return;
+    setSaving((n) => n + 1);
+    let confirmed = 0;
+    try {
+      for (let i = 0; i < ids.length; i += 50) {
+        const chunk = ids.slice(i, i + 50);
+        await apiPost<{ marked: number }>("/api/learn/review", { wordIds: chunk });
+        confirmed = i + chunk.length;
+      }
+    } catch (e) {
+      const failed = new Set(ids.slice(confirmed));
+      setReviewed((prev) => new Set([...prev].filter((id) => !failed.has(id))));
+      setNote(`${errorMessage(e)}. Một số từ chưa được lưu, hãy thử lại.`);
+    } finally {
+      setSaving((n) => n - 1);
+    }
+  }, []);
+
+  /** Đánh dấu "đã ôn": đổi giao diện ngay, gửi server sau ~1,2 giây (hoặc ngay với `now`). */
+  const markReview = useCallback(
+    (ids: number[], now = false) => {
+      if (ids.length === 0) return;
+      setNote(null);
+      for (const id of ids) pendingReview.current.add(id);
+      setReviewed((prev) => new Set([...prev, ...ids]));
+      sfx("tap");
+      clearTimeout(reviewTimer.current);
+      reviewTimer.current = setTimeout(() => void flushReview(), now ? 0 : 1200);
+    },
+    [flushReview],
+  );
+
   /** Đánh dấu "đã học": đổi giao diện ngay, gửi server sau ~1,2 giây (hoặc ngay với `now`). */
   const mark = useCallback(
     (ids: number[], now = false) => {
@@ -123,20 +170,24 @@ export function LearnList({ cefr, topic, domain, mode }: Props) {
   // rời trang / ẩn tab: gửi nốt những từ còn chờ
   useEffect(() => {
     const onHide = () => {
-      if (document.visibilityState === "hidden") void flush();
+      if (document.visibilityState === "hidden") {
+        void flush();
+        void flushReview();
+      }
     };
     document.addEventListener("visibilitychange", onHide);
     return () => {
       document.removeEventListener("visibilitychange", onHide);
       void flush();
+      void flushReview();
     };
-  }, [flush]);
+  }, [flush, flushReview]);
 
   /** "Làm mới": lưu các từ vừa đánh dấu, rồi đổi sang 50 từ tiếp theo (hết danh sách thì quay lại từ đầu). */
   const refresh = useCallback(async () => {
-    await flush();
+    await Promise.all([flush(), flushReview()]);
     await load(cursor, true);
-  }, [flush, load, cursor]);
+  }, [flush, flushReview, load, cursor]);
 
   const hrefScope = topic ? { cefr, topic } : { cefr, domain };
   // Cả phạm vi chỉ có một lượt (≤ 50 từ): làm mới sẽ ra đúng danh sách cũ nên không hiện nút.
@@ -187,9 +238,16 @@ export function LearnList({ cefr, topic, domain, mode }: Props) {
         <p className="muted">
           {fmtNumber(items.length)} từ, {fmtNumber(learnedCount)} từ đã học{saving > 0 ? ", đang lưu…" : ""}
         </p>
+      <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
         <button type="button" className="btn btn-light btn-sm" disabled={markable.length === 0} onClick={() => mark(markable.map((w) => w.wordId), true)}>
           Đánh dấu cả danh sách đã học{markable.length > 0 ? ` (${markable.length})` : ""}
         </button>
+        {mode === "review" ? (
+          <button type="button" className="btn btn-light btn-sm" disabled={reviewable.length === 0} onClick={() => markReview(reviewable.map((w) => w.wordId), true)}>
+            Đánh dấu cả danh sách đã ôn{reviewable.length > 0 ? ` (${reviewable.length})` : ""}
+          </button>
+        ) : null}
+      </div>
       </div>
       {note ? <p className="err" role="alert">{note}</p> : null}
 
@@ -229,6 +287,14 @@ export function LearnList({ cefr, topic, domain, mode }: Props) {
                   <button type="button" className="btn btn-sm" onClick={() => mark([w.wordId])}>
                     Đã học
                   </button>
+                ) : mode === "review" ? (
+                  reviewed.has(w.wordId) ? (
+                    <span className="chip chip-good">✓ Đã ôn</span>
+                  ) : (
+                    <button type="button" className="btn btn-sm" onClick={() => markReview([w.wordId])}>
+                      Đã ôn
+                    </button>
+                  )
                 ) : null}
               </div>
             </article>

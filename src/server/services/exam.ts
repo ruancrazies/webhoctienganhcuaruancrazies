@@ -1,4 +1,5 @@
 import { attemptsLeft, buildExamItems, checkExamStart, examDeadline, isSubmitTooLate, scoreExam, type ExamGate } from "../../core/exam";
+import { toAnswerEvents, toStoredAnswers } from "../../core/events";
 import { gradeAll, reviewList } from "../../core/grading";
 import { toClientItems, type Pools } from "../../core/questions";
 import { EXAM_START_PER_HOUR } from "../../core/rules";
@@ -28,6 +29,8 @@ import {
 import { nowOf, rngOf, type Ctx } from "./ctx";
 import { clientPassagesFor, pickPassageBundles, revealedPassagesFor } from "./passages";
 import { getLevelStatuses } from "./levels";
+import { logActivity } from "./activity";
+import { refreshInsightsSafe } from "./insights";
 
 const OVERFETCH = 2.5; // lấy dư từ vì cloze cần câu ví dụ, không phải từ nào cũng dựng được
 const SENTENCES_PER_WORD = 6;
@@ -115,7 +118,9 @@ export async function startExam(req: ExamStartRequest, userId: string, ctx: Ctx 
   if (items.length === 0) throw new ServiceError(409, "NO_CONTENT", "Chưa đủ nội dung để ra đề cho cấp này");
 
   try {
-    return await toStartResponse(await createExam(userId, req.cefr, items, examDeadline(now, cfg.exam)), false);
+    const started = await toStartResponse(await createExam(userId, req.cefr, items, examDeadline(now, cfg.exam)), false);
+    await logActivity(userId, "exam/start", { cefr: req.cefr });
+    return started;
   } catch (e) {
     // Hai request song song: unique partial index (một bài dở/người) chặn request thứ hai → trả lại bài của request thứ nhất.
     if (e instanceof RepoError && e.code === "23505") {
@@ -144,12 +149,15 @@ export async function submitExam(req: ExamSubmitRequest, userId: string, ctx: Ct
   const score = scoreExam(graded, cfg.exam);
 
   try {
-    await applyExamResult(userId, exam.id, { passed: score.passed, total: score.total, vocab: score.vocab, grammar: score.grammar, reading: score.reading, listening: score.listening, today: dayNo(now) });
+    await applyExamResult(userId, exam.id, { passed: score.passed, total: score.total, vocab: score.vocab, grammar: score.grammar, reading: score.reading, listening: score.listening, today: dayNo(now), answers: toStoredAnswers(graded), events: toAnswerEvents(graded) });
   } catch (e) {
     // Thua cuộc đua nộp hai lần (hoặc bài vừa bị đóng vì hết giờ)
     if (hasTag(e, "exam_finished_or_invalid")) throw new ServiceError(409, "EXAM_INVALID", "Bài thi đã kết thúc hoặc không hợp lệ");
     throw e;
   }
+
+  await logActivity(userId, "exam/submit", { cefr: exam.cefr, passed: score.passed });
+  await refreshInsightsSafe(userId, ctx);
 
   const left = attemptsLeft(await examStartTimes(userId, startOfVnDay(now)), now, cfg.exam);
   return {
@@ -163,5 +171,6 @@ export async function submitExam(req: ExamSubmitRequest, userId: string, ctx: Ct
     passages: await revealedPassagesFor(exam.items),
     nextAttemptAt: score.passed ? undefined : new Date(now.getTime() + cfg.exam.cooldownMinutes * 60_000).toISOString(),
     attemptsLeftToday: left,
+    resultId: exam.id,
   };
 }

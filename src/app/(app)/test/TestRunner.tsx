@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnswerList, ScoreSummary, scoreParts, scoresOfResult } from "@/components/AttemptView";
 import { PassagePanel, PassageReveal } from "@/components/PassagePanel";
 import { QuestionCard } from "@/components/QuestionCard";
 import { ApiFail, apiPost, errorMessage } from "@/lib/api";
+import { useDwell } from "@/lib/useDwell";
 import { fmtClock, fmtNumber, fmtVnTime, pct } from "@/lib/format";
 import { sfx } from "@/lib/sound";
 import type { ClientPassage, Question } from "@/core/types";
@@ -176,6 +178,8 @@ function Running({ testId, items, passages, expiresAt, resumed, submitting, onSu
   const sent = useRef(false);
   const answersRef = useRef(answers);
   answersRef.current = answers;
+  // responseMs của mỗi câu = tổng thời gian câu hiện trên màn hình (cộng dồn khi đi lại giữa các câu, không tính lúc bỏ tab)
+  const dwell = useDwell();
 
   useEffect(() => {
     try {
@@ -199,7 +203,7 @@ function Running({ testId, items, passages, expiresAt, resumed, submitting, onSu
     setConfirming(false);
     setError(null);
     onSubmitting();
-    const payload = items.map((q) => ({ qid: q.qid, value: (answersRef.current[q.qid] ?? "").trim() })).filter((a) => a.value !== "");
+    const payload = items.map((q) => ({ qid: q.qid, value: (answersRef.current[q.qid] ?? "").trim(), responseMs: dwell.ms(q.qid) })).filter((a) => a.value !== "");
     try {
       onResult(await apiPost<PracticeResult>("/api/test/submit", { testId, answers: payload }));
     } catch (e) {
@@ -211,7 +215,7 @@ function Running({ testId, items, passages, expiresAt, resumed, submitting, onSu
       setError(errorMessage(e));
       onBackToRun();
     }
-  }, [testId, items, onBackToRun, onClosed, onResult, onSubmitting]);
+  }, [dwell, testId, items, onBackToRun, onClosed, onResult, onSubmitting]);
 
   useEffect(() => {
     const tick = () => {
@@ -225,6 +229,9 @@ function Running({ testId, items, passages, expiresAt, resumed, submitting, onSu
   }, [expiresAt, submit]);
 
   const q = items[idx];
+  useEffect(() => {
+    dwell.show(q.qid);
+  }, [dwell, q.qid]);
   const passage = q.passageId !== undefined ? passages.find((x) => x.id === q.passageId) : undefined;
   const answered = items.filter((it) => (answers[it.qid] ?? "").trim() !== "").length;
   const unanswered = items.length - answered;
@@ -314,51 +321,34 @@ function Running({ testId, items, passages, expiresAt, resumed, submitting, onSu
 
 /* ------------------------------------------------------------------------------------------------ */
 
-const asText = (v: string | string[] | undefined) => (Array.isArray(v) ? v.join(" ") : (v ?? ""));
-
 function ResultView({ result, onAgain }: { result: PracticeResult; onAgain: () => void }) {
   const total = Math.round(result.scoreTotal * 100);
   const diff = result.previousTotal === null ? null : total - Math.round(result.previousTotal * 100);
 
   return (
     <div className="stack" style={{ gap: 20 }}>
-      <section className="sheet" aria-labelledby="res-h">
-        <div className="grade">
-          <h1 id="res-h" style={{ fontSize: 14, fontWeight: 600, color: "var(--pencil)" }}>Kết quả bài kiểm tra</h1>
-          <div className="score" aria-label={`Điểm tổng ${total} phần trăm`}>{total}%</div>
-          {diff !== null ? (
+      <ScoreSummary
+        heading="Kết quả bài kiểm tra"
+        total={result.scoreTotal}
+        parts={scoreParts(scoresOfResult(result), { counts: { vocab: result.vocabCount, grammar: result.grammarCount, reading: result.readingCount, listening: result.listeningCount } })}
+        aboveParts={
+          diff !== null ? (
             <p className="muted">{diff === 0 ? "Bằng điểm bài trước." : diff > 0 ? `Cao hơn bài trước ${diff} điểm.` : `Thấp hơn bài trước ${-diff} điểm.`}</p>
           ) : (
             <p className="muted">Đây là bài kiểm tra đầu tiên của bạn.</p>
-          )}
-        </div>
-        <div className="parts">
-          <div className="part">
-            <b>{pct(result.scoreVocab)}</b>
-            <span className="muted small">Từ vựng ({result.vocabCount} câu)</span>
-          </div>
-          <div className="part">
-            <b>{pct(result.scoreGrammar)}</b>
-            <span className="muted small">Ngữ pháp ({result.grammarCount} câu)</span>
-          </div>
-          {result.scoreReading !== null ? (
-            <div className="part">
-              <b>{pct(result.scoreReading)}</b>
-              <span className="muted small">Bài đọc ({result.readingCount} câu)</span>
-            </div>
-          ) : null}
-          {result.scoreListening !== null ? (
-            <div className="part">
-              <b>{pct(result.scoreListening)}</b>
-              <span className="muted small">Bài nghe ({result.listeningCount} câu)</span>
-            </div>
-          ) : null}
-        </div>
+          )
+        }
+      >
         {result.questCounted ? <p className="gate gate-ok" style={{ marginTop: 12 }}>Đã tính vào nhiệm vụ hôm nay. Vào tab Nhiệm vụ để nhận thưởng.</p> : (
           <p className="gate" style={{ marginTop: 12 }}>Bạn trả lời chưa đủ một nửa số câu nên bài này chưa tính vào nhiệm vụ.</p>
         )}
         {result.scheduledReview > 0 ? <p className="muted small" style={{ marginTop: 12 }}>{result.scheduledReview} từ làm sai đã được hẹn ôn lại ngay.</p> : null}
-      </section>
+        {result.resultId ? (
+          <p className="small" style={{ marginTop: 12 }}>
+            <Link href={`/results/practice/${result.resultId}`}>Xem lại toàn bộ bài làm (cả câu đúng)</Link> · <Link href="/results">Lịch sử kết quả</Link>
+          </p>
+        ) : null}
+      </ScoreSummary>
 
       <div className="row">
         <button type="button" className="btn btn-mark" onClick={onAgain}>Làm bài khác</button>
@@ -371,19 +361,7 @@ function ResultView({ result, onAgain }: { result: PracticeResult; onAgain: () =
       {result.review.length > 0 ? (
         <section className="stack" aria-labelledby="rv-h">
           <h2 id="rv-h">Các câu làm sai ({result.review.length})</h2>
-          <div className="review">
-            {result.review.map((r) => (
-              <article key={r.qid} className="rv">
-                <p className="q">{r.prompt.replace("___", "_____")}</p>
-                <p>Đáp án đúng: <span className="ok">{asText(r.expected)}</span></p>
-                <p className="muted small">
-                  Bạn trả lời: {r.yourAnswer !== undefined && asText(r.yourAnswer) !== "" ? <span className="no">{asText(r.yourAnswer)}</span> : "(bỏ trống)"}
-                </p>
-                {r.en && r.vi && r.game !== "grammar" && r.game !== "passage" ? <p className="muted small">{r.en} = {r.vi}</p> : null}
-                {r.explanation ? <p className="small">{r.explanation}</p> : null}
-              </article>
-            ))}
-          </div>
+          <AnswerList items={result.review} labelledBy="rv-h" />
         </section>
       ) : (
         <p className="muted">Bạn không sai câu nào.</p>

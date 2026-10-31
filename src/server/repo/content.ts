@@ -1,5 +1,6 @@
 import { createAdminClient } from "../db";
 import { ServiceError } from "../errors";
+import { INSIGHT_CFG } from "../../core/insights";
 import { shuffle } from "../../core/questions";
 import type { Cefr, GrammarQ, Sentence, Word } from "../../core/types";
 import { toWord, unwrap, unwrapList, mapLimit, WORD_COLS, type WordRow } from "./shared";
@@ -242,12 +243,30 @@ function toGrammar(r: GrammarRow): GrammarQ | null {
 }
 
 /** `n` câu ngữ pháp ngẫu nhiên của đúng cấp (cột rand, index (level, rand)); quay vòng khi thiếu. */
-export async function pickGrammar(level: Cefr, n: number, rng: () => number): Promise<GrammarQ[]> {
-  const r = rng();
-  const q = () =>
-    db().from("grammar_questions").select("id,level,topic,question,options,answer,explanation").eq("level", level).eq("status", "active").order("rand");
-  let rows = unwrapList<GrammarRow>("grammar.pick", await q().gte("rand", r).limit(n));
-  if (rows.length < n) rows = rows.concat(unwrapList<GrammarRow>("grammar.wrap", await q().lt("rand", r).limit(n - rows.length)));
+export async function pickGrammar(level: Cefr, n: number, rng: () => number, preferTopics: readonly string[] = []): Promise<GrammarQ[]> {
+  const base = () =>
+    db().from("grammar_questions").select("id,level,topic,question,options,answer,explanation").eq("level", level).eq("status", "active");
+  // Lấy `limit` câu ngẫu nhiên theo cột rand (đọc từ điểm ngẫu nhiên r, hết thì quay vòng), có thể giới hạn theo chủ đề.
+  const random = async (limit: number, topics?: readonly string[]): Promise<GrammarRow[]> => {
+    const r = rng();
+    const q = () => (topics ? base().in("topic", [...topics]) : base()).order("rand");
+    let rows = unwrapList<GrammarRow>("grammar.pick", await q().gte("rand", r).limit(limit));
+    if (rows.length < limit) rows = rows.concat(unwrapList<GrammarRow>("grammar.wrap", await q().lt("rand", r).limit(limit - rows.length)));
+    return rows;
+  };
+
+  let rows: GrammarRow[];
+  if (preferTopics.length === 0) {
+    rows = await random(n);
+  } else {
+    // Weak-first (giai đoạn 2): tối đa weakShare số câu lấy từ chủ đề ngữ pháp yếu, còn lại ngẫu nhiên cả cấp; rồi xáo để câu yếu không dồn lên đầu.
+    const k = Math.min(n, Math.max(1, Math.ceil(n * INSIGHT_CFG.weakShare)));
+    const weak = await random(k, preferTopics);
+    const have = new Set(weak.map((g) => g.id));
+    // xin đủ n câu: dù loại tối đa `weak.length` câu trùng thì vẫn còn ≥ n − weak.length câu
+    const rest = (await random(n)).filter((g) => !have.has(g.id)).slice(0, n - weak.length);
+    rows = shuffle([...weak, ...rest], rng);
+  }
   return rows.map(toGrammar).filter((g): g is GrammarQ => g !== null);
 }
 

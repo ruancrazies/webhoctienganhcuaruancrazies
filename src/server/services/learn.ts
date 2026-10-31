@@ -1,11 +1,13 @@
 import { learnState } from "../../core/srs";
-import type { LearnCard, LearnPage, LearnQuery, MarkLearnedRequest } from "../../types/api";
+import { startOfVnDay } from "../../core/streak";
+import type { LearnCard, LearnPage, LearnQuery, MarkLearnedRequest, MarkReviewedRequest } from "../../types/api";
 import { ServiceError } from "../errors";
 import { HOUR, LEARN_MARK_PER_HOUR, LEARN_LIST_PER_MINUTE, MINUTE } from "../limits";
 import { hitRateLimit } from "../ratelimit";
-import { listNewWords, listReviewWords, markLearned as repoMarkLearned, progressFor, resolveScope, sentencesFor, wordMeta } from "../repo";
+import { listNewWords, listReviewWords, markLearned as repoMarkLearned, markReviewed as repoMarkReviewed, progressFor, resolveScope, sentencesFor, wordMeta } from "../repo";
 import { nowOf, type Ctx } from "./ctx";
 import { getLevelStatuses, requireUnlocked } from "./levels";
+import { logActivity } from "./activity";
 import { recordQuestProgress } from "./quests";
 
 /** Mỗi lần hiển thị 50 từ; muốn xem tiếp thì bấm "Làm mới" (thay danh sách, không nối dài). */
@@ -31,6 +33,7 @@ export async function listLearn(query: LearnQuery, userId: string): Promise<Lear
 
   const scope = await resolveScope(query.scope);
   await requireUnlocked(userId, scope.cefr);
+  if (!query.cursor) await logActivity(userId, "learn/words", { mode: query.mode, cefr: scope.cefr }); // chỉ trang đầu: cuộn tiếp không phải lần mở mới
 
   // lấy dư một dòng để biết còn trang sau hay không
   const list = query.mode === "review" ? listReviewWords : listNewWords;
@@ -82,5 +85,34 @@ export async function markLearned(req: MarkLearnedRequest, userId: string, ctx: 
 
   const marked = await repoMarkLearned(userId, ids);
   await recordQuestProgress(userId, { learn: marked, review: 0, play: 0, test: 0 }, { now: nowOf(ctx) });
+  await logActivity(userId, "learn/mark", { count: marked });
+  return { marked };
+}
+
+/**
+ * "Đã ôn" ở chế độ Ôn lại từ cũ (≤ 50 từ): cộng tiến độ nhiệm vụ "Ôn từ cũ". Mỗi từ chỉ được tính một lần mỗi ngày,
+ * từ chưa có tiến độ (level 0) không tính (đó là "học", dùng markLearned). Không đổi level SRS, không XP.
+ * Cũng chỉ cho từ của cấp ĐÃ MỞ, như markLearned.
+ */
+export async function markReviewed(req: MarkReviewedRequest, userId: string, ctx: Ctx = {}): Promise<{ marked: number }> {
+  const ids = [...new Set(req.wordIds)];
+  if (ids.length === 0 || ids.length > 50) throw new ServiceError(400, "BAD_REQUEST", "Mỗi lần đánh dấu tối đa 50 từ");
+
+  if (!(await hitRateLimit(`learn-review:${userId}`, HOUR, LEARN_MARK_PER_HOUR))) {
+    throw new ServiceError(429, "RATE_LIMITED", "Bạn thao tác quá nhiều, hãy nghỉ một chút");
+  }
+
+  const [meta, statuses] = await Promise.all([wordMeta(ids), getLevelStatuses(userId)]);
+  const unlocked = new Set(statuses.filter((s) => s.unlocked).map((s) => s.cefr));
+  for (const id of ids) {
+    const m = meta.get(id);
+    if (!m) throw new ServiceError(404, "WORD_NOT_FOUND", "Có từ không tồn tại", { wordId: id });
+    if (!unlocked.has(m.cefr)) throw new ServiceError(403, "LEVEL_LOCKED", "Có từ thuộc cấp đang khóa", { wordId: id, cefr: m.cefr });
+  }
+
+  const now = nowOf(ctx);
+  const marked = await repoMarkReviewed(userId, ids, startOfVnDay(now), now);
+  await recordQuestProgress(userId, { learn: 0, review: marked, play: 0, test: 0 }, { now });
+  await logActivity(userId, "learn/review", { count: marked });
   return { marked };
 }

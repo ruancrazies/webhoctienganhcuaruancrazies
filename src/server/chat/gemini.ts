@@ -3,6 +3,8 @@ import { ServiceError } from "../errors";
 import { optionalEnv } from "../env";
 
 export type GeminiMessage = { role: "user" | "model"; text: string };
+/** Tuỳ chọn theo từng lời gọi. Mặc định giữ nguyên như chat (nhiệt độ 0,5, 450 token). */
+export type GeminiOptions = { temperature?: number; maxOutputTokens?: number };
 
 const DEFAULT_MODEL = "gemini-3.5-flash-lite";
 const TIMEOUT_MS = 20_000; // đủ ngắn để không vượt giới hạn thời gian của hàm serverless
@@ -11,7 +13,7 @@ const MAX_OUTPUT_TOKENS = 450;
 type GeminiResponse = { candidates?: { content?: { parts?: { text?: string }[] } }[]; promptFeedback?: { blockReason?: string } };
 
 /** Gọi Gemini (REST) từ server. Khóa API chỉ ở biến môi trường GEMINI_API_KEY, không bao giờ xuống trình duyệt. */
-export async function askGemini(system: string, messages: GeminiMessage[]): Promise<string> {
+export async function askGemini(system: string, messages: GeminiMessage[], opts: GeminiOptions = {}): Promise<string> {
   const key = optionalEnv("GEMINI_API_KEY");
   if (!key) throw new ServiceError(503, "CHAT_UNAVAILABLE", "Trò chuyện chưa được bật");
   const model = optionalEnv("GEMINI_MODEL") ?? DEFAULT_MODEL;
@@ -19,7 +21,7 @@ export async function askGemini(system: string, messages: GeminiMessage[]): Prom
   const body = JSON.stringify({
     systemInstruction: { parts: [{ text: system }] },
     contents: messages.map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
-    generationConfig: { temperature: 0.5, maxOutputTokens: MAX_OUTPUT_TOKENS },
+    generationConfig: { temperature: opts.temperature ?? 0.5, maxOutputTokens: opts.maxOutputTokens ?? MAX_OUTPUT_TOKENS },
   });
 
   let lastStatus = 0;

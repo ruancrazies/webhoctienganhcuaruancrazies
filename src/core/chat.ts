@@ -19,7 +19,8 @@ export const PET_PERSONA: Record<ChatPet, { name: string; style: string }> = {
   },
 };
 
-export function buildSystemPrompt(pet: ChatPet, knowledge: string): string {
+/** `learnerContext` (tuỳ chọn): khối LEARNER_CONTEXT từ core/snapshot.buildLearnerContext. Không có thì prompt y như cũ. */
+export function buildSystemPrompt(pet: ChatPet, knowledge: string, learnerContext?: string): string {
   const p = PET_PERSONA[pet];
   return [
     `Bạn là ${p.name}, thú cưng trợ lý trong một web học tiếng Anh cho người Việt. Tính cách: ${p.style}`,
@@ -35,6 +36,7 @@ export function buildSystemPrompt(pet: ChatPet, knowledge: string): string {
     "",
     "KIẾN THỨC THAM KHẢO về các thì tiếng Anh (dùng khi câu hỏi liên quan, bám theo nội dung này):",
     knowledge,
+    ...(learnerContext ? ["", learnerContext] : []),
   ].join("\n");
 }
 

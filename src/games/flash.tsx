@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { sfx, speak } from "@/lib/sound";
+import { useDwell } from "@/lib/useDwell";
 import type { Answer } from "@/core/types";
 import type { GameProps } from "./shell/types";
 
@@ -16,13 +17,17 @@ export function FlashGame({ items, onFinish }: GameProps) {
   const [flipped, setFlipped] = useState(false);
   const [done, setDone] = useState(0);
   const results = useRef<Record<string, "known" | "again">>({});
+  /** Số lần bấm "Chưa nhớ" của từng thẻ → attempts (0 = nhớ ngay lần đầu). */
+  const misses = useRef<Record<string, number>>({});
   const finished = useRef(false);
+  const dwell = useDwell();
   const cur = queue[0];
   const item = cur ? items[cur.i] : undefined;
 
   // tự đọc từ khi thẻ mới hiện (tôn trọng nút tắt âm)
   const spoken = item ? `${item.qid}:${cur.pass}` : "";
   useEffect(() => {
+    if (item) dwell.show(item.qid); // thời gian thẻ hiện trên màn hình, cộng dồn qua lần gặp lại
     if (!item) return;
     const t = setTimeout(() => speak(item.prompt), 200);
     return () => clearTimeout(t);
@@ -32,6 +37,7 @@ export function FlashGame({ items, onFinish }: GameProps) {
     if (!cur || !item || finished.current) return;
     setFlipped(false);
     sfx(known ? "correct" : "tap");
+    if (!known) misses.current[item.qid] = (misses.current[item.qid] ?? 0) + 1;
 
     if (!known && cur.pass === 1) {
       setQueue((q) => [...q.slice(1), { i: cur.i, pass: 2 }]);
@@ -41,7 +47,10 @@ export function FlashGame({ items, onFinish }: GameProps) {
     setDone((d) => d + 1);
     if (queue.length <= 1) {
       finished.current = true;
-      const answers: Answer[] = items.map((it) => ({ qid: it.qid, value: results.current[it.qid] ?? "again" }));
+      const answers: Answer[] = items.map((it) => {
+        const responseMs = dwell.ms(it.qid);
+        return { qid: it.qid, value: results.current[it.qid] ?? "again", attempts: misses.current[it.qid] ?? 0, ...(responseMs !== undefined ? { responseMs } : {}) };
+      });
       onFinish(answers);
       return;
     }

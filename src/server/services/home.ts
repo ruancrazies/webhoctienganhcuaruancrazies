@@ -7,6 +7,7 @@ import { getConfig } from "../config";
 import { ServiceError } from "../errors";
 import { allContentStats, allDomains, allTopics, countersFrom, dueCount, getProfile, levelPasses, userLevelStats } from "../repo";
 import { nowOf, type Ctx } from "./ctx";
+import { homeActions } from "./insights";
 
 /**
  * Dữ liệu trang chủ và trang chọn lĩnh vực/chủ đề: hồ sơ, số từ đến hạn ôn, và mỗi cấp gồm trạng thái khóa/thi,
@@ -52,6 +53,8 @@ export async function getHome(userId: string, ctx: Ctx = {}): Promise<HomeRespon
     };
   });
 
+  const actions = await homeActions(userId, { now, profile, dueCount: due, statuses });
+
   return {
     profile: {
       username: profile.username,
@@ -64,5 +67,6 @@ export async function getHome(userId: string, ctx: Ctx = {}): Promise<HomeRespon
     },
     dueCount: due,
     levels,
+    actions,
   };
 }

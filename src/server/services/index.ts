@@ -1,6 +1,6 @@
 export { startRound } from "./startRound";
 export { finishRound } from "./finishRound";
-export { listLearn, markLearned, LEARN_PAGE_SIZE } from "./learn";
+export { listLearn, markLearned, markReviewed, LEARN_PAGE_SIZE } from "./learn";
 export { startExam, submitExam } from "./exam";
 export { getHome } from "./home";
 export { getPracticeOverview, startPractice, submitPractice } from "./practice";
@@ -9,3 +9,9 @@ export { getLeaderboard, getBlitzBoard, clearLeaderboardCache } from "./leaderbo
 export { chatWithPet } from "./chat";
 export { getLevelStatuses, requireUnlocked } from "./levels";
 export type { Ctx } from "./ctx";
+export { listResults, getResultDetail, scheduleWrongWords } from "./results";
+export { getInsights, refreshUserInsights, getWeakProfile } from "./insights";
+export { logActivity } from "./activity";
+export { getLearnerSnapshot } from "./learner";
+export { getCoach } from "./coach";
+export { explainMistake } from "./explain";

@@ -14,7 +14,7 @@ export default async function TestPage() {
       <Link href="/quests" className="back">‹ Nhiệm vụ</Link>
       <header className="stack" style={{ gap: 6 }}>
         <h1>Kiểm tra</h1>
-        <p className="muted">Kiểm tra xem bạn còn nhớ bao nhiêu trong số những từ đã học.</p>
+        <p className="muted">Kiểm tra xem bạn còn nhớ bao nhiêu trong số những từ đã học. <Link href="/results">Xem lại các bài đã làm</Link>.</p>
       </header>
       <TestRunner overview={overview} />
     </main>

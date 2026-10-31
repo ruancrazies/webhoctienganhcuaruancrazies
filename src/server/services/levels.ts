@@ -1,5 +1,5 @@
 import { levelStatus, statusOf } from "../../core/levels";
-import type { Cefr, LevelStatus } from "../../core/types";
+import { GATED_LEVELS, type Cefr, type LevelStatus } from "../../core/types";
 import { getConfig } from "../config";
 import { ServiceError } from "../errors";
 import { levelCounters, levelPasses } from "../repo";
@@ -15,4 +15,10 @@ export async function requireUnlocked(userId: string, cefr: Cefr): Promise<Level
   const s = statusOf(await getLevelStatuses(userId), cefr);
   if (!s.unlocked) throw new ServiceError(403, "LEVEL_LOCKED", "Cấp đang khóa: hãy qua bài kiểm tra của cấp trước", { cefr });
   return s;
+}
+
+/** Cấp đang học: cấp đã mở mà chưa qua; đã qua hết thì C1 (cấp cuối có bài thi). */
+export async function currentStudyLevel(userId: string): Promise<Cefr> {
+  const cur = (await getLevelStatuses(userId)).find((s) => s.unlocked && !s.pass && (GATED_LEVELS as readonly Cefr[]).includes(s.cefr));
+  return cur?.cefr ?? "C1";
 }

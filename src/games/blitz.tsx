@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { QuestionCard } from "@/components/QuestionCard";
 import { fmtClock } from "@/lib/format";
 import { sfx } from "@/lib/sound";
+import { useDwell } from "@/lib/useDwell";
 import type { Answer } from "@/core/types";
 import type { GameProps } from "./shell/types";
 
@@ -39,13 +40,20 @@ export function BlitzGame({ items, onFinish }: GameProps) {
 
   const q = items[idx];
 
+  // responseMs: thời gian câu hiện trên màn hình đến lúc chọn (không tính 220 ms chuyển câu)
+  const dwell = useDwell();
+  useEffect(() => {
+    dwell.show(q.qid);
+  }, [dwell, q.qid]);
+
   const pick = useCallback(
     (value: string) => {
       if (finished.current || pending.current || value === "") return;
       pending.current = true;
       setPicked(value);
       sfx("tap");
-      answers.current.push({ qid: items[idx].qid, value });
+      const responseMs = dwell.ms(items[idx].qid);
+      answers.current.push({ qid: items[idx].qid, value, ...(responseMs !== undefined ? { responseMs } : {}) });
       setTimeout(() => {
         pending.current = false;
         if (finished.current) return;
@@ -56,7 +64,7 @@ export function BlitzGame({ items, onFinish }: GameProps) {
         }
       }, 220);
     },
-    [finish, idx, items],
+    [dwell, finish, idx, items],
   );
 
   // phím 1–4 chọn đáp án

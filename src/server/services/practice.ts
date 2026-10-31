@@ -1,10 +1,11 @@
 import { buildExamItems, examDeadline, scoreExam } from "../../core/exam";
+import { toAnswerEvents, toStoredAnswers } from "../../core/events";
 import { gradeAll, reviewList } from "../../core/grading";
 import { answeredEnough, sample, wrongWordIds } from "../../core/practice";
 import { toClientItems, type Pools } from "../../core/questions";
 import { PRACTICE_MIN_WORDS, PRACTICE_START_PER_HOUR } from "../../core/rules";
 import { dayNo } from "../../core/streak";
-import { GATED_LEVELS, type Cefr, type Sentence } from "../../core/types";
+import type { Sentence } from "../../core/types";
 import type { PracticeOverview, PracticeResult, PracticeStartResponse, PracticeSubmitRequest } from "../../types/api";
 import { getConfig } from "../config";
 import { RepoError, ServiceError, hasTag } from "../errors";
@@ -26,9 +27,11 @@ import {
   type PracticeRow,
 } from "../repo";
 import { nowOf, rngOf, type Ctx } from "./ctx";
-import { getLevelStatuses } from "./levels";
+import { currentStudyLevel } from "./levels";
 import { clientPassagesFor, pickPassageBundles, revealedPassagesFor } from "./passages";
 import { recordQuestProgress } from "./quests";
+import { logActivity } from "./activity";
+import { refreshInsightsSafe } from "./insights";
 
 const OVERFETCH = 2.5; // lấy dư từ vì cloze cần câu ví dụ, không phải từ nào cũng dựng được
 const SENTENCES_PER_WORD = 6;
@@ -43,10 +46,7 @@ const toStartResponse = async (t: PracticeRow, resumed: boolean): Promise<Practi
 });
 
 /** Cấp để lấy câu ngữ pháp: cấp đang học (mở, chưa qua); đã qua hết thì C1. */
-async function grammarLevel(userId: string): Promise<Cefr> {
-  const cur = (await getLevelStatuses(userId)).find((s) => s.unlocked && !s.pass && (GATED_LEVELS as readonly Cefr[]).includes(s.cefr));
-  return cur?.cefr ?? "C1";
-}
+const grammarLevel = currentStudyLevel;
 
 /** Dữ liệu trang kiểm tra: số từ đã học, có làm được không, vài điểm gần nhất. */
 export async function getPracticeOverview(userId: string, ctx: Ctx = {}): Promise<PracticeOverview> {
@@ -118,7 +118,9 @@ export async function startPractice(userId: string, ctx: Ctx = {}): Promise<Prac
   if (items.length === 0) throw new ServiceError(409, "NO_CONTENT", "Chưa đủ nội dung để ra đề");
 
   try {
-    return await toStartResponse(await createPractice(userId, items, examDeadline(now, cfg.exam)), false);
+    const started = await toStartResponse(await createPractice(userId, items, examDeadline(now, cfg.exam)), false);
+    await logActivity(userId, "test/start", {});
+    return started;
   } catch (e) {
     if (e instanceof RepoError && e.code === "23505") {
       const winner = await activePractice(userId);
@@ -148,12 +150,14 @@ export async function submitPractice(req: PracticeSubmitRequest, userId: string,
   const previous = (await recentPracticeResults(userId, 1))[0];
 
   try {
-    await applyPracticeResult(userId, test.id, { total: score.total, vocab: score.vocab, grammar: score.grammar, reading: score.reading, listening: score.listening, today: dayNo(now), wrongWords });
+    await applyPracticeResult(userId, test.id, { total: score.total, vocab: score.vocab, grammar: score.grammar, reading: score.reading, listening: score.listening, today: dayNo(now), wrongWords, answers: toStoredAnswers(graded), events: toAnswerEvents(graded) });
   } catch (e) {
     if (hasTag(e, "test_finished_or_invalid")) throw new ServiceError(409, "TEST_INVALID", "Bài kiểm tra đã kết thúc hoặc không hợp lệ");
     throw e;
   }
   await recordQuestProgress(userId, { learn: 0, review: 0, play: 0, test: counted ? 1 : 0 }, ctx);
+  await logActivity(userId, "test/submit", {});
+  await refreshInsightsSafe(userId, ctx);
 
   return {
     scoreTotal: score.total,
@@ -170,5 +174,6 @@ export async function submitPractice(req: PracticeSubmitRequest, userId: string,
     scheduledReview: wrongWords.length,
     questCounted: counted,
     previousTotal: previous ? previous.total : null,
+    resultId: test.id,
   };
 }

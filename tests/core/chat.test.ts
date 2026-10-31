@@ -10,6 +10,12 @@ describe("chat core", () => {
     expect(buildSystemPrompt("nuonuo", "k")).not.toContain(PET_PERSONA.phoebe.style);
   });
 
+  it("learnerContext tuỳ chọn: có thì nối cuối prompt, không có thì prompt không đổi", () => {
+    const base = buildSystemPrompt("nuonuo", "K");
+    expect(buildSystemPrompt("nuonuo", "K", "LEARNER_CONTEXT-X")).toBe(`${base}\n\nLEARNER_CONTEXT-X`);
+    expect(buildSystemPrompt("nuonuo", "K", "")).toBe(base);
+  });
+
   it("lịch sử: giữ N tin cuối, bỏ tin rỗng, cắt dài, bắt đầu bằng tin người dùng", () => {
     const many = Array.from({ length: 20 }, (_, i) => ({ role: (i % 2 === 0 ? "user" : "pet") as "user" | "pet", text: `m${i}` }));
     const h = sanitizeHistory(many);

@@ -7,7 +7,7 @@ const TABS = [
   { href: "/", label: "Trang chủ", icon: "🏠", match: (p: string) => p === "/" || /^\/(level|learn|exam|play)(\/|$)/.test(p) },
   { href: "/quests", label: "Nhiệm vụ", icon: "🎯", match: (p: string) => p.startsWith("/quests") },
   { href: "/leaderboard", label: "Xếp hạng", icon: "🏆", match: (p: string) => p.startsWith("/leaderboard") },
-  { href: "/profile", label: "Hồ sơ", icon: "👤", match: (p: string) => p.startsWith("/profile") },
+  { href: "/profile", label: "Hồ sơ", icon: "👤", match: (p: string) => /^\/(profile|results)(\/|$)/.test(p) },
 ];
 
 export function TopNav() {

@@ -3,6 +3,7 @@ import { RepoError } from "../errors";
 import type { Cefr, LevelCounters, SrsState, Word } from "../../core/types";
 import { CEFR_ORDER } from "../../core/types";
 import { shuffle } from "../../core/questions";
+import { EMPTY_WEAK, preferWeak, type WeakProfile } from "../../core/insights";
 import { allContentStats, randomWordPicker, type ContentStat } from "./content";
 import type { ResolvedScope } from "./scope";
 import { chunk, toWord, unwrapList, WORD_COLS, type WordRow } from "./shared";
@@ -35,7 +36,7 @@ async function progressIds(userId: string, ids: number[]): Promise<Set<number>> 
  * Từ ĐẾN HẠN ôn trong phạm vi: lọc cefr/domain/chủ đề NGAY TRONG truy vấn rồi mới LIMIT (mục 5.4) —
  * lấy LIMIT trước rồi lọc sau thì từ đến hạn của cấp khác chiếm hết chỗ. Index (user_id, cefr, domain, next_review).
  */
-async function dueWords(userId: string, scope: ResolvedScope, n: number, now: Date, rng: () => number): Promise<Word[]> {
+async function dueWords(userId: string, scope: ResolvedScope, n: number, now: Date, rng: () => number, weak: WeakProfile): Promise<Word[]> {
   const topic = scope.topicId !== undefined;
   const embed = topic ? `words!inner(${WORD_COLS},word_topics!inner(topic_id))` : `words!inner(${WORD_COLS})`;
   let q = db()
@@ -50,18 +51,19 @@ async function dueWords(userId: string, scope: ResolvedScope, n: number, now: Da
   // Lấy dư một nhóm từ đến hạn sớm nhất rồi chọn ngẫu nhiên n từ trong đó: nếu chỉ lấy n từ đầu theo next_review
   // thì các từ học cùng lúc (cùng next_review) luôn ra đúng một bộ, theo thứ tự id = bảng chữ cái.
   const rows = unwrapList<{ words: WordRow }>("progress.due", await q.order("next_review").limit(Math.max(n * DUE_POOL_FACTOR, DUE_POOL_MIN)));
-  return shuffle(rows.map((r) => toWord(r.words)), rng).slice(0, n);
+  // Weak-first: trong nhóm đến hạn đã xáo, từ thuộc nhóm yếu của người học lên trước (tối đa weakShare số chỗ; hồ sơ rỗng thì không đổi gì).
+  return preferWeak(shuffle(rows.map((r) => toWord(r.words)), rng), weak, n).slice(0, n);
 }
 
 /** Từ MỚI (chưa có tiến độ): lấy ngẫu nhiên theo rand, lấy dư rồi loại từ đã có tiến độ. */
-async function newWords(userId: string, scope: ResolvedScope, need: number, exclude: Set<number>, rng: () => number): Promise<Word[]> {
+async function newWords(userId: string, scope: ResolvedScope, need: number, exclude: Set<number>, rng: () => number, weak: WeakProfile): Promise<Word[]> {
   const MAX_TRIES = 6;
   const pick = await randomWordPicker(scope);
   const seen = new Set(exclude);
   const out: Word[] = [];
   let stale = 0;
   for (let t = 0; t < MAX_TRIES && out.length < need && stale < 2; t++) {
-    const fresh = (await pick((need - out.length) * 3, rng)).filter((w) => !seen.has(w.id));
+    const fresh = preferWeak((await pick((need - out.length) * 3, rng)).filter((w) => !seen.has(w.id)), weak, need - out.length);
     if (!fresh.length) {
       stale++;
       continue;
@@ -80,8 +82,10 @@ export type PickResult = { words: Word[]; practice: boolean };
  * Chọn từ cho một vòng (mục 5.4): đến hạn ôn → từ mới → (không còn gì) chế độ luyện tập.
  * preferNew (trò flash): từ mới trước, đến hạn bù sau.
  * practice = true khi không có từ đến hạn lẫn từ mới: lấy từ ngẫu nhiên trong phạm vi bất kể tiến độ.
+ * `weak` (giai đoạn 2, weak-first): từ thuộc nhóm yếu của người học được ưu tiên TRONG từng nguồn ở trên
+ * (đến hạn / mới / luyện tập); không đổi thứ tự ưu tiên giữa các nguồn. Mặc định rỗng = hành vi cũ.
  */
-export async function pickWords(userId: string, scope: ResolvedScope, n: number, preferNew: boolean, rng: () => number, now: Date): Promise<PickResult> {
+export async function pickWords(userId: string, scope: ResolvedScope, n: number, preferNew: boolean, rng: () => number, now: Date, weak: WeakProfile = EMPTY_WEAK): Promise<PickResult> {
   let words: Word[] = [];
   const add = (list: Word[]) => {
     const have = new Set(words.map((w) => w.id));
@@ -89,17 +93,17 @@ export async function pickWords(userId: string, scope: ResolvedScope, n: number,
   };
 
   if (preferNew) {
-    add(await newWords(userId, scope, n, new Set(), rng));
-    if (words.length < n) add(await dueWords(userId, scope, n - words.length, now, rng));
+    add(await newWords(userId, scope, n, new Set(), rng, weak));
+    if (words.length < n) add(await dueWords(userId, scope, n - words.length, now, rng, weak));
   } else {
-    add(await dueWords(userId, scope, n, now, rng));
-    if (words.length < n) add(await newWords(userId, scope, n - words.length, new Set(words.map((w) => w.id)), rng));
+    add(await dueWords(userId, scope, n, now, rng, weak));
+    if (words.length < n) add(await newWords(userId, scope, n - words.length, new Set(words.map((w) => w.id)), rng, weak));
   }
   // Xáo lại cả vòng: từ đến hạn và từ mới được ghép nối tiếp, và truy vấn `in (...)` trả theo id (= bảng chữ cái).
   if (words.length > 0) return { words: shuffle(words, rng), practice: false };
 
   const pick = await randomWordPicker(scope);
-  for (let t = 0; t < 3 && words.length < n; t++) add(await pick(n * 2, rng));
+  for (let t = 0; t < 3 && words.length < n; t++) add(preferWeak(await pick(n * 2, rng), weak, n));
   return { words: shuffle(words, rng), practice: true };
 }
 
@@ -138,6 +142,27 @@ export function countersFrom(stats: UserLevelStat[], content: ContentStat[]): Le
 export async function levelCounters(userId: string): Promise<LevelCounters[]> {
   const [stats, content] = await Promise.all([userLevelStats(userId), allContentStats()]);
   return countersFrom(stats, content);
+}
+
+/**
+ * "Đã ôn" ở chế độ Ôn lại: ghi nhận MỖI TỪ tối đa một lần mỗi ngày (giờ VN). Chỉ đụng `updated_at` của từ đã có
+ * level >= 1 và chưa được chạm từ đầu ngày — KHÔNG đổi level / next_review (ôn qua danh sách không phải bài kiểm tra,
+ * không được đẩy từ lên "thuộc"). UPDATE có điều kiện nên bấm lặp hoặc hai request song song không đếm trùng.
+ * Trả số từ thực sự được tính.
+ */
+export async function markReviewed(userId: string, wordIds: number[], dayStart: Date, now: Date): Promise<number> {
+  const rows = unwrapList<{ word_id: number }>(
+    "progress.markReviewed",
+    await db()
+      .from("user_word_progress")
+      .update({ updated_at: now.toISOString() })
+      .eq("user_id", userId)
+      .in("word_id", wordIds)
+      .gte("level", 1)
+      .lt("updated_at", dayStart.toISOString())
+      .select("word_id"),
+  );
+  return rows.length;
 }
 
 /** RPC mark_learned: một giao dịch. Trả số từ thực sự được đưa lên level 1. */

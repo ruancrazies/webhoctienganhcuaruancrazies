@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CHAT_MAX_CHARS, PET_PERSONA, type ChatPet, type ChatTurn } from "@/core/chat";
+import { usePersonalize } from "@/lib/aiPrefs";
 import { apiPost, errorMessage } from "@/lib/api";
 import { CHAT_OPEN_EVENT, isPetsOn, subscribePets, type PetWho } from "@/lib/pets";
 
@@ -23,6 +24,7 @@ export function PetChat() {
   const [logs, setLogs] = useState<Record<ChatPet, Bubble[]>>({ nuonuo: [], phoebe: [] });
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [personalize, setPersonalize] = usePersonalize();
   const seq = useRef(0);
   const logEl = useRef<HTMLDivElement>(null);
   const inputEl = useRef<HTMLInputElement>(null);
@@ -66,7 +68,7 @@ export function PetChat() {
     setText("");
     setBusy(true);
     try {
-      const r = await apiPost<{ reply: string }>("/api/chat", { pet, message, history });
+      const r = await apiPost<{ reply: string }>("/api/chat", { pet, message, history, personalize });
       add({ role: "pet", text: r.reply });
     } catch (e) {
       add({ role: "pet", text: errorMessage(e), error: true });
@@ -101,6 +103,9 @@ export function PetChat() {
         <button type="submit" className="btn btn-sm" disabled={busy || !text.trim()}>Gửi</button>
       </form>
       <p className="pchat-note">Trợ lý AI có thể nhầm — hãy kiểm tra lại khi cần.</p>
+      <label className="pchat-note pchat-opt">
+        <input type="checkbox" checked={personalize} onChange={(e) => setPersonalize(e.target.checked)} /> Cho {name} đọc bản tóm tắt ẩn danh về kết quả học của mình (không có tên/email; gửi sang Google Gemini) để trả lời đúng chỗ mình yếu.
+      </label>
     </section>
   );
 }

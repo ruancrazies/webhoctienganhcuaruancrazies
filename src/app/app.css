@@ -254,6 +254,9 @@ a.game:hover { background: var(--ink-soft); }
 .rv .q { font-weight: 700; }
 .rv .ok { color: var(--good); font-weight: 700; }
 .rv .no { color: var(--red); text-decoration: line-through; }
+.rv.right { border-left-color: var(--good); }
+.rv-chip { margin-left: 8px; vertical-align: middle; }
+.rv-n { color: var(--pencil); font-weight: 600; }
 
 /* ---- xếp hạng, hồ sơ ---- */
 .board { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
@@ -354,3 +357,38 @@ a.game:hover { background: var(--ink-soft); }
 .passage-text { white-space: pre-line; line-height: 1.7; font-size: 16px; }
 .passage-reveal summary { cursor: pointer; }
 .passage-reveal .passage-text { margin-top: 10px; }
+
+/* ---- lịch sử kết quả (/results) ---- */
+.results-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.results-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.results-total { font-size: 22px; font-weight: 800; }
+.results-old { max-width: 220px; text-align: right; }
+
+/* Giai đoạn 2: gợi ý hôm nay và hồ sơ năng lực */
+.actions { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.action { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; color: var(--ink); text-decoration: none; background: var(--sheet); }
+.action:hover { background: var(--ink-soft); }
+.action:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.action-ico { font-size: 22px; line-height: 1; }
+.action-body { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.skill-row { display: grid; gap: 4px; }
+.skill-row .bar { height: 8px; }
+.skill-row.dim { opacity: 0.6; }
+.weak-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.weak-list li { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.kv > div { display: grid; gap: 2px; }
+.kv b { font-size: 18px; }
+.up { color: var(--good); }
+.down { color: var(--red); }
+
+/* Giai đoạn 3: lời nhắn coach, giải thích lỗi, tuỳ chọn cá nhân hoá */
+.coach { display: grid; gap: 4px; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--sheet); }
+.coach-msg { margin: 0; font-weight: 600; }
+.coach-note { margin: 0; }
+.linkbtn { background: none; border: 0; padding: 0; font: inherit; color: var(--pencil); text-decoration: underline; cursor: pointer; }
+.linkbtn:hover { color: var(--ink); }
+.explain-ask { margin-top: 6px; display: grid; gap: 6px; justify-items: start; }
+.explain { margin: 6px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--ink-soft); }
+.pchat-opt { display: flex; gap: 6px; align-items: flex-start; line-height: 1.35; }
+.pchat-opt input { margin-top: 2px; }

@@ -1,6 +1,7 @@
 import { createAdminClient } from "../db";
 import { RepoError } from "../errors";
 import type { BoardRow } from "../../types/api";
+import type { AnswerEvent } from "../../core/events";
 import type { Cefr, GameId, StoredItem } from "../../core/types";
 import { unwrap } from "./shared";
 
@@ -45,6 +46,8 @@ export type RoundPayload = {
   updates: { word_id: number; level: number; bad: number; next_review: string }[];
   grammar: { level: Cefr; correct: boolean }[];
   blitz: { key: string; score: number } | null;
+  /** Sự kiện từng câu đã trả lời → answer_events (cùng giao dịch). */
+  events: AnswerEvent[];
 };
 export type RoundOutcome = { xp: number; streak: number; newBest: boolean; board: BoardRow[] | null };
 

@@ -8,6 +8,7 @@ import {
   submittedTooFast,
   type GradedItem,
 } from "../../core/grading";
+import { toAnswerEvents } from "../../core/events";
 import { BLITZ_LIVES, GAME_RULES, PLAY_FINISH_PER_HOUR } from "../../core/rules";
 import { roundQuestDelta } from "../../core/quests";
 import { nextSrsState } from "../../core/srs";
@@ -19,6 +20,8 @@ import { HOUR } from "../limits";
 import { hitRateLimit } from "../ratelimit";
 import { applyRoundResult, getProfile, getRound, progressFor, type RoundPayload } from "../repo";
 import { nowOf, type Ctx } from "./ctx";
+import { logActivity } from "./activity";
+import { refreshInsightsSafe } from "./insights";
 import { recordQuestProgress } from "./quests";
 
 /**
@@ -92,7 +95,7 @@ export async function finishRound(req: FinishRequest, userId: string, ctx: Ctx =
 
   let out;
   try {
-    out = await applyRoundResult(userId, row.id, { today, xp, updates, grammar, blitz });
+    out = await applyRoundResult(userId, row.id, { today, xp, updates, grammar, blitz, events: toAnswerEvents(results) });
   } catch (e) {
     // Thua cuộc đua nộp hai lần: UPDATE … WHERE finished_at IS NULL không khớp dòng nào
     if (hasTag(e, "round_finished_or_invalid")) throw new ServiceError(409, "ROUND_INVALID", "Vòng đã kết thúc hoặc không hợp lệ");
@@ -101,6 +104,10 @@ export async function finishRound(req: FinishRequest, userId: string, ctx: Ctx =
 
   // Nhiệm vụ ngày: sau khi vòng đã được ghi nhận; lỗi ở đây không làm hỏng kết quả vòng.
   await recordQuestProgress(userId, roundQuestDelta(questSteps), ctx);
+
+  // Giai đoạn 2: ghi hoạt động và cập nhật hồ sơ năng lực (dữ liệu phụ, không bao giờ làm hỏng kết quả vòng).
+  await logActivity(userId, "play/finish", { game: row.game, answers: results.length, correct: results.filter((r) => r.correct).length });
+  await refreshInsightsSafe(userId, ctx);
 
   return {
     xpGained: xp,

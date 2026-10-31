@@ -68,3 +68,15 @@ export function fmtVnTime(iso: string, now = new Date()): string {
   const dm = d.toLocaleDateString("vi-VN", { ...opt, day: "2-digit", month: "2-digit" });
   return `${hm} ngày ${dm}`;
 }
+
+/** "28/10/2026 14:35" theo múi giờ Việt Nam. */
+export function fmtVnDateTime(iso: string): string {
+  const d = new Date(iso);
+  const opt = { timeZone: "Asia/Ho_Chi_Minh" } as const;
+  const date = d.toLocaleDateString("vi-VN", { ...opt, day: "2-digit", month: "2-digit", year: "numeric" });
+  const time = d.toLocaleTimeString("vi-VN", { ...opt, hour: "2-digit", minute: "2-digit", hour12: false });
+  return `${date} ${time}`;
+}
+
+/** Nhãn bốn phần của bài thi / kiểm tra. */
+export const PART_LABEL = { vocab: "Từ vựng", grammar: "Ngữ pháp", reading: "Bài đọc", listening: "Bài nghe" } as const;
