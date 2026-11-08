@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SKILL_LABEL } from "@/core/skills";
+import { LearnTabs } from "@/components/LearnTabs";
 import { TodayActions } from "@/components/TodayActions";
 import { GAMES } from "@/games/registry";
 import { fmtNumber, pct } from "@/lib/format";
@@ -29,6 +30,7 @@ export default async function InsightsPage() {
 
   return (
     <main className="page page-narrow">
+      <LearnTabs active="insights" />
       <header className="stack" style={{ gap: 6 }}>
         <h1>Hồ sơ năng lực</h1>
         <p className="muted">

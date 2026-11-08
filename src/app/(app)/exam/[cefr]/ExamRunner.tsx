@@ -337,7 +337,7 @@ function Running({ cefr, examId, items, passages, expiresAt, resumed, submitting
       </section>
 
       {confirming || submitting ? (
-        <section className="sheet" role="alertdialog" aria-labelledby="cf-h" style={{ borderColor: "var(--red)" }}>
+        <section className="sheet" role="alertdialog" aria-labelledby="cf-h" style={{ borderColor: "var(--danger)" }}>
           <div className="stack">
             <h2 id="cf-h">Nộp bài?</h2>
             <p className="muted">

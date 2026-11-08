@@ -1,49 +1,60 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useSyncExternalStore } from "react";
-import { getThemePref, resolveTheme, setThemePref, subscribeTheme, type ResolvedTheme, type ThemePref } from "@/lib/theme";
+import { DEFAULT_THEME_ID } from "@/cosmetics/core/constants";
+import type { ThemeOption } from "@/cosmetics/registry";
+import { getAuto, getThemeId, setAuto, setTheme, subscribeTheme } from "@/lib/theme";
 
-function useThemePref(): ThemePref {
-  return useSyncExternalStore(subscribeTheme, getThemePref, () => "system");
+export function useThemeId(): string {
+  return useSyncExternalStore(subscribeTheme, getThemeId, () => DEFAULT_THEME_ID);
+}
+export function useThemeAuto(): boolean {
+  return useSyncExternalStore(subscribeTheme, getAuto, () => false);
 }
 
-function useResolvedTheme(): ResolvedTheme {
-  return useSyncExternalStore(subscribeTheme, () => resolveTheme(getThemePref()), () => "light");
+/** Chọn theme: nếu CSS của theme chưa có trong trang (theme mới thêm) thì để server render lại với CSS đó. */
+export function useChooseTheme(): (id: string) => void {
+  const router = useRouter();
+  return (id) => {
+    if (!setTheme(id)) router.refresh();
+  };
 }
 
-/** Nút nhỏ trên thanh trên cùng: đổi nhanh sáng ↔ tối. */
-export function ThemeButton() {
-  const theme = useResolvedTheme();
-  const next = theme === "dark" ? "light" : "dark";
-  const label = next === "dark" ? "Chuyển sang giao diện tối" : "Chuyển sang giao diện sáng";
+/** Công tắt "Tự động theo thiết bị": bật thì tối khi hệ điều hành ở chế độ tối, còn lại Vở ô ly. Dùng chung cho hồ sơ và menu nhanh. */
+export function AutoThemeSwitch() {
+  const auto = useThemeAuto();
   return (
-    <button type="button" className="mute" aria-label={label} title={label} onClick={() => setThemePref(next)}>
-      {theme === "dark" ? "☀️" : "🌙"}
+    <button type="button" className="btn btn-light btn-sm" aria-pressed={auto} onClick={() => setAuto(!auto)}>
+      {auto ? "Đang bật" : "Đang tắt"}
     </button>
   );
 }
 
-const OPTIONS: { value: ThemePref; label: string; icon: string }[] = [
-  { value: "system", label: "Tự động", icon: "🖥️" },
-  { value: "light", label: "Sáng", icon: "☀️" },
-  { value: "dark", label: "Tối", icon: "🌙" },
-];
-
-/** Bộ chọn đầy đủ cho trang hồ sơ. */
-export function ThemePicker() {
-  const pref = useThemePref();
+/** Bộ chọn đầy đủ cho trang hồ sơ (giai đoạn 2 chuyển sang Bộ sưu tập). Mỗi theme là một nút; chọn theme thì tắt chế độ tự động. */
+export function ThemePicker({ options }: { options: ThemeOption[] }) {
+  const id = useThemeId();
+  const auto = useThemeAuto();
+  const choose = useChooseTheme();
   return (
     <div className="set-block">
       <div>
         <b>Giao diện</b>
-        <p className="muted">“Tự động” theo cài đặt sáng/tối của thiết bị.</p>
+        <p className="muted">Chọn một giao diện, hoặc để thiết bị quyết định.</p>
       </div>
       <div className="scope" role="group" aria-label="Giao diện">
-        {OPTIONS.map((o) => (
-          <button key={o.value} type="button" className="pill" aria-pressed={pref === o.value} onClick={() => setThemePref(o.value)}>
-            <span aria-hidden="true">{o.icon}</span> {o.label}
+        {options.map((o) => (
+          <button key={o.id} type="button" className="pill" aria-pressed={!auto && id === o.id} onClick={() => choose(o.id)}>
+            {o.name}
           </button>
         ))}
+      </div>
+      <div className="toggle">
+        <div>
+          <b>Tự động theo thiết bị</b>
+          <p className="muted">Tối khi thiết bị ở chế độ tối, còn lại Vở ô ly.</p>
+        </div>
+        <AutoThemeSwitch />
       </div>
     </div>
   );

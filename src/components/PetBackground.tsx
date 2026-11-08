@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { BREAK_AFTER_MIN, breakReminder, greetingFor } from "@/core/pet-tips";
-import { isPetsOn, openPetChat, petSay, SAY_EVENT, setPetsOn, subscribePets, type PetMessage } from "@/lib/pets";
+import { isPetsOn, openPetChat, petSay, SAY_EVENT, subscribePets, type PetMessage } from "@/lib/pets";
+import { Icon } from "./Icon";
 
 /**
  * Hoạt ảnh nền: hai nhân vật chibi (Nuonuo, Phoebe) sống dọc đáy màn hình, dùng TOÀN BỘ hoạt ảnh
@@ -398,18 +399,7 @@ export function PetChatButton() {
   if (!on) return null;
   return (
     <button type="button" className="mute" aria-label="Trò chuyện với thú cưng" title="Trò chuyện với thú cưng" onClick={() => openPetChat()}>
-      💬
-    </button>
-  );
-}
-
-/** Nút nhỏ trên thanh trên cùng: bật/tắt thú cưng nền. */
-export function PetButton() {
-  const on = useSyncExternalStore(subscribePets, isPetsOn, () => false);
-  const label = on ? "Tắt thú cưng trợ lý" : "Bật thú cưng trợ lý";
-  return (
-    <button type="button" className="mute" aria-pressed={on} aria-label={label} title={label} onClick={() => setPetsOn(!on)}>
-      {on ? "🐾" : "🚫"}
+      <Icon name="chat" />
     </button>
   );
 }

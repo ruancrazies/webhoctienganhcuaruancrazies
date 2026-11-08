@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { CoachNote } from "@/components/CoachNote";
+import { LearnTabs } from "@/components/LearnTabs";
 import { TodayActions } from "@/components/TodayActions";
 import { LEVEL_NAMES, fmtNumber, ratio } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { getHome } from "@/server/services";
 import type { HomeLevel } from "@/types/api";
 
-export const metadata = { title: "Trang chủ · Web học từ vựng" };
+export const metadata = { title: "Học · Web học từ vựng" };
 export const dynamic = "force-dynamic";
 
 function statusChip(l: HomeLevel) {
@@ -64,6 +65,7 @@ export default async function HomePage() {
 
   return (
     <main className="page">
+      <LearnTabs active="today" />
       <section className="hello" aria-labelledby="hello-h">
         <h1 id="hello-h">
           Chào <span className="name">{profile.username}</span>

@@ -20,9 +20,18 @@
     "content:export": "tsx scripts/content/export.ts",
     "db:bench": "tsx tests/db/bench.ts",
     "auth:secrets": "tsx scripts/auth/gen-secrets.ts",
-    "test:api": "vitest run --config vitest.api.config.ts"
+    "test:api": "vitest run --config vitest.api.config.ts",
+    "prebuild": "tsx scripts/cosmetics/gen-registry.ts",
+    "gen:registry": "tsx scripts/cosmetics/gen-registry.ts",
+    "check:registry": "tsx scripts/cosmetics/gen-registry.ts --check",
+    "new:theme": "tsx scripts/cosmetics/new.ts theme",
+    "new:avatar": "tsx scripts/cosmetics/new.ts avatar",
+    "new:frame": "tsx scripts/cosmetics/new.ts frame",
+    "new:scene": "tsx scripts/cosmetics/new-scene.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@fontsource/be-vietnam-pro": "^5.3.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",
     "csv-parse": "^7.0.3",
@@ -36,7 +45,9 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@electric-sql/pglite": "^0.5.11",
+    "@playwright/test": "^1.65.0",
     "@types/node": "^22.20.5",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",

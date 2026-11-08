@@ -71,7 +71,7 @@ export function ScoreSummary({
   return (
     <section className="sheet" aria-labelledby="res-h">
       <div className="grade">
-        <h1 id="res-h" style={{ fontSize: 14, fontWeight: 600, color: "var(--pencil)" }}>{heading}</h1>
+        <h1 id="res-h" style={{ fontSize: 14, fontWeight: 600, color: "var(--text-soft)" }}>{heading}</h1>
         <div className={`score${failed ? " fail" : ""}`} aria-label={`Điểm tổng ${t} phần trăm`}>{t}%</div>
         {verdict ? <p className={`verdict${passVerdict ? " pass" : ""}`}>{verdict}</p> : null}
         {aboveParts}

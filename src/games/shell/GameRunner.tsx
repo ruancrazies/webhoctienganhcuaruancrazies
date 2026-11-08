@@ -213,7 +213,7 @@ export function GameRunner({ game, scope, label }: Props) {
         </div>
 
         {leaving && phase === "playing" ? (
-          <section className="sheet sheet-plain stack" role="alertdialog" aria-labelledby="lv-h" style={{ borderColor: "var(--red)" }}>
+          <section className="sheet sheet-plain stack" role="alertdialog" aria-labelledby="lv-h" style={{ borderColor: "var(--danger)" }}>
             <h2 id="lv-h">Thoát vòng chơi?</h2>
             <p className="muted">Kết quả của vòng này sẽ không được tính.</p>
             <div className="row">

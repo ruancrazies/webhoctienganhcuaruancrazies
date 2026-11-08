@@ -1,0 +1,8 @@
+/* Mặc định: một tờ vở nghiêng, vệt dạ quang và cây bút chì. Chỉ dùng biến --ls-* (không mã màu thô). */
+[data-login-scene="default"] .ls-art > i:nth-child(1) { right: 9%; bottom: 10%; width: min(44%, 340px); aspect-ratio: 3 / 4; background-color: var(--surface); border: 2px solid var(--accent); border-radius: 10px; transform: rotate(-4deg);
+  background-image: repeating-linear-gradient(transparent 0 27px, color-mix(in srgb, var(--accent) 16%, transparent) 27px 28px); }
+[data-login-scene="default"] .ls-art > i:nth-child(1)::before { content: ""; position: absolute; top: 0; bottom: 0; left: 14%; border-left: 2px solid var(--margin); opacity: 0.55; }
+[data-login-scene="default"] .ls-art > i:nth-child(2) { right: 12%; bottom: 52%; width: min(30%, 230px); height: 22px; background: var(--mark); border-radius: 3px; transform: rotate(-4deg); opacity: 0.9; }
+[data-login-scene="default"] .ls-art > i:nth-child(3) { right: 4%; bottom: 18%; width: 150px; height: 14px; background: var(--ls-accent); border-radius: 3px 8px 8px 3px; transform: rotate(-52deg); transform-origin: right center; }
+[data-login-scene="default"] .ls-art > i:nth-child(3)::after { content: ""; position: absolute; left: -12px; top: 0; border-right: 12px solid var(--mark); border-top: 7px solid transparent; border-bottom: 7px solid transparent; }
+@container login (max-width: 799px) { [data-login-scene="default"] .ls-art { display: none; } }

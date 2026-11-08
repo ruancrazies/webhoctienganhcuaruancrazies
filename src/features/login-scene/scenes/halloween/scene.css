@@ -1,0 +1,10 @@
+/* Halloween: trăng, đồi tối, hai quả bí ngô. Chỉ dùng biến --ls-* và color-mix (không mã màu thô). */
+[data-login-scene="halloween"] .ls-art > i:nth-child(1) { top: 40%; right: 8%; width: clamp(40px, 11cqw, 110px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 35%, var(--ls-text), var(--ls-glow) 75%); box-shadow: 0 0 60px 8px color-mix(in srgb, var(--ls-glow) 40%, transparent); }
+[data-login-scene="halloween"] .ls-art > i:nth-child(2) { left: -10%; right: -10%; bottom: -14%; height: 30%; border-radius: 50% 50% 0 0 / 100% 100% 0 0; background: color-mix(in srgb, var(--ls-bg) 55%, black); }
+[data-login-scene="halloween"] .ls-art > i:nth-child(n + 3) { width: 64px; height: 54px; bottom: 7%; background: var(--ls-accent); border-radius: 50% 50% 46% 46%; box-shadow: inset -7px -5px 0 color-mix(in srgb, var(--ls-accent) 72%, black); }
+[data-login-scene="halloween"] .ls-art > i:nth-child(3) { left: 10%; }
+[data-login-scene="halloween"] .ls-art > i:nth-child(4) { left: 28%; transform: scale(0.72); transform-origin: bottom center; }
+[data-login-scene="halloween"] .ls-art > i:nth-child(n + 3)::before { content: ""; position: absolute; left: 28px; top: -9px; width: 8px; height: 12px; border-radius: 3px; background: color-mix(in srgb, var(--ls-bg2) 50%, black); }
+[data-login-scene="halloween"] .ls-art > i:nth-child(n + 3)::after { content: ""; position: absolute; inset: 0; background: var(--ls-bg);
+  clip-path: path("M16 20 l6 -8 l6 8 z M36 20 l6 -8 l6 8 z M14 34 q18 14 36 0 q-18 6 -36 0 z"); }
+@container login (max-width: 799px) { [data-login-scene="halloween"] .ls-art > i:nth-child(n + 3) { display: none; } [data-login-scene="halloween"] .ls-art > i:nth-child(1) { top: 14px; right: 14px; } }

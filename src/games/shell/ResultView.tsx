@@ -77,7 +77,7 @@ export function ResultView({ meta, result, answered, total, cefr, scope, onRepla
     <div className="stack" style={{ gap: 20 }}>
       <section className="sheet" aria-labelledby="gr-h">
         <div className="grade">
-          <h1 id="gr-h" style={{ fontSize: 14, fontWeight: 600, color: "var(--pencil)" }}>
+          <h1 id="gr-h" style={{ fontSize: 14, fontWeight: 600, color: "var(--text-soft)" }}>
             {meta.emoji} {meta.name} · cấp {cefr}
           </h1>
           <div className="score" aria-label={`Nhận được ${result.xpGained} XP`} style={{ fontSize: result.xpGained >= 1000 ? 38 : 48 }}>

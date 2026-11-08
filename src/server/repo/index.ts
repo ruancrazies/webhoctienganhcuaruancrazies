@@ -10,3 +10,4 @@ export * from "./passages";
 export * from "./results";
 export * from "./insights";
 export * from "./ai";
+export * from "./scenes";

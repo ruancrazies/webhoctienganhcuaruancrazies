@@ -7,22 +7,6 @@ export function useMuted(): boolean {
   return useSyncExternalStore(subscribeMuted, isMuted, () => false);
 }
 
-export function MuteButton() {
-  const muted = useMuted();
-  return (
-    <button
-      type="button"
-      className="mute"
-      aria-pressed={muted}
-      aria-label={muted ? "Bật âm thanh" : "Tắt âm thanh"}
-      title={muted ? "Bật âm thanh" : "Tắt âm thanh"}
-      onClick={() => setMuted(!muted)}
-    >
-      {muted ? "🔇" : "🔊"}
-    </button>
-  );
-}
-
 /** Công tắc đầy đủ cho trang hồ sơ. */
 export function MuteToggle() {
   const muted = useMuted();

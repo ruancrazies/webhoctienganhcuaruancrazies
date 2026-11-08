@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuthShell } from "../_components/AuthShell";
 import { supabaseCaptcha } from "@/server/captcha";
 import { VerifyForm } from "../_components/VerifyForm";
 import { first, type SearchParams } from "../search-params";
@@ -12,7 +13,7 @@ export default async function VerifyPage({ searchParams }: { searchParams: Searc
   // Khi Supabase tự xác minh CAPTCHA, đăng nhập không tự gửi lại mã được: người dùng bấm "Gửi lại" ở dưới.
   const resent = unconfirmed && !supabaseCaptcha();
   return (
-    <>
+    <AuthShell>
       <h1>Xác nhận email</h1>
       <p className="muted">
         {unconfirmed
@@ -26,6 +27,6 @@ export default async function VerifyPage({ searchParams }: { searchParams: Searc
       <p className="links">
         <Link href="/login">Quay lại đăng nhập</Link>
       </p>
-    </>
+    </AuthShell>
   );
 }

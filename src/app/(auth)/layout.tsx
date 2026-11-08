@@ -1,12 +1,6 @@
 import type { ReactNode } from "react";
 
+/** Trung tính: mỗi trang tự chọn khung (AuthShell cho trang thường, LoginScene cho /login). */
 export default function AuthLayout({ children }: { children: ReactNode }) {
-  return (
-    <main className="auth-shell">
-      <div className="card">
-        <p className="brand">Web học từ vựng</p>
-        {children}
-      </div>
-    </main>
-  );
+  return children;
 }

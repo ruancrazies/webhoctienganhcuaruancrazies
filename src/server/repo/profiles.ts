@@ -1,5 +1,7 @@
 import { createAdminClient } from "../db";
 import type { BoardRow } from "../../types/api";
+import type { Role } from "../../core/roles";
+import { parseRole } from "../../core/roles";
 import type { Cefr } from "../../core/types";
 import { unwrap, unwrapList } from "./shared";
 
@@ -73,4 +75,10 @@ export async function updateUsername(userId: string, username: string): Promise<
 /** Đổi avatar (mã trong core/avatars.ts, hoặc null để về chữ cái đầu). */
 export async function updateAvatar(userId: string, avatar: string | null): Promise<void> {
   unwrap("profiles.updateAvatar", await db().from("profiles").update({ avatar }).eq("id", userId));
+}
+
+/** Vai trò của người dùng, đọc từ DB mỗi lần (không tin dữ liệu từ client). Không có dòng hồ sơ → "user". */
+export async function getRole(userId: string): Promise<Role> {
+  const r = unwrap<{ role: string }>("profiles.getRole", await db().from("profiles").select("role").eq("id", userId).maybeSingle());
+  return parseRole(r?.role);
 }

@@ -32,11 +32,11 @@ function ScoreChart({ items }: { items: ResultListItem[] }) {
       <h2 id="ch-h" style={{ marginBottom: 8 }}>Điểm theo thời gian</h2>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label} style={{ width: "100%", height: "auto", display: "block" }}>
         {[0, 0.5, 1].map((g) => (
-          <line key={g} x1={padX} x2={W - padX} y1={y(g)} y2={y(g)} stroke="var(--line)" strokeWidth="1" strokeDasharray={g === 0.5 ? "3 3" : undefined} />
+          <line key={g} x1={padX} x2={W - padX} y1={y(g)} y2={y(g)} stroke="var(--border)" strokeWidth="1" strokeDasharray={g === 0.5 ? "3 3" : undefined} />
         ))}
-        <polyline fill="none" stroke="var(--pencil)" strokeWidth="2" points={pts.map((p, i) => `${x(i)},${y(p.scores.total)}`).join(" ")} />
+        <polyline fill="none" stroke="var(--text-soft)" strokeWidth="2" points={pts.map((p, i) => `${x(i)},${y(p.scores.total)}`).join(" ")} />
         {pts.map((p, i) => (
-          <circle key={p.id} cx={x(i)} cy={y(p.scores.total)} r="4" fill={p.type === "exam" ? "var(--red)" : "var(--ink)"}>
+          <circle key={p.id} cx={x(i)} cy={y(p.scores.total)} r="4" fill={p.type === "exam" ? "var(--danger)" : "var(--accent)"}>
             <title>{`${titleOf(p)} · ${fmtVnDateTime(p.finishedAt)} · ${pct(p.scores.total)}`}</title>
           </circle>
         ))}

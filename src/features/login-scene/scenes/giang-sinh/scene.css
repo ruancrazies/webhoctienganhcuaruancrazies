@@ -1,0 +1,9 @@
+/* Giáng sinh: nền tuyết, hai cây thông, ngôi sao. Chỉ dùng biến --ls-* và color-mix (không mã màu thô). */
+[data-login-scene="giang-sinh"] .ls-art > i:nth-child(1) { left: -10%; right: -10%; bottom: -14%; height: 26%; border-radius: 50% 50% 0 0 / 100% 100% 0 0; background: var(--ls-text); }
+[data-login-scene="giang-sinh"] .ls-art > i:nth-child(n + 2):nth-child(-n + 3) { width: 90px; height: 130px; bottom: 12%; background: color-mix(in srgb, var(--ls-bg2) 60%, black);
+  clip-path: polygon(50% 0, 82% 34%, 66% 34%, 92% 66%, 70% 66%, 100% 100%, 0 100%, 30% 66%, 8% 66%, 34% 34%, 18% 34%); }
+[data-login-scene="giang-sinh"] .ls-art > i:nth-child(2) { right: 12%; }
+[data-login-scene="giang-sinh"] .ls-art > i:nth-child(3) { right: 30%; transform: scale(0.7); transform-origin: bottom center; }
+[data-login-scene="giang-sinh"] .ls-art > i:nth-child(4) { top: 9%; right: 16%; width: 34px; height: 34px; background: var(--ls-glow);
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+@container login (max-width: 799px) { [data-login-scene="giang-sinh"] .ls-art > i:nth-child(n + 2):nth-child(-n + 3) { display: none; } [data-login-scene="giang-sinh"] .ls-art > i:nth-child(4) { top: 14px; right: 14px; width: 24px; height: 24px; } }

@@ -5,12 +5,13 @@ import { LevelProgress } from "@/components/LevelProgress";
 import { MuteToggle } from "@/components/MuteButton";
 import { PetSettings } from "@/components/PetSettings";
 import { ThemePicker } from "@/components/ThemeToggle";
+import { themeOptions } from "@/cosmetics/registry";
 import { LEVEL_NAMES, fmtNumber, ratio } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { getHome } from "@/server/services";
 import { AvatarPicker, UsernameForm } from "./AccountSettings";
 
-export const metadata = { title: "Hồ sơ · Web học từ vựng" };
+export const metadata = { title: "Tôi · Web học từ vựng" };
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
@@ -91,7 +92,7 @@ export default async function ProfilePage() {
 
       <section className="sheet sheet-plain stack" aria-labelledby="st-h">
         <h2 id="st-h">Cài đặt</h2>
-        <ThemePicker />
+        <ThemePicker options={themeOptions()} />
         <MuteToggle />
         <PetSettings />
         <form action={logoutAction}>

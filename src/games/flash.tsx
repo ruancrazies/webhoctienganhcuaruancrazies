@@ -110,7 +110,7 @@ export function FlashGame({ items, onFinish }: GameProps) {
             <button type="button" className="btn btn-red" onClick={() => rate(false)}>
               ✗ Chưa nhớ
             </button>
-            <button type="button" className="btn" style={{ background: "var(--good)", borderColor: "var(--good)", boxShadow: "0 3px 0 #0f5c3c" }} onClick={() => rate(true)}>
+            <button type="button" className="btn" style={{ background: "var(--success)", borderColor: "var(--success)", boxShadow: "0 3px 0 var(--success-edge)" }} onClick={() => rate(true)}>
               ✓ Đã nhớ
             </button>
           </div>
