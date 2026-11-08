@@ -7,6 +7,7 @@ import { hitRateLimit } from "../ratelimit";
 import { bumpQuests, claimQuestRpc, questRows } from "../repo";
 import { nowOf, type Ctx } from "./ctx";
 import { logActivity } from "./activity";
+import { recordEventProgress } from "./seasonEvents";
 
 /** Nhiệm vụ hôm nay (giờ VN) của người dùng. Chỉ đọc: chưa có dòng thì hiển thị tiến độ 0. */
 export async function getDailyQuests(userId: string, ctx: Ctx = {}): Promise<QuestsResponse> {
@@ -27,6 +28,8 @@ export async function recordQuestProgress(userId: string, delta: QuestDelta, ctx
   } catch (e) {
     console.error("[quests] ghi tiến độ thất bại", e);
   }
+  // Nhiệm vụ sự kiện dùng cùng một delta; lỗi bên này không ảnh hưởng bên kia (recordEventProgress cũng không ném lỗi).
+  await recordEventProgress(userId, delta, ctx);
 }
 
 /** Nhận thưởng một nhiệm vụ của HÔM NAY (ngày cũ đã hết hạn, không nhận được). */

@@ -466,3 +466,45 @@ a.game:hover { background: var(--accent-soft); }
   .topbar-me { display: flex; }
   .gal-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ---- Tôi: lối vào các mục ---- */
+.linkcard { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 12px 16px; background: var(--surface); border: 1.5px solid var(--control-border); border-radius: var(--radius); color: var(--text); text-decoration: none; box-shadow: 0 3px 0 var(--border); }
+.linkcard:hover { background: var(--accent-soft); }
+.linkcard-t { display: grid; gap: 2px; min-width: 0; }
+.linkcard svg { flex: none; color: var(--accent); }
+
+/* ---- Bộ sưu tập ---- */
+.cos-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; grid-template-columns: 1fr; }
+.cos-card { display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: start; padding: 14px; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); }
+.cos-card[data-state="equipped"] { border-color: var(--success); border-width: 2px; }
+.cos-card[data-state="locked"] { background: var(--bg); }
+.cos-art { display: grid; place-items: center; min-height: 96px; }
+.cos-art.is-locked { opacity: 0.6; filter: grayscale(0.55); } /* món khóa: xám, nhưng tên + lý do luôn là chữ thật */
+.cos-body { display: grid; gap: 8px; min-width: 0; }
+.cos-name { font-size: 17px; font-weight: 800; overflow-wrap: anywhere; }
+.cos-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+.cos-status { display: flex; align-items: center; gap: 4px; margin: 0; }
+.cos-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.cos-actions .btn { min-height: 44px; }
+.cos-theme { width: 96px; height: 96px; display: grid; grid-template-rows: auto auto auto; align-content: center; gap: 6px; padding: 10px; border: 1.5px solid var(--border); border-radius: 10px; background-color: var(--bg); background-image: var(--pattern-image); background-size: var(--pattern-size); color: var(--text); }
+.cos-theme b { font-size: 22px; line-height: 1; font-weight: 800; color: var(--accent); }
+.cos-sw { display: flex; gap: 4px; }
+.cos-sw i { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--surface); }
+.sw-accent { background: var(--accent); } .sw-mark { background: var(--mark); } .sw-danger { background: var(--danger); } .sw-success { background: var(--success); }
+.cos-previewbar { position: sticky; bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); z-index: 20; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: var(--radius); box-shadow: 0 6px 0 var(--border); }
+.cos-previewbar .btn { min-height: 44px; }
+@media (min-width: 720px) {
+  .cos-grid { grid-template-columns: 1fr 1fr; }
+  .cos-previewbar { bottom: 16px; }
+}
+.cos-cnt { font-size: 13px; font-weight: 600; margin-left: 2px; } /* số đếm trong tab: giữ nguyên màu chữ (không dùng opacity vì làm tụt tương phản) */
+
+/* ---- Sự kiện theo mùa (giai đoạn 3): chỉ dùng token ---- */
+.ev-count { display: flex; align-items: center; gap: 6px; margin: 4px 0 12px; }
+.ev-tasks { gap: 16px; list-style: none; padding: 0; margin: 0; }
+.ev-reward { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-soft); }
+.ev-art { display: inline-grid; place-items: center; flex: none; }
+.lvl-strip { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); }
+.lvl-strip .bar { flex: 1; }
+.tab-dot { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 6px; border-radius: 999px; background: var(--danger); color: var(--on-danger); font-size: 12px; line-height: 18px; text-align: center; }
+.pill[aria-current="page"] .tab-dot { background: var(--on-accent); color: var(--accent); }

@@ -1,0 +1,213 @@
+{"slug":"a1-general-vocabulary","title":"Từ vựng chung","emoji":"📚","cefr":"A1","domain":"general","sort":1}
+{"slug":"a1-family","title":"Gia đình","emoji":"👪","cefr":"A1","domain":"general","sort":2}
+{"slug":"a1-home-objects","title":"Đồ vật trong nhà","emoji":"🏠","cefr":"A1","domain":"general","sort":3}
+{"slug":"a1-food-drink","title":"Ăn uống","emoji":"🍽️","cefr":"A1","domain":"general","sort":4}
+{"slug":"a1-time-calendar","title":"Thời gian & lịch","emoji":"📅","cefr":"A1","domain":"general","sort":5}
+{"slug":"a1-arts-entertainment","title":"Nghệ thuật & giải trí","emoji":"🎭","cefr":"A1","domain":"general","sort":6}
+{"slug":"a1-nature-animals","title":"Thiên nhiên & động vật","emoji":"🌿","cefr":"A1","domain":"general","sort":7}
+{"slug":"a1-school-education","title":"Trường học & giáo dục","emoji":"🎓","cefr":"A1","domain":"general","sort":8}
+{"slug":"a1-transport","title":"Giao thông","emoji":"🚌","cefr":"A1","domain":"general","sort":9}
+{"slug":"a1-clothes-accessories","title":"Quần áo & phụ kiện","emoji":"👕","cefr":"A1","domain":"general","sort":10}
+{"slug":"a1-sports-fitness","title":"Thể thao & sức khỏe thể chất","emoji":"⚽","cefr":"A1","domain":"general","sort":11}
+{"slug":"a1-colors-shapes","title":"Màu sắc & hình dạng","emoji":"🎨","cefr":"A1","domain":"general","sort":12}
+{"slug":"a1-people-appearance","title":"Con người & ngoại hình","emoji":"🧑","cefr":"A1","domain":"general","sort":13}
+{"slug":"a1-numbers-measurements","title":"Số & đo lường","emoji":"🔢","cefr":"A1","domain":"general","sort":14}
+{"slug":"a1-work-study","title":"Công việc & học tập","emoji":"💼","cefr":"A1","domain":"general","sort":15}
+{"slug":"a1-shopping-money","title":"Mua sắm & tiền bạc","emoji":"🛍️","cefr":"A1","domain":"general","sort":16}
+{"slug":"a1-technology","title":"Công nghệ","emoji":"📱","cefr":"A1","domain":"general","sort":17}
+{"slug":"a1-emotions-relationships","title":"Cảm xúc & quan hệ","emoji":"❤️","cefr":"A1","domain":"general","sort":18}
+{"slug":"a1-health-body","title":"Sức khỏe & cơ thể","emoji":"🩺","cefr":"A1","domain":"medical","sort":19}
+{"slug":"a1-media-communication","title":"Truyền thông","emoji":"📰","cefr":"A1","domain":"general","sort":20}
+{"slug":"a1-society-culture","title":"Xã hội & văn hóa","emoji":"🏛️","cefr":"A1","domain":"general","sort":21}
+{"slug":"a1-opinions","title":"Ý kiến & quan điểm","emoji":"💬","cefr":"A1","domain":"general","sort":22}
+{"slug":"a1-law-government","title":"Luật & chính quyền","emoji":"⚖️","cefr":"A1","domain":"law","sort":23}
+{"slug":"a1-business-management","title":"Kinh doanh & quản lý","emoji":"📊","cefr":"A1","domain":"business","sort":24}
+{"slug":"a1-medical-care","title":"Y tế & chăm sóc","emoji":"🏥","cefr":"A1","domain":"medical","sort":25}
+{"slug":"a1-anatomy-physiology","title":"Giải phẫu & sinh lý","emoji":"🫀","cefr":"A1","domain":"medical","sort":26}
+{"slug":"a1-geography-places","title":"Địa lý & địa điểm","emoji":"🗺️","cefr":"A1","domain":"general","sort":27}
+{"slug":"a1-buildings-construction","title":"Nhà cửa & xây dựng","emoji":"🏗️","cefr":"A1","domain":"general","sort":28}
+{"slug":"a1-greetings","title":"Chào hỏi","emoji":"👋","cefr":"A1","domain":"general","sort":29}
+{"slug":"a1-environment-weather","title":"Môi trường & thời tiết","emoji":"☁️","cefr":"A1","domain":"general","sort":30}
+{"slug":"a1-travel-basics","title":"Du lịch cơ bản","emoji":"🧳","cefr":"A1","domain":"general","sort":31}
+{"slug":"a1-science-research","title":"Khoa học & nghiên cứu","emoji":"🔬","cefr":"A1","domain":"science","sort":32}
+{"slug":"a1-psychology","title":"Tâm lý học","emoji":"🧠","cefr":"A1","domain":"general","sort":33}
+{"slug":"a1-literature-language","title":"Văn học & ngôn ngữ","emoji":"📖","cefr":"A1","domain":"general","sort":34}
+{"slug":"a1-engineering-manufacturing","title":"Kỹ thuật & sản xuất","emoji":"🏭","cefr":"A1","domain":"science","sort":35}
+{"slug":"a1-religion-beliefs","title":"Tôn giáo & tín ngưỡng","emoji":"🕊️","cefr":"A1","domain":"general","sort":36}
+{"slug":"a1-programming-intro","title":"Nhập môn lập trình","emoji":"👨‍💻","cefr":"A1","domain":"it","sort":37}
+{"slug":"a2-general-vocabulary","title":"Từ vựng chung","emoji":"📚","cefr":"A2","domain":"general","sort":1}
+{"slug":"a2-family","title":"Gia đình","emoji":"👪","cefr":"A2","domain":"general","sort":2}
+{"slug":"a2-home-objects","title":"Đồ vật trong nhà","emoji":"🏠","cefr":"A2","domain":"general","sort":3}
+{"slug":"a2-food-drink","title":"Ăn uống","emoji":"🍽️","cefr":"A2","domain":"general","sort":4}
+{"slug":"a2-time-calendar","title":"Thời gian & lịch","emoji":"📅","cefr":"A2","domain":"general","sort":5}
+{"slug":"a2-arts-entertainment","title":"Nghệ thuật & giải trí","emoji":"🎭","cefr":"A2","domain":"general","sort":6}
+{"slug":"a2-nature-animals","title":"Thiên nhiên & động vật","emoji":"🌿","cefr":"A2","domain":"general","sort":7}
+{"slug":"a2-school-education","title":"Trường học & giáo dục","emoji":"🎓","cefr":"A2","domain":"general","sort":8}
+{"slug":"a2-transport","title":"Giao thông","emoji":"🚌","cefr":"A2","domain":"general","sort":9}
+{"slug":"a2-clothes-accessories","title":"Quần áo & phụ kiện","emoji":"👕","cefr":"A2","domain":"general","sort":10}
+{"slug":"a2-sports-fitness","title":"Thể thao & sức khỏe thể chất","emoji":"⚽","cefr":"A2","domain":"general","sort":11}
+{"slug":"a2-colors-shapes","title":"Màu sắc & hình dạng","emoji":"🎨","cefr":"A2","domain":"general","sort":12}
+{"slug":"a2-people-appearance","title":"Con người & ngoại hình","emoji":"🧑","cefr":"A2","domain":"general","sort":13}
+{"slug":"a2-numbers-measurements","title":"Số & đo lường","emoji":"🔢","cefr":"A2","domain":"general","sort":14}
+{"slug":"a2-work-study","title":"Công việc & học tập","emoji":"💼","cefr":"A2","domain":"general","sort":15}
+{"slug":"a2-shopping-money","title":"Mua sắm & tiền bạc","emoji":"🛍️","cefr":"A2","domain":"general","sort":16}
+{"slug":"a2-technology","title":"Công nghệ","emoji":"📱","cefr":"A2","domain":"general","sort":17}
+{"slug":"a2-emotions-relationships","title":"Cảm xúc & quan hệ","emoji":"❤️","cefr":"A2","domain":"general","sort":18}
+{"slug":"a2-health-body","title":"Sức khỏe & cơ thể","emoji":"🩺","cefr":"A2","domain":"medical","sort":19}
+{"slug":"a2-media-communication","title":"Truyền thông","emoji":"📰","cefr":"A2","domain":"general","sort":20}
+{"slug":"a2-society-culture","title":"Xã hội & văn hóa","emoji":"🏛️","cefr":"A2","domain":"general","sort":21}
+{"slug":"a2-opinions","title":"Ý kiến & quan điểm","emoji":"💬","cefr":"A2","domain":"general","sort":22}
+{"slug":"a2-law-government","title":"Luật & chính quyền","emoji":"⚖️","cefr":"A2","domain":"law","sort":23}
+{"slug":"a2-business-management","title":"Kinh doanh & quản lý","emoji":"📊","cefr":"A2","domain":"business","sort":24}
+{"slug":"a2-medical-care","title":"Y tế & chăm sóc","emoji":"🏥","cefr":"A2","domain":"medical","sort":25}
+{"slug":"a2-geography-places","title":"Địa lý & địa điểm","emoji":"🗺️","cefr":"A2","domain":"general","sort":27}
+{"slug":"a2-buildings-construction","title":"Nhà cửa & xây dựng","emoji":"🏗️","cefr":"A2","domain":"general","sort":28}
+{"slug":"a2-environment-weather","title":"Môi trường & thời tiết","emoji":"☁️","cefr":"A2","domain":"general","sort":30}
+{"slug":"a2-travel-basics","title":"Du lịch cơ bản","emoji":"🧳","cefr":"A2","domain":"travel","sort":31}
+{"slug":"a2-science-research","title":"Khoa học & nghiên cứu","emoji":"🔬","cefr":"A2","domain":"science","sort":32}
+{"slug":"a2-psychology","title":"Tâm lý học","emoji":"🧠","cefr":"A2","domain":"general","sort":33}
+{"slug":"a2-literature-language","title":"Văn học & ngôn ngữ","emoji":"📖","cefr":"A2","domain":"general","sort":34}
+{"slug":"a2-religion-beliefs","title":"Tôn giáo & tín ngưỡng","emoji":"🕊️","cefr":"A2","domain":"general","sort":36}
+{"slug":"a2-programming-intro","title":"Nhập môn lập trình","emoji":"👨‍💻","cefr":"A2","domain":"it","sort":37}
+{"slug":"a2-politics-government","title":"Chính trị & chính phủ","emoji":"🏛️","cefr":"A2","domain":"law","sort":38}
+{"slug":"a2-crime-safety","title":"Tội phạm & an toàn","emoji":"🚨","cefr":"A2","domain":"general","sort":39}
+{"slug":"a2-finance-accounting","title":"Tài chính & kế toán","emoji":"💰","cefr":"A2","domain":"business","sort":40}
+{"slug":"a2-agriculture-food-production","title":"Nông nghiệp & sản xuất thực phẩm","emoji":"🌾","cefr":"A2","domain":"science","sort":41}
+{"slug":"a2-chemistry-materials","title":"Hóa học & vật liệu","emoji":"🧪","cefr":"A2","domain":"science","sort":42}
+{"slug":"a2-physics-math","title":"Vật lý & toán học","emoji":"📐","cefr":"A2","domain":"science","sort":43}
+{"slug":"a2-military-conflict","title":"Quân sự & xung đột","emoji":"🪖","cefr":"A2","domain":"law","sort":44}
+{"slug":"a2-marketing-sales","title":"Tiếp thị & bán hàng","emoji":"📣","cefr":"A2","domain":"business","sort":45}
+{"slug":"b1-general-vocabulary","title":"Từ vựng chung","emoji":"📚","cefr":"B1","domain":"general","sort":1}
+{"slug":"b1-family","title":"Gia đình","emoji":"👪","cefr":"B1","domain":"general","sort":2}
+{"slug":"b1-home-objects","title":"Đồ vật trong nhà","emoji":"🏠","cefr":"B1","domain":"general","sort":3}
+{"slug":"b1-food-drink","title":"Ăn uống","emoji":"🍽️","cefr":"B1","domain":"general","sort":4}
+{"slug":"b1-time-calendar","title":"Thời gian & lịch","emoji":"📅","cefr":"B1","domain":"general","sort":5}
+{"slug":"b1-arts-entertainment","title":"Nghệ thuật & giải trí","emoji":"🎭","cefr":"B1","domain":"general","sort":6}
+{"slug":"b1-nature-animals","title":"Thiên nhiên & động vật","emoji":"🌿","cefr":"B1","domain":"general","sort":7}
+{"slug":"b1-school-education","title":"Trường học & giáo dục","emoji":"🎓","cefr":"B1","domain":"general","sort":8}
+{"slug":"b1-transport","title":"Giao thông","emoji":"🚌","cefr":"B1","domain":"general","sort":9}
+{"slug":"b1-clothes-accessories","title":"Quần áo & phụ kiện","emoji":"👕","cefr":"B1","domain":"general","sort":10}
+{"slug":"b1-sports-fitness","title":"Thể thao & sức khỏe thể chất","emoji":"⚽","cefr":"B1","domain":"general","sort":11}
+{"slug":"b1-colors-shapes","title":"Màu sắc & hình dạng","emoji":"🎨","cefr":"B1","domain":"general","sort":12}
+{"slug":"b1-people-appearance","title":"Con người & ngoại hình","emoji":"🧑","cefr":"B1","domain":"general","sort":13}
+{"slug":"b1-numbers-measurements","title":"Số & đo lường","emoji":"🔢","cefr":"B1","domain":"general","sort":14}
+{"slug":"b1-work-study","title":"Công việc & học tập","emoji":"💼","cefr":"B1","domain":"general","sort":15}
+{"slug":"b1-shopping-money","title":"Mua sắm & tiền bạc","emoji":"🛍️","cefr":"B1","domain":"business","sort":16}
+{"slug":"b1-technology","title":"Công nghệ","emoji":"📱","cefr":"B1","domain":"it","sort":17}
+{"slug":"b1-emotions-relationships","title":"Cảm xúc & quan hệ","emoji":"❤️","cefr":"B1","domain":"general","sort":18}
+{"slug":"b1-health-body","title":"Sức khỏe & cơ thể","emoji":"🩺","cefr":"B1","domain":"medical","sort":19}
+{"slug":"b1-media-communication","title":"Truyền thông","emoji":"📰","cefr":"B1","domain":"general","sort":20}
+{"slug":"b1-society-culture","title":"Xã hội & văn hóa","emoji":"🏛️","cefr":"B1","domain":"general","sort":21}
+{"slug":"b1-opinions","title":"Ý kiến & quan điểm","emoji":"💬","cefr":"B1","domain":"general","sort":22}
+{"slug":"b1-law-government","title":"Luật & chính quyền","emoji":"⚖️","cefr":"B1","domain":"law","sort":23}
+{"slug":"b1-business-management","title":"Kinh doanh & quản lý","emoji":"📊","cefr":"B1","domain":"business","sort":24}
+{"slug":"b1-medical-care","title":"Y tế & chăm sóc","emoji":"🏥","cefr":"B1","domain":"medical","sort":25}
+{"slug":"b1-anatomy-physiology","title":"Giải phẫu & sinh lý","emoji":"🫀","cefr":"B1","domain":"medical","sort":26}
+{"slug":"b1-geography-places","title":"Địa lý & địa điểm","emoji":"🗺️","cefr":"B1","domain":"general","sort":27}
+{"slug":"b1-buildings-construction","title":"Nhà cửa & xây dựng","emoji":"🏗️","cefr":"B1","domain":"general","sort":28}
+{"slug":"b1-greetings","title":"Chào hỏi","emoji":"👋","cefr":"B1","domain":"general","sort":29}
+{"slug":"b1-environment-weather","title":"Môi trường & thời tiết","emoji":"☁️","cefr":"B1","domain":"general","sort":30}
+{"slug":"b1-travel-basics","title":"Du lịch cơ bản","emoji":"🧳","cefr":"B1","domain":"travel","sort":31}
+{"slug":"b1-science-research","title":"Khoa học & nghiên cứu","emoji":"🔬","cefr":"B1","domain":"science","sort":32}
+{"slug":"b1-psychology","title":"Tâm lý học","emoji":"🧠","cefr":"B1","domain":"general","sort":33}
+{"slug":"b1-literature-language","title":"Văn học & ngôn ngữ","emoji":"📖","cefr":"B1","domain":"general","sort":34}
+{"slug":"b1-engineering-manufacturing","title":"Kỹ thuật & sản xuất","emoji":"🏭","cefr":"B1","domain":"science","sort":35}
+{"slug":"b1-religion-beliefs","title":"Tôn giáo & tín ngưỡng","emoji":"🕊️","cefr":"B1","domain":"general","sort":36}
+{"slug":"b1-programming-intro","title":"Nhập môn lập trình","emoji":"👨‍💻","cefr":"B1","domain":"it","sort":37}
+{"slug":"b1-politics-government","title":"Chính trị & chính phủ","emoji":"🏛️","cefr":"B1","domain":"law","sort":38}
+{"slug":"b1-crime-safety","title":"Tội phạm & an toàn","emoji":"🚨","cefr":"B1","domain":"law","sort":39}
+{"slug":"b1-finance-accounting","title":"Tài chính & kế toán","emoji":"💰","cefr":"B1","domain":"business","sort":40}
+{"slug":"b1-agriculture-food-production","title":"Nông nghiệp & sản xuất thực phẩm","emoji":"🌾","cefr":"B1","domain":"science","sort":41}
+{"slug":"b1-chemistry-materials","title":"Hóa học & vật liệu","emoji":"🧪","cefr":"B1","domain":"science","sort":42}
+{"slug":"b1-physics-math","title":"Vật lý & toán học","emoji":"📐","cefr":"B1","domain":"science","sort":43}
+{"slug":"b1-military-conflict","title":"Quân sự & xung đột","emoji":"🪖","cefr":"B1","domain":"law","sort":44}
+{"slug":"b1-marketing-sales","title":"Tiếp thị & bán hàng","emoji":"📣","cefr":"B1","domain":"business","sort":45}
+{"slug":"b1-software-development","title":"Phát triển phần mềm","emoji":"🖥️","cefr":"B1","domain":"it","sort":46}
+{"slug":"b1-advanced-academic","title":"Học thuật nâng cao","emoji":"🎓","cefr":"B1","domain":"it","sort":47}
+{"slug":"b1-networks-security","title":"Mạng & bảo mật","emoji":"🔒","cefr":"B1","domain":"it","sort":48}
+{"slug":"b1-philosophy-ideas","title":"Triết học & tư tưởng","emoji":"💭","cefr":"B1","domain":"general","sort":49}
+{"slug":"b1-biology-ecology","title":"Sinh học & sinh thái","emoji":"🧬","cefr":"B1","domain":"science","sort":50}
+{"slug":"b1-idioms-phrases","title":"Thành ngữ & cụm từ","emoji":"🗣️","cefr":"B1","domain":"general","sort":51}
+{"slug":"b2-general-vocabulary","title":"Từ vựng chung","emoji":"📚","cefr":"B2","domain":"general","sort":1}
+{"slug":"b2-family","title":"Gia đình","emoji":"👪","cefr":"B2","domain":"general","sort":2}
+{"slug":"b2-home-objects","title":"Đồ vật trong nhà","emoji":"🏠","cefr":"B2","domain":"general","sort":3}
+{"slug":"b2-food-drink","title":"Ăn uống","emoji":"🍽️","cefr":"B2","domain":"general","sort":4}
+{"slug":"b2-time-calendar","title":"Thời gian & lịch","emoji":"📅","cefr":"B2","domain":"general","sort":5}
+{"slug":"b2-arts-entertainment","title":"Nghệ thuật & giải trí","emoji":"🎭","cefr":"B2","domain":"general","sort":6}
+{"slug":"b2-nature-animals","title":"Thiên nhiên & động vật","emoji":"🌿","cefr":"B2","domain":"general","sort":7}
+{"slug":"b2-school-education","title":"Trường học & giáo dục","emoji":"🎓","cefr":"B2","domain":"general","sort":8}
+{"slug":"b2-transport","title":"Giao thông","emoji":"🚌","cefr":"B2","domain":"general","sort":9}
+{"slug":"b2-clothes-accessories","title":"Quần áo & phụ kiện","emoji":"👕","cefr":"B2","domain":"general","sort":10}
+{"slug":"b2-sports-fitness","title":"Thể thao & sức khỏe thể chất","emoji":"⚽","cefr":"B2","domain":"general","sort":11}
+{"slug":"b2-colors-shapes","title":"Màu sắc & hình dạng","emoji":"🎨","cefr":"B2","domain":"general","sort":12}
+{"slug":"b2-people-appearance","title":"Con người & ngoại hình","emoji":"🧑","cefr":"B2","domain":"general","sort":13}
+{"slug":"b2-numbers-measurements","title":"Số & đo lường","emoji":"🔢","cefr":"B2","domain":"general","sort":14}
+{"slug":"b2-work-study","title":"Công việc & học tập","emoji":"💼","cefr":"B2","domain":"general","sort":15}
+{"slug":"b2-shopping-money","title":"Mua sắm & tiền bạc","emoji":"🛍️","cefr":"B2","domain":"business","sort":16}
+{"slug":"b2-technology","title":"Công nghệ","emoji":"📱","cefr":"B2","domain":"general","sort":17}
+{"slug":"b2-emotions-relationships","title":"Cảm xúc & quan hệ","emoji":"❤️","cefr":"B2","domain":"general","sort":18}
+{"slug":"b2-health-body","title":"Sức khỏe & cơ thể","emoji":"🩺","cefr":"B2","domain":"medical","sort":19}
+{"slug":"b2-media-communication","title":"Truyền thông","emoji":"📰","cefr":"B2","domain":"general","sort":20}
+{"slug":"b2-society-culture","title":"Xã hội & văn hóa","emoji":"🏛️","cefr":"B2","domain":"general","sort":21}
+{"slug":"b2-opinions","title":"Ý kiến & quan điểm","emoji":"💬","cefr":"B2","domain":"general","sort":22}
+{"slug":"b2-law-government","title":"Luật & chính quyền","emoji":"⚖️","cefr":"B2","domain":"law","sort":23}
+{"slug":"b2-medical-care","title":"Y tế & chăm sóc","emoji":"🏥","cefr":"B2","domain":"medical","sort":25}
+{"slug":"b2-anatomy-physiology","title":"Giải phẫu & sinh lý","emoji":"🫀","cefr":"B2","domain":"medical","sort":26}
+{"slug":"b2-geography-places","title":"Địa lý & địa điểm","emoji":"🗺️","cefr":"B2","domain":"general","sort":27}
+{"slug":"b2-buildings-construction","title":"Nhà cửa & xây dựng","emoji":"🏗️","cefr":"B2","domain":"general","sort":28}
+{"slug":"b2-greetings","title":"Chào hỏi","emoji":"👋","cefr":"B2","domain":"general","sort":29}
+{"slug":"b2-environment-weather","title":"Môi trường & thời tiết","emoji":"☁️","cefr":"B2","domain":"general","sort":30}
+{"slug":"b2-travel-basics","title":"Du lịch cơ bản","emoji":"🧳","cefr":"B2","domain":"travel","sort":31}
+{"slug":"b2-science-research","title":"Khoa học & nghiên cứu","emoji":"🔬","cefr":"B2","domain":"science","sort":32}
+{"slug":"b2-psychology","title":"Tâm lý học","emoji":"🧠","cefr":"B2","domain":"general","sort":33}
+{"slug":"b2-literature-language","title":"Văn học & ngôn ngữ","emoji":"📖","cefr":"B2","domain":"general","sort":34}
+{"slug":"b2-engineering-manufacturing","title":"Kỹ thuật & sản xuất","emoji":"🏭","cefr":"B2","domain":"science","sort":35}
+{"slug":"b2-religion-beliefs","title":"Tôn giáo & tín ngưỡng","emoji":"🕊️","cefr":"B2","domain":"general","sort":36}
+{"slug":"b2-programming-intro","title":"Nhập môn lập trình","emoji":"👨‍💻","cefr":"B2","domain":"it","sort":37}
+{"slug":"b2-politics-government","title":"Chính trị & chính phủ","emoji":"🏛️","cefr":"B2","domain":"law","sort":38}
+{"slug":"b2-crime-safety","title":"Tội phạm & an toàn","emoji":"🚨","cefr":"B2","domain":"law","sort":39}
+{"slug":"b2-finance-accounting","title":"Tài chính & kế toán","emoji":"💰","cefr":"B2","domain":"business","sort":40}
+{"slug":"b2-agriculture-food-production","title":"Nông nghiệp & sản xuất thực phẩm","emoji":"🌾","cefr":"B2","domain":"science","sort":41}
+{"slug":"b2-chemistry-materials","title":"Hóa học & vật liệu","emoji":"🧪","cefr":"B2","domain":"science","sort":42}
+{"slug":"b2-physics-math","title":"Vật lý & toán học","emoji":"📐","cefr":"B2","domain":"science","sort":43}
+{"slug":"b2-military-conflict","title":"Quân sự & xung đột","emoji":"🪖","cefr":"B2","domain":"law","sort":44}
+{"slug":"b2-marketing-sales","title":"Tiếp thị & bán hàng","emoji":"📣","cefr":"B2","domain":"business","sort":45}
+{"slug":"b2-advanced-academic","title":"Học thuật nâng cao","emoji":"🎓","cefr":"B2","domain":"general","sort":47}
+{"slug":"b2-networks-security","title":"Mạng & bảo mật","emoji":"🔒","cefr":"B2","domain":"it","sort":48}
+{"slug":"b2-philosophy-ideas","title":"Triết học & tư tưởng","emoji":"💭","cefr":"B2","domain":"general","sort":49}
+{"slug":"b2-biology-ecology","title":"Sinh học & sinh thái","emoji":"🧬","cefr":"B2","domain":"science","sort":50}
+{"slug":"b2-data-ai","title":"Dữ liệu & AI","emoji":"🤖","cefr":"B2","domain":"it","sort":52}
+{"slug":"c1-general-vocabulary","title":"Từ vựng chung","emoji":"📚","cefr":"C1","domain":"general","sort":1}
+{"slug":"c1-nature-animals","title":"Thiên nhiên & động vật","emoji":"🌿","cefr":"C1","domain":"science","sort":7}
+{"slug":"c1-shopping-money","title":"Mua sắm & tiền bạc","emoji":"🛍️","cefr":"C1","domain":"business","sort":16}
+{"slug":"c1-technology","title":"Công nghệ","emoji":"📱","cefr":"C1","domain":"it","sort":17}
+{"slug":"c1-law-government","title":"Luật & chính quyền","emoji":"⚖️","cefr":"C1","domain":"law","sort":23}
+{"slug":"c1-business-management","title":"Kinh doanh & quản lý","emoji":"📊","cefr":"C1","domain":"business","sort":24}
+{"slug":"c1-medical-care","title":"Y tế & chăm sóc","emoji":"🏥","cefr":"C1","domain":"medical","sort":25}
+{"slug":"c1-environment-weather","title":"Môi trường & thời tiết","emoji":"☁️","cefr":"C1","domain":"science","sort":30}
+{"slug":"c1-travel-basics","title":"Du lịch cơ bản","emoji":"🧳","cefr":"C1","domain":"travel","sort":31}
+{"slug":"c1-literature-language","title":"Văn học & ngôn ngữ","emoji":"📖","cefr":"C1","domain":"general","sort":34}
+{"slug":"c1-programming-intro","title":"Nhập môn lập trình","emoji":"👨‍💻","cefr":"C1","domain":"it","sort":37}
+{"slug":"c1-finance-accounting","title":"Tài chính & kế toán","emoji":"💰","cefr":"C1","domain":"business","sort":40}
+{"slug":"c1-agriculture-food-production","title":"Nông nghiệp & sản xuất thực phẩm","emoji":"🌾","cefr":"C1","domain":"science","sort":41}
+{"slug":"c1-chemistry-materials","title":"Hóa học & vật liệu","emoji":"🧪","cefr":"C1","domain":"science","sort":42}
+{"slug":"c1-physics-math","title":"Vật lý & toán học","emoji":"📐","cefr":"C1","domain":"science","sort":43}
+{"slug":"c1-marketing-sales","title":"Tiếp thị & bán hàng","emoji":"📣","cefr":"C1","domain":"business","sort":45}
+{"slug":"c1-software-development","title":"Phát triển phần mềm","emoji":"🖥️","cefr":"C1","domain":"it","sort":46}
+{"slug":"c1-networks-security","title":"Mạng & bảo mật","emoji":"🔒","cefr":"C1","domain":"it","sort":48}
+{"slug":"c1-biology-ecology","title":"Sinh học & sinh thái","emoji":"🧬","cefr":"C1","domain":"science","sort":50}
+{"slug":"c2-general-vocabulary","title":"Từ vựng chung","emoji":"📚","cefr":"C2","domain":"general","sort":1}
+{"slug":"c2-clothes-accessories","title":"Quần áo & phụ kiện","emoji":"👕","cefr":"C2","domain":"general","sort":10}
+{"slug":"c2-sports-fitness","title":"Thể thao & sức khỏe thể chất","emoji":"⚽","cefr":"C2","domain":"general","sort":11}
+{"slug":"c2-work-study","title":"Công việc & học tập","emoji":"💼","cefr":"C2","domain":"general","sort":15}
+{"slug":"c2-technology","title":"Công nghệ","emoji":"📱","cefr":"C2","domain":"it","sort":17}
+{"slug":"c2-law-government","title":"Luật & chính quyền","emoji":"⚖️","cefr":"C2","domain":"law","sort":23}
+{"slug":"c2-business-management","title":"Kinh doanh & quản lý","emoji":"📊","cefr":"C2","domain":"business","sort":24}
+{"slug":"c2-medical-care","title":"Y tế & chăm sóc","emoji":"🏥","cefr":"C2","domain":"medical","sort":25}
+{"slug":"c2-finance-accounting","title":"Tài chính & kế toán","emoji":"💰","cefr":"C2","domain":"business","sort":40}
+{"slug":"c2-physics-math","title":"Vật lý & toán học","emoji":"📐","cefr":"C2","domain":"science","sort":43}
+{"slug":"c2-marketing-sales","title":"Tiếp thị & bán hàng","emoji":"📣","cefr":"C2","domain":"business","sort":45}
+{"slug":"c2-software-development","title":"Phát triển phần mềm","emoji":"🖥️","cefr":"C2","domain":"it","sort":46}
+{"slug":"c2-networks-security","title":"Mạng & bảo mật","emoji":"🔒","cefr":"C2","domain":"it","sort":48}
+{"slug":"c2-philosophy-ideas","title":"Triết học & tư tưởng","emoji":"💭","cefr":"C2","domain":"general","sort":49}
+{"slug":"c2-biology-ecology","title":"Sinh học & sinh thái","emoji":"🧬","cefr":"C2","domain":"science","sort":50}

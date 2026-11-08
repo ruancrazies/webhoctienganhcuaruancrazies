@@ -2,13 +2,14 @@ import { highestPassedLevel } from "../../core/levels";
 import type { Cefr } from "../../core/types";
 import type { BlitzBoardResponse, LeaderboardResponse } from "../../types/api";
 import { blitzBoard, passesForUsers, topProfiles } from "../repo";
+import { publicLooks } from "./cosmetics";
 import { nowOf, type Ctx } from "./ctx";
 
 const TOP_N = 10;
 const BLITZ_TOP_N = 5;
 const TTL_MS = 60_000;
 
-type Entry = { id: string; username: string; avatar: string | null; xp: number; level: Cefr | null };
+type Entry = { id: string; username: string; avatar: string | null; frame: string | null; xp: number; level: Cefr | null };
 let cache: { at: number; rows: Entry[] } | undefined;
 const blitzCache = new Map<Cefr, { at: number; rows: BlitzBoardResponse["rows"] }>();
 
@@ -21,11 +22,12 @@ export async function getLeaderboard(userId: string, ctx: Ctx = {}): Promise<Lea
   const t = nowOf(ctx).getTime();
   if (!cache || t - cache.at > TTL_MS || t < cache.at) {
     const top = await topProfiles(TOP_N);
-    const passes = await passesForUsers(top.map((p) => p.id));
-    cache = { at: t, rows: top.map((p) => ({ ...p, level: highestPassedLevel(passes.get(p.id) ?? new Set()) })) };
+    const [passes, looks] = await Promise.all([passesForUsers(top.map((p) => p.id)), publicLooks(top, ctx)]);
+    // Người khác chỉ thấy avatar và khung CÒN HẠN của chủ nhân (món hết hạn về mặc định); theme thì riêng tư nên không có ở đây.
+    cache = { at: t, rows: top.map((p) => ({ ...p, ...looks.get(p.id)!, level: highestPassedLevel(passes.get(p.id) ?? new Set()) })) };
   }
   return {
-    rows: cache.rows.map((r, i) => ({ rank: i + 1, username: r.username, avatar: r.avatar, xp: r.xp, level: r.level, isMe: r.id === userId })),
+    rows: cache.rows.map((r, i) => ({ rank: i + 1, username: r.username, avatar: r.avatar, frame: r.frame, xp: r.xp, level: r.level, isMe: r.id === userId })),
   };
 }
 

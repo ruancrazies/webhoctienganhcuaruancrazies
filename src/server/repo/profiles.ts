@@ -11,6 +11,9 @@ export type Profile = {
   id: string;
   username: string;
   avatar: string | null;
+  /** Mã theme đang chọn ("auto" = theo thiết bị), null = chưa chọn. Chưa kiểm sở hữu: dùng resolveLook. */
+  theme: string | null;
+  frame: string | null;
   xp: number;
   streak: number;
   bestStreak: number;
@@ -19,18 +22,20 @@ export type Profile = {
   xpDay: number | null;
 };
 
-type Raw = { id: string; username: string; avatar: string | null; xp: number; streak: number; best_streak: number; last_day: number | null; xp_today: number; xp_day: number | null };
+type Raw = { id: string; username: string; avatar: string | null; theme: string | null; frame: string | null; xp: number; streak: number; best_streak: number; last_day: number | null; xp_today: number; xp_day: number | null };
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   const r = unwrap<Raw>(
     "profiles.get",
-    await db().from("profiles").select("id,username,avatar,xp,streak,best_streak,last_day,xp_today,xp_day").eq("id", userId).maybeSingle(),
+    await db().from("profiles").select("id,username,avatar,theme,frame,xp,streak,best_streak,last_day,xp_today,xp_day").eq("id", userId).maybeSingle(),
   );
   if (!r) return null;
   return {
     id: r.id,
     username: r.username,
     avatar: r.avatar,
+    theme: r.theme,
+    frame: r.frame,
     xp: Number(r.xp),
     streak: r.streak,
     bestStreak: r.best_streak,
@@ -41,10 +46,10 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 }
 
 /** Top theo XP (index profiles_xp_idx). */
-export async function topProfiles(limit: number): Promise<{ id: string; username: string; avatar: string | null; xp: number }[]> {
-  const rows = unwrapList<{ id: string; username: string; avatar: string | null; xp: number }>(
+export async function topProfiles(limit: number): Promise<{ id: string; username: string; avatar: string | null; frame: string | null; xp: number }[]> {
+  const rows = unwrapList<{ id: string; username: string; avatar: string | null; frame: string | null; xp: number }>(
     "profiles.top",
-    await db().from("profiles").select("id,username,avatar,xp").order("xp", { ascending: false }).limit(limit),
+    await db().from("profiles").select("id,username,avatar,frame,xp").order("xp", { ascending: false }).limit(limit),
   );
   return rows.map((r) => ({ ...r, xp: Number(r.xp) }));
 }

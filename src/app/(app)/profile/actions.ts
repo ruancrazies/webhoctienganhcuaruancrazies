@@ -1,14 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import type { FormState } from "@/app/(auth)/state";
 import { isAvatarId } from "@/core/avatars";
 import { usernameSchema } from "@/core/auth";
-import { requireUser } from "@/server/auth/session";
+import { THEME_AUTO } from "@/core/cosmetics";
+import { getCurrentUser, requireUser } from "@/server/auth/session";
+import { readThemeCookie, writeThemeCookie } from "@/server/auth/themeCookie";
 import { usernameOwner } from "@/server/auth/users";
-import { RepoError } from "@/server/errors";
+import { RepoError, ServiceError } from "@/server/errors";
 import { hitRateLimit } from "@/server/ratelimit";
 import { getProfile, updateAvatar, updateUsername } from "@/server/repo";
+import { equipCosmetic, pollCosmetics, type PollResult } from "@/server/services";
 
 const BUSY = "Hệ thống đang bận, vui lòng thử lại sau.";
 const TOO_MANY = "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.";
@@ -60,4 +64,52 @@ export async function updateAvatarAction(_: FormState, formData: FormData): Prom
 
   revalidatePath("/profile");
   return { notice: "Đã đổi avatar." };
+}
+
+// ---------------- Cosmetic: chọn dùng + việc nền ----------------
+
+const equipSchema = z.object({
+  kind: z.enum(["theme", "avatar", "frame"]),
+  id: z.string().regex(/^[a-z][a-z0-9-]{1,23}$/).nullable(),
+});
+
+export type EquipResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Chọn dùng một theme/avatar/khung. Server kiểm sở hữu và hạn dùng (client chỉ là gợi ý); theme còn ghi cookie `eg-theme`
+ * để lần render sau đúng màu ngay. `id` null = về mặc định; theme còn nhận "auto" (theo thiết bị).
+ */
+export async function equipCosmeticAction(input: { kind: string; id: string | null }): Promise<EquipResult> {
+  const user = await requireUser();
+  const parsed = equipSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Yêu cầu không hợp lệ." };
+  const { kind, id } = parsed.data;
+  try {
+    const look = await equipCosmetic(user.id, kind, id);
+    if (kind === "theme") await writeThemeCookie(look.auto ? THEME_AUTO : look.theme);
+  } catch (e) {
+    if (e instanceof ServiceError) return { ok: false, error: e.message };
+    console.error("[profile:equip]", e);
+    return { ok: false, error: BUSY };
+  }
+  revalidatePath("/", "layout"); // vẽ lại khung: avatar/khung ở thanh trên, CSS của theme mới trong <head>
+  return { ok: true };
+}
+
+/**
+ * Việc nền của khung (app), trình duyệt gọi tối đa mỗi phút một lần: cấp món theo level, đồng bộ theme theo tài khoản,
+ * giao thông báo mở khóa/hết hạn. Chưa đăng nhập hoặc lỗi → trả "không có gì" (không bao giờ làm phiền người dùng).
+ */
+export async function pollCosmeticsAction(ack: boolean): Promise<PollResult> {
+  const none: PollResult = { messages: [], theme: null, changed: false };
+  try {
+    const user = await getCurrentUser();
+    if (!user) return none;
+    const result = await pollCosmetics(user.id, { ack: ack === true, cookieTheme: await readThemeCookie() });
+    if (result.theme !== null && result.theme !== (await readThemeCookie())) await writeThemeCookie(result.theme);
+    return result;
+  } catch (e) {
+    console.error("[profile:poll]", e);
+    return none;
+  }
 }

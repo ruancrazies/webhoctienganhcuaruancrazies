@@ -273,7 +273,7 @@ export type ScheduleReviewResponse = {
   scheduled: number;
 };
 
-export type LeaderboardRow = { rank: number; username: string; avatar: string | null; xp: number; level: Cefr | null; isMe: boolean };
+export type LeaderboardRow = { rank: number; username: string; avatar: string | null; frame: string | null; xp: number; level: Cefr | null; isMe: boolean };
 export type LeaderboardResponse = { rows: LeaderboardRow[] };
 export type BlitzBoardResponse = { cefr: Cefr; rows: BoardRow[] };
 

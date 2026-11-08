@@ -15,3 +15,7 @@ export { logActivity } from "./activity";
 export { getLearnerSnapshot } from "./learner";
 export { getCoach } from "./coach";
 export { explainMistake } from "./explain";
+export { getMyEvents, claimEventTask, recordEventProgress, eventNames, listAdminEvents, getAdminEvent, adminCatalog } from "./seasonEvents";
+export type { EventView, MyEvents, ClaimEventResult, AdminEventRow, AdminEventView, RewardOption } from "./seasonEvents";
+export { equipCosmetic, getCollection, getMyLook, pollCosmetics, publicLooks, usableThemeOptions, countUnseen } from "./cosmetics";
+export type { Collection, CollectionItem, PollResult } from "./cosmetics";

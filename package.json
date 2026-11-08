@@ -24,6 +24,7 @@
     "prebuild": "tsx scripts/cosmetics/gen-registry.ts",
     "gen:registry": "tsx scripts/cosmetics/gen-registry.ts",
     "check:registry": "tsx scripts/cosmetics/gen-registry.ts --check",
+    "cosmetics:sync": "tsx scripts/cosmetics/sync.ts",
     "new:theme": "tsx scripts/cosmetics/new.ts theme",
     "new:avatar": "tsx scripts/cosmetics/new.ts avatar",
     "new:frame": "tsx scripts/cosmetics/new.ts frame",

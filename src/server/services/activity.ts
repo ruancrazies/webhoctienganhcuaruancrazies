@@ -5,7 +5,7 @@ import { recordActivity } from "../repo";
  * không được làm hỏng việc chơi, nộp bài hay nhận thưởng của người dùng.
  *
  * Quy ước `props`: nhỏ và không chứa nội dung riêng tư (không đáp án, không nội dung chat). Chat chỉ ghi `{ pet }`.
- * Loại sự kiện: play/start, play/finish, learn/words, learn/mark, exam/start, exam/submit, test/start, test/submit, quests/claim, chat.
+ * Loại sự kiện: play/start, play/finish, learn/words, learn/mark, exam/start, exam/submit, test/start, test/submit, quests/claim, events/claim, chat.
  */
 export async function logActivity(userId: string, type: string, props: Record<string, unknown> = {}): Promise<void> {
   try {

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import type { ThemeOption } from "@/cosmetics/registry";
 import { getRecentSnapshot, subscribeTheme } from "@/lib/theme";
@@ -69,6 +70,7 @@ export function QuickMenu({ themes }: { themes: ThemeOption[] }) {
                 </button>
               ))}
             </div>
+            <Link href="/profile/collection?tab=theme" className="small" onClick={() => setOpen(false)}>Xem tất cả giao diện</Link>
             <div className="toggle">
               <span className="small">Tự động theo thiết bị</span>
               <AutoThemeSwitch />

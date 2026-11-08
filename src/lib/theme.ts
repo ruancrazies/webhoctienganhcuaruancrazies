@@ -3,7 +3,8 @@
  * là một công tắt riêng: bật thì dùng dark khi hệ điều hành ở chế độ tối, còn lại dùng paper; chọn một theme thì tắt.
  *
  * Lưu bằng cookie `eg-theme` (giá trị = mã theme hoặc "auto") để server render đúng ngay lần đầu, không nháy màu.
- * Giai đoạn 2 sẽ thêm lưu theo tài khoản (profiles.theme); cookie vẫn là bản sao để render nhanh.
+ * Gốc là tài khoản (profiles.theme, "auto" = theo thiết bị): server ghi cả hai khi chọn, và khung (app) đồng bộ lại cookie theo tài khoản
+ * (xem pollCosmetics), nên theme theo người dùng sang thiết bị khác. Cookie vẫn là bản sao để server render đúng ngay lần đầu.
  * Khóa localStorage cũ "eg-theme" (dark/light/system) được đổi một lần: dark → dark; light/system → paper.
  */
 import { DARK_THEME_ID, DEFAULT_THEME_ID } from "../cosmetics/core/constants";
@@ -14,6 +15,7 @@ const RECENT_KEY = "eg-theme-recent";
 const EVENT = "eg-theme-change";
 const QUERY = "(prefers-color-scheme: dark)";
 const MAX_AGE = 60 * 60 * 24 * 365;
+export const THEME_COOKIE_MAX_AGE = MAX_AGE;
 
 export type ThemePref = { theme: string; auto: boolean };
 
@@ -60,6 +62,26 @@ export function getAuto(): boolean {
   return readCookie() === AUTO;
 }
 
+/** Giá trị cookie hiện tại (mã theme hoặc "auto"); null nếu chưa có. */
+export const getCookieTheme = readCookie;
+
+/**
+ * Đếm số lần NGƯỜI DÙNG đổi lựa chọn trên thiết bị này. Việc nền (đồng bộ từ tài khoản) ghi nhớ số này trước khi hỏi server
+ * và bỏ kết quả nếu số đã đổi, để câu trả lời đến muộn không đè lên lựa chọn mới của người dùng.
+ */
+let changeSeq = 0;
+export const themeChangeSeq = (): number => changeSeq;
+
+/** Áp theme mà server (tài khoản) cho là đúng. Trả false nếu CSS của theme chưa có trong trang (người gọi nên router.refresh()). */
+export function applyServerTheme(value: string): boolean {
+  writeCookie(value);
+  const id = value === AUTO ? autoTheme(matchMedia(QUERY).matches) : value;
+  const ready = value === AUTO || hasCss(id);
+  if (ready) document.documentElement.dataset.theme = id;
+  emit();
+  return ready;
+}
+
 function emit(): void {
   window.dispatchEvent(new Event(EVENT));
 }
@@ -69,6 +91,7 @@ function emit(): void {
  * người gọi nên gọi router.refresh() để server render lại với CSS của theme mới.
  */
 export function setTheme(id: string): boolean {
+  changeSeq++;
   writeCookie(id);
   pushRecent(id);
   const ready = hasCss(id);
@@ -78,6 +101,7 @@ export function setTheme(id: string): boolean {
 }
 
 export function setAuto(on: boolean): void {
+  changeSeq++;
   if (on) {
     writeCookie(AUTO);
     document.documentElement.dataset.theme = autoTheme(matchMedia(QUERY).matches);

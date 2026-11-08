@@ -2,8 +2,15 @@ import { fmtNumber } from "@/lib/format";
 import { xpLevelOf } from "@/core/xpLevel";
 
 /** Huy hiệu Level + thanh tiến độ tới level kế (tính từ tổng XP). Dùng được cả ở server lẫn client component. */
-export function LevelProgress({ xp }: { xp: number }) {
+export function LevelProgress({ xp, compact = false }: { xp: number; compact?: boolean }) {
   const lv = xpLevelOf(xp);
+  if (compact) {
+    return (
+      <div className="bar bar-mark" role="progressbar" aria-valuemin={0} aria-valuemax={lv.need ?? lv.into} aria-valuenow={lv.into} aria-label={`Tiến độ Level ${lv.level}`}>
+        <i style={{ width: `${lv.ratio * 100}%` }} />
+      </div>
+    );
+  }
   return (
     <div className="today">
       <div className="spread small">

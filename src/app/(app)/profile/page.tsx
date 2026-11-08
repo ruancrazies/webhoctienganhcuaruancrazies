@@ -1,104 +1,65 @@
 import Link from "next/link";
-import { logoutAction } from "@/app/(auth)/actions";
 import { Avatar } from "@/components/Avatar";
+import { Icon } from "@/components/Icon";
 import { LevelProgress } from "@/components/LevelProgress";
-import { MuteToggle } from "@/components/MuteButton";
-import { PetSettings } from "@/components/PetSettings";
-import { ThemePicker } from "@/components/ThemeToggle";
-import { themeOptions } from "@/cosmetics/registry";
-import { LEVEL_NAMES, fmtNumber, ratio } from "@/lib/format";
+import { dayNo, displayStreak } from "@/core/streak";
+import { fmtNumber } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
-import { getHome } from "@/server/services";
-import { AvatarPicker, UsernameForm } from "./AccountSettings";
+import { getProfile } from "@/server/repo";
+import { countUnseen, getMyLook } from "@/server/services";
+import { notFound } from "next/navigation";
 
 export const metadata = { title: "Tôi · Web học từ vựng" };
 export const dynamic = "force-dynamic";
 
+/**
+ * Tab "Tôi": thẻ danh tính gọn + ba lối vào (Kết quả, Bộ sưu tập, Cài đặt). Mọi thứ khác chuyển đi nơi nó thuộc về:
+ * XP hôm nay và lộ trình các cấp ở tab Học, hồ sơ năng lực ở tab Học → Năng lực, tài khoản và âm thanh ở Cài đặt.
+ */
 export default async function ProfilePage() {
   const user = await requireUser();
-  const { profile, levels } = await getHome(user.id);
-  const passed = levels.filter((l) => l.pass).length;
-  const learned = levels.reduce((a, l) => a + l.learned, 0);
-  const mastered = levels.reduce((a, l) => a + l.mastered, 0);
-  const today = ratio(profile.xpToday, profile.dailyXpCap);
+  const profile = await getProfile(user.id);
+  if (!profile) notFound();
+  const [{ look }, unseen] = await Promise.all([getMyLook(profile), countUnseen(user.id).catch(() => 0)]);
+  const streak = displayStreak({ lastDay: profile.lastDay, streak: profile.streak, bestStreak: profile.bestStreak }, dayNo(new Date()));
 
   return (
     <main className="page page-narrow">
       <section className="row" style={{ gap: 16, flexWrap: "nowrap" }} aria-labelledby="pf-h">
-        <Avatar avatar={profile.avatar} username={profile.username} />
+        <Avatar avatar={look.avatar} frame={look.frame} username={profile.username} />
         <div style={{ minWidth: 0 }}>
           <h1 id="pf-h" style={{ overflowWrap: "anywhere" }}>{profile.username}</h1>
           <p className="muted" style={{ overflowWrap: "anywhere" }}>{user.email}</p>
         </div>
       </section>
 
-      <section className="stats" aria-label="Thống kê">
-        <div className="stat"><b>{fmtNumber(profile.xp)}</b><span>tổng XP</span></div>
-        <div className="stat"><b>🔥 {profile.streak}</b><span>chuỗi hiện tại</span></div>
-        <div className="stat"><b>{profile.bestStreak}</b><span>chuỗi dài nhất</span></div>
-      </section>
-
-      <Link href="/insights" className="btn btn-light">📊 Hồ sơ năng lực của tôi</Link>
-
       <section className="sheet" aria-label="Level">
         <LevelProgress xp={profile.xp} />
       </section>
 
-      <section className="sheet" aria-labelledby="td-h">
-        <div className="stack">
-          <div className="spread">
-            <h2 id="td-h">Hôm nay</h2>
-            <span className="muted small">{fmtNumber(profile.xpToday)} / {fmtNumber(profile.dailyXpCap)} XP</span>
-          </div>
-          <div className="bar bar-mark" role="progressbar" aria-valuemin={0} aria-valuemax={profile.dailyXpCap} aria-valuenow={profile.xpToday} aria-label="XP hôm nay">
-            <i style={{ width: `${today * 100}%` }} />
-          </div>
-          <p className="muted small">Mỗi ngày nhận tối đa {fmtNumber(profile.dailyXpCap)} XP (tính theo giờ Việt Nam).</p>
-        </div>
+      <section className="stats" aria-label="Thống kê">
+        <div className="stat"><b>{fmtNumber(profile.xp)}</b><span>tổng XP</span></div>
+        <div className="stat"><b>{streak}</b><span>chuỗi hiện tại</span></div>
+        <div className="stat"><b>{profile.bestStreak}</b><span>chuỗi dài nhất</span></div>
       </section>
 
-      <section className="sheet sheet-plain stack" aria-labelledby="jn-h">
-        <div className="spread">
-          <h2 id="jn-h">Lộ trình</h2>
-          <span className="muted small">Đã qua {passed}/5 bài kiểm tra</span>
-        </div>
-        <div className="journey">
-          {levels.map((l) => (
-            <div key={l.cefr} className={`jn ${l.pass ? "pass" : l.unlocked ? "open" : ""}`}>
-              <b>{l.cefr}</b>
-              <span className="small muted">{LEVEL_NAMES[l.cefr]}</span>
-              <span className="small">{l.pass ? "✓ Đã qua" : l.unlocked ? (l.cefr === "C2" ? "Đang mở" : "Đang học") : "🔒 Khóa"}</span>
-            </div>
-          ))}
-        </div>
-        <p className="muted small">
-          Tổng cộng đã học {fmtNumber(learned)} từ, đã thuộc {fmtNumber(mastered)} từ (từ phổ thông, mọi cấp).
-        </p>
-      </section>
-
-      <section className="sheet sheet-plain stack" aria-labelledby="rs-h">
-        <div className="spread">
-          <h2 id="rs-h">Kết quả bài kiểm tra</h2>
-          <Link href="/results" className="btn btn-light btn-sm">Xem lịch sử</Link>
-        </div>
-        <p className="muted small">Mở lại các bài thi lên cấp và bài kiểm tra đã nộp để xem đáp án của bạn.</p>
-      </section>
-
-      <section className="sheet sheet-plain stack" aria-labelledby="ac-h">
-        <h2 id="ac-h">Tài khoản</h2>
-        <UsernameForm username={profile.username} />
-        <AvatarPicker avatar={profile.avatar} username={profile.username} />
-      </section>
-
-      <section className="sheet sheet-plain stack" aria-labelledby="st-h">
-        <h2 id="st-h">Cài đặt</h2>
-        <ThemePicker options={themeOptions()} />
-        <MuteToggle />
-        <PetSettings />
-        <form action={logoutAction}>
-          <button type="submit" className="btn btn-light">Đăng xuất</button>
-        </form>
-      </section>
+      <nav className="stack" aria-label="Mục của tôi">
+        <Link href="/results" className="linkcard">
+          <span className="linkcard-t"><b>Kết quả bài kiểm tra</b><span className="muted small">Mở lại các bài thi đã nộp để xem đáp án.</span></span>
+          <Icon name="chevron-right" />
+        </Link>
+        <Link href="/profile/collection" className="linkcard">
+          <span className="linkcard-t">
+            <b>Bộ sưu tập {unseen > 0 ? <span className="chip chip-mark">{unseen} món mới</span> : null}</b>
+            <span className="muted small">Giao diện, avatar và khung bạn đã mở khóa.</span>
+          </span>
+          <Icon name="chevron-right" />
+        </Link>
+        <Link href="/profile/settings" className="linkcard">
+          <span className="linkcard-t"><b>Cài đặt</b><span className="muted small">Tài khoản, âm thanh, thú cưng, đăng xuất.</span></span>
+          <Icon name="chevron-right" />
+        </Link>
+      </nav>
     </main>
   );
 }

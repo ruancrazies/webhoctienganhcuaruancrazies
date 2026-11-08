@@ -15,6 +15,11 @@ export default function AdminHome() {
         <p className="muted">Chọn, đặt lịch và xem trước giao diện đăng nhập theo mùa (Halloween, Giáng sinh…).</p>
         <div><Link href="/admin/scenes" className="btn btn-sm">Quản lý Scene</Link></div>
       </section>
+      <section className="sheet stack" aria-labelledby="ev-h">
+        <h2 id="ev-h">Sự kiện theo mùa</h2>
+        <p className="muted">Tạo đợt sự kiện có lịch, nhiệm vụ và phần thưởng (XP, khung, avatar, giao diện có hạn dùng). Nhân bản để chạy lại năm sau.</p>
+        <div><Link href="/admin/events" className="btn btn-sm">Quản lý sự kiện</Link></div>
+      </section>
       <section className="sheet stack" aria-labelledby="gal-h">
         <h2 id="gal-h">Gallery</h2>
         <p className="muted">Xem mọi theme, avatar, khung cạnh nhau kèm kết quả kiểm tự động trước khi bật cho người dùng.</p>

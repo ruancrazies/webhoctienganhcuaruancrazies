@@ -33,7 +33,7 @@ export default async function LeaderboardPage() {
               <li key={r.rank} className={r.isMe ? "me" : undefined} aria-current={r.isMe ? "true" : undefined}>
                 <span className={`rank${r.rank <= 3 ? ` r${r.rank}` : ""}`}>{r.rank}</span>
                 <span className="who-row">
-                  <Avatar avatar={r.avatar} username={r.username} size="sm" />
+                  <Avatar avatar={r.avatar} frame={r.frame} username={r.username} size="sm" />
                   <span className="who">
                     <b>{r.username}{r.isMe ? " (bạn)" : ""}</b>
                     <span className="muted small">Level {xpLevelOf(r.xp).level} · {r.level ? `Đã qua cấp ${r.level}` : "Chưa qua cấp nào"}</span>

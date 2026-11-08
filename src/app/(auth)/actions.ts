@@ -14,6 +14,7 @@ import {
   verifySchema,
 } from "@/core/auth";
 import { clientIp } from "@/server/auth/client-ip";
+import { restoreThemeCookie } from "@/server/auth/themeCookie";
 import { CAPTCHA_FIELD, checkCaptcha, supabaseCaptcha } from "@/server/captcha";
 import { createSupabaseServer } from "@/server/auth/supabase";
 import { findEmailByUsername, isUsernameTaken } from "@/server/auth/users";
@@ -148,7 +149,7 @@ export async function loginAction(_: FormState, formData: FormData): Promise<For
     if (!email) return { error: BAD_LOGIN, values }; // một thông báo chung, không lộ tài khoản có tồn tại
 
     const supabase = await createSupabaseServer();
-    const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken: captcha.captchaToken } });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken: captcha.captchaToken } });
     if (error) {
       if (error.code === "email_not_confirmed") {
         // Chỉ xảy ra khi mật khẩu đúng: gửi lại mã (nếu chưa vượt giới hạn) và chuyển sang trang xác nhận.
@@ -162,6 +163,7 @@ export async function loginAction(_: FormState, formData: FormData): Promise<For
       if (error.status && error.status >= 500) return { error: BUSY, values };
       return { error: BAD_LOGIN, values };
     }
+    if (data.user) await restoreThemeCookie(data.user.id);
     return { redirectTo: next };
   });
 }

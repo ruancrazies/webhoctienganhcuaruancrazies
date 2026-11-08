@@ -36,3 +36,7 @@ Món mới sinh ra với `active: false` (chưa ai chọn được). Quy trình:
 ## Kiểm giao diện (Playwright + axe)
 
 `npm run test:e2e` (cần Supabase và tài khoản thử, xem `playwright.config.ts`). Lần đầu chạy với `--update-snapshots` để tạo ảnh chuẩn.
+
+## Sự kiện (giai đoạn 3)
+
+Món có `unlock: { type: "event", event: "<mã đợt>" }` được cấp qua nhiệm vụ sự kiện (xem `docs/giai-doan-3.md`). `durationDays` quyết định hạn dùng tính từ ngày nhận. Khung/avatar mới phải có ảnh 96/192 trước khi `active: true` (CI chặn món bật mà thiếu ảnh: `tests/cosmetics/assets-gate.test.ts`).
