@@ -15,8 +15,10 @@ function walk(dir: string, out: string[] = []): string[] {
 
 // Được phép chứa mã màu thô: định nghĩa theme, emoji-avatar cũ (chuyển tiếp), mẫu email (HTML mail không có CSS biến).
 // Giai đoạn 1: scene.ts (token) và draw.ts (màu vẽ canvas) của Scene đăng nhập, cùng engine/geometry.ts (dựng chuỗi rgba cho chùm sáng). scene.css thì KHÔNG được dùng màu thô.
+// Giai đoạn 4: cosmetics/core/accents.ts là bảng màu nhấn (dữ liệu, như theme); component chọn màu chỉ nhận màu qua biến CSS --swatch.
 const ALLOW = [
   /src[\\/]cosmetics[\\/]themes[\\/]/,
+  /src[\\/]cosmetics[\\/]core[\\/]accents\.ts$/,
   /src[\\/]core[\\/]avatars\.ts$/,
   /src[\\/]server[\\/]mail-templates\.ts$/,
   /src[\\/]features[\\/]login-scene[\\/]scenes[\\/][^\\/]+[\\/](?:scene|draw)\.ts$/,

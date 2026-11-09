@@ -11,6 +11,7 @@ import { LEVEL_NAMES, fmtClock, fmtNumber, fmtVnTime, pct } from "@/lib/format";
 import { sfx } from "@/lib/sound";
 import type { Cefr, ClientPassage, Question } from "@/core/types";
 import type { ExamResult, ExamStartResponse } from "@/types/api";
+import { Icon } from "@/components/Icon";
 
 export type ExamInfo = {
   vocabTotal: number;
@@ -90,7 +91,7 @@ export function ExamRunner({ cefr, info, next, gate }: { cefr: Cefr; info: ExamI
       <div className="stack">
         <Link href={`/level/${cefr}`} className="back">‹ Cấp {cefr}</Link>
         <div className="sheet sheet-plain state" role="alert">
-          <div className="big" aria-hidden="true">⌛</div>
+          <div className="big" aria-hidden="true"><Icon name="clock" size={36} /></div>
           <h2>Bài thi đã bị đóng</h2>
           <p className="muted">{phase.message}</p>
           <Link href={`/level/${cefr}`} className="btn">Về cấp {cefr}</Link>
@@ -282,7 +283,7 @@ function Running({ cefr, examId, items, passages, expiresAt, resumed, submitting
         <div className="spread">
           <b>Thi cấp {cefr}</b>
           <span className={`timer${low ? " low" : ""}`} role="timer" aria-label={`Còn ${fmtClock(remaining)}`}>
-            ⏱ {fmtClock(remaining)}
+            <Icon name="clock" size={16} className="ic" />{fmtClock(remaining)}
           </span>
         </div>
         <div className="spread small">

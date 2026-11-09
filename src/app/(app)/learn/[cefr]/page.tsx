@@ -5,6 +5,7 @@ import { LEVEL_NAMES, isCefr } from "@/lib/format";
 import { learnHref } from "@/games/registry";
 import { requireUser } from "@/server/auth/session";
 import { getHome } from "@/server/services";
+import { Icon } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export default async function LearnPage({ params, searchParams }: { params: Prom
       <main className="page page-narrow">
         <Link href="/" className="back">‹ Trang chủ</Link>
         <div className="sheet sheet-plain state">
-          <div className="big" aria-hidden="true">🔒</div>
+          <div className="big" aria-hidden="true"><Icon name="lock" size={36} /></div>
           <h2>Cấp {cefr} đang khóa</h2>
           <p className="muted">Đạt bài kiểm tra cấp trước để mở cấp này.</p>
           <Link href="/" className="btn">Về trang chủ</Link>
@@ -63,10 +64,10 @@ export default async function LearnPage({ params, searchParams }: { params: Prom
       </header>
       <nav className="scope" aria-label="Chế độ học">
         <Link href={learnHref(hrefScope, "new")} className="pill" aria-current={mode === "new" ? "page" : undefined} replace>
-          🌱 Học từ mới
+          <Icon name="sprout" className="ic" />Học từ mới
         </Link>
         <Link href={learnHref(hrefScope, "review")} className="pill" aria-current={mode === "review" ? "page" : undefined} replace>
-          🔁 Ôn lại từ cũ
+          <Icon name="repeat" className="ic" />Ôn lại từ cũ
         </Link>
       </nav>
       <LearnList key={`${cefr}|${topic ?? ""}|${domain}|${mode}`} cefr={cefr} topic={topic} domain={domain} mode={mode} />

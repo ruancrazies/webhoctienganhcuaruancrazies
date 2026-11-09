@@ -9,6 +9,7 @@ export default defineTheme({
   unlock: { type: "level", level: 15 },
   sort: 20,
   pattern: "dots",
+  skin: "clay",
   tokens: {
     bg: "#fff1f7",
     bgPattern: "#fbd6e6",

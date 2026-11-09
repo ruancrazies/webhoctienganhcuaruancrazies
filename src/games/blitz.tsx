@@ -7,6 +7,7 @@ import { sfx } from "@/lib/sound";
 import { useDwell } from "@/lib/useDwell";
 import type { Answer } from "@/core/types";
 import type { GameProps } from "./shell/types";
+import { Icon } from "@/components/Icon";
 
 export const BLITZ_SECONDS = 60;
 
@@ -83,9 +84,9 @@ export function BlitzGame({ items, onFinish }: GameProps) {
     <div className="stack" style={{ gap: 16 }}>
       <div className="exam-head" style={{ position: "static" }}>
         <div className="spread">
-          <b>⚡ Đua tốc độ</b>
+          <b><Icon name="bolt" className="ic" />Đua tốc độ</b>
           <span className={`timer${low ? " low" : ""}`} role="timer" aria-label={`Còn ${fmtClock(left)}`}>
-            ⏱ {fmtClock(left)}
+            <Icon name="clock" size={16} className="ic" />{fmtClock(left)}
           </span>
         </div>
         <div className="bar" role="progressbar" aria-valuemin={0} aria-valuemax={BLITZ_SECONDS} aria-valuenow={left} aria-label="Thời gian còn lại">

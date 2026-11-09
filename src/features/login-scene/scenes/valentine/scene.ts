@@ -1,0 +1,33 @@
+import { defineScene } from "../types";
+
+export default defineScene({
+  id: "valentine",
+  name: "Valentine",
+  greeting: "Yêu thương bắt đầu từ một từ mới",
+  tagline: "Từ vựng cũng như tình bạn: càng chăm càng đậm sâu.",
+  sort: 30,
+  skin: "clay",
+  tokens: {
+    surface: "#fffafb",
+    text: "#4a1230",
+    textSoft: "#7a4560",
+    accent: "#b3195a",
+    accentSoft: "#fde3ee",
+    onAccent: "#ffffff",
+    accentEdge: "#7c0f3e",
+    border: "#f3cbd9",
+    controlBorder: "#b3195a",
+    margin: "#e35d8f",
+    mark: "#ffd1e0",
+    danger: "#a61e1e",
+    dangerSoft: "#fdecea",
+    success: "#1b6b3f",
+    successSoft: "#e3f4ea",
+    stageBg: "#7a1038",
+    stageBg2: "#b3195a",
+    stageText: "#ffffff",
+    stageTextSoft: "#ffdfeb",
+    stageAccent: "#ffb3cc",
+    glow: "#ffc2d6",
+  },
+});

@@ -11,6 +11,7 @@ import { fmtClock, fmtNumber, fmtVnTime, pct } from "@/lib/format";
 import { sfx } from "@/lib/sound";
 import type { ClientPassage, Question } from "@/core/types";
 import type { PracticeOverview, PracticeResult, PracticeStartResponse } from "@/types/api";
+import { Icon } from "@/components/Icon";
 
 type Phase =
   | { t: "intro" }
@@ -61,7 +62,7 @@ export function TestRunner({ overview }: { overview: PracticeOverview }) {
   if (phase.t === "expired") {
     return (
       <div className="sheet sheet-plain state" role="alert">
-        <div className="big" aria-hidden="true">⌛</div>
+        <div className="big" aria-hidden="true"><Icon name="clock" size={36} /></div>
         <h2>Bài kiểm tra đã bị đóng</h2>
         <p className="muted">{phase.message}</p>
         <button type="button" className="btn" onClick={() => setPhase({ t: "intro" })}>Làm bài mới</button>
@@ -247,7 +248,7 @@ function Running({ testId, items, passages, expiresAt, resumed, submitting, onSu
       <div className="exam-head">
         <div className="spread">
           <b>Bài kiểm tra</b>
-          <span className={`timer${low ? " low" : ""}`} role="timer" aria-label={`Còn ${fmtClock(remaining)}`}>⏱ {fmtClock(remaining)}</span>
+          <span className={`timer${low ? " low" : ""}`} role="timer" aria-label={`Còn ${fmtClock(remaining)}`}><Icon name="clock" size={16} className="ic" />{fmtClock(remaining)}</span>
         </div>
         <div className="spread small">
           <span>Câu {idx + 1}/{items.length}</span>

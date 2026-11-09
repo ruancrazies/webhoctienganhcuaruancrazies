@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { fmtNumber } from "@/lib/format";
 import { GAMES, learnHref, playHref } from "@/games/registry";
 import type { HomeDomain, HomeTopic } from "@/types/api";
+import { Icon } from "@/components/Icon";
 
 type Pick = { by: "all" } | { by: "domain"; code: string } | { by: "topic"; slug: string };
 
@@ -22,7 +23,7 @@ export function LevelScopePicker({ cefr, domains, topics }: { cefr: string; doma
   if (domains.length === 0 && topics.length === 0) {
     return (
       <section className="sheet sheet-plain state">
-        <div className="big" aria-hidden="true">📭</div>
+        <div className="big" aria-hidden="true"><Icon name="inbox" size={36} /></div>
         <h2>Cấp này chưa có từ vựng</h2>
         <p className="muted">Nội dung sẽ xuất hiện sau khi được nạp từ Google Sheet.</p>
       </section>
@@ -64,15 +65,15 @@ export function LevelScopePicker({ cefr, domains, topics }: { cefr: string; doma
 
       <section className="cta-row" aria-label="Học từ vựng">
         <Link href={learnHref(scope, "new")} className="cta is-primary">
-          <b>🌱 Học từ mới</b>
+          <b><Icon name="sprout" className="ic" />Học từ mới</b>
           <span className="muted">Mỗi lượt 50 từ chưa học: nghĩa, phiên âm, câu ví dụ; đánh dấu từ đã học</span>
         </Link>
         <Link href={learnHref(scope, "review")} className="cta">
-          <b>🔁 Ôn lại từ cũ</b>
+          <b><Icon name="repeat" className="ic" />Ôn lại từ cũ</b>
           <span className="muted">Xem lại các từ đã học, từ đến hạn ôn hiện lên trước</span>
         </Link>
         <Link href="/test" className="cta">
-          <b>📝 Kiểm tra</b>
+          <b><Icon name="note" className="ic" />Kiểm tra</b>
           <span className="muted">Kiểm tra xem bạn còn nhớ bao nhiêu trong số những từ đã học</span>
         </Link>
       </section>
@@ -88,7 +89,7 @@ export function LevelScopePicker({ cefr, domains, topics }: { cefr: string; doma
             const off = !g.ready || blocked;
             const inner = (
               <>
-                <span className="ge" aria-hidden="true">{g.emoji}</span>
+                <span className="ge" aria-hidden="true"><Icon name={g.icon} size={26} /></span>
                 <b>{g.name}</b>
                 <span className="muted">{g.blurb}</span>
                 <span className="tag chip chip-mark">+{g.xp}</span>

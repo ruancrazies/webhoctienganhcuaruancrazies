@@ -1,3 +1,4 @@
+import { skinDecls } from "../../cosmetics/core/css";
 import { HEX_RE } from "../../cosmetics/core/tokens";
 import type { SceneMeta } from "./scenes/types";
 
@@ -19,6 +20,6 @@ export function sceneCss(s: SceneMeta): string {
     if (!HEX_RE.test(v)) throw new Error(`scene ${s.id}: token ${k} phải là #rrggbb`);
     return `${VARS[k]}:${v}`;
   });
-  decl.push("color-scheme:light");
+  decl.push(...skinDecls(s.skin ?? "soft"), "color-scheme:light");
   return `[data-login-scene="${s.id}"]{${decl.join(";")}}`;
 }

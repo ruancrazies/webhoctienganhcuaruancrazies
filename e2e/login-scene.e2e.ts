@@ -2,8 +2,18 @@ import { expect, test } from "@playwright/test";
 import { expectNoA11yViolations, expectNoHorizontalScroll } from "./helpers";
 
 // `?scene=` chỉ có tác dụng ngoài production (dev/test), nên dùng được để kiểm từng scene mà không cần DB.
-for (const scene of ["default", "halloween", "giang-sinh"]) {
-  for (const [label, size] of [["375px", { width: 375, height: 760 }], ["1024px", { width: 1024, height: 720 }]] as const) {
+// Checklist giai đoạn 4: kiểm ở 375, 768, 1024, 1440px. Ảnh chụp chuẩn chỉ giữ ở 375 và 1024 (hai khổ chính) để bộ ảnh không phình;
+// ảnh của scene mới cần tạo lần đầu bằng `--update-snapshots`.
+const SIZES = [
+  ["375px", { width: 375, height: 760 }, true],
+  ["768px", { width: 768, height: 900 }, false],
+  ["1024px", { width: 1024, height: 720 }, true],
+  ["1440px", { width: 1440, height: 900 }, false],
+] as const;
+const SCENES = ["default", "halloween", "giang-sinh", "tet", "trung-thu", "khai-giang"];
+
+for (const scene of SCENES) {
+  for (const [label, size, shot] of SIZES) {
     test(`đăng nhập · scene ${scene} · ${label}: không cuộn ngang, đạt axe, ô nhập ≥ 44px`, async ({ page }) => {
       await page.setViewportSize(size);
       await page.goto(`/login?scene=${scene}`);
@@ -11,9 +21,32 @@ for (const scene of ["default", "halloween", "giang-sinh"]) {
       await expectNoHorizontalScroll(page);
       await expectNoA11yViolations(page);
       for (const id of ["identifier", "password"]) expect((await page.locator(`#${id}`).boundingBox())!.height).toBeGreaterThanOrEqual(44);
-      await expect(page).toHaveScreenshot(`login-${scene}-${label}.png`, { maxDiffPixelRatio: 0.03 });
+      if (shot) await expect(page).toHaveScreenshot(`login-${scene}-${label}.png`, { maxDiffPixelRatio: 0.03 });
     });
   }
+}
+
+// Ba scene mùa của giai đoạn 4: công cụ có tên đọc được, dùng được bằng bàn phím; giảm chuyển động thì tắt canvas mà chữ vẫn đủ.
+for (const [scene, tool, greeting] of [["tet", /Bao lì xì/, "năm mới"], ["trung-thu", /Lồng đèn/, "Trung thu"], ["khai-giang", /Kính lúp/, "năm học mới"]] as const) {
+  test(`scene ${scene}: công cụ ${tool} di chuyển bằng mũi tên; giảm chuyển động vẫn còn lời chào`, async ({ browser }) => {
+    const page = await browser.newPage({ viewport: { width: 1024, height: 720 } });
+    await page.goto(`/login?scene=${scene}`);
+    const t = page.getByRole("button", { name: tool });
+    await t.waitFor();
+    await t.focus();
+    const before = (await t.boundingBox())!;
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("ArrowLeft");
+    await expect.poll(async () => (await t.boundingBox())!.x).toBeLessThan(before.x - 10);
+    await page.close();
+
+    const reduced = await browser.newPage({ viewport: { width: 1024, height: 720 }, reducedMotion: "reduce" });
+    await reduced.goto(`/login?scene=${scene}`);
+    await reduced.waitForTimeout(1500);
+    await expect(reduced.locator(".ls-root[data-live]")).toHaveCount(0);
+    await expect(reduced.locator(".ls-greeting")).toContainText(greeting);
+    await reduced.close();
+  });
 }
 
 test("nút Hiện đổi type và đồng bộ aria-pressed; mật khẩu vẫn là input thật", async ({ page }) => {

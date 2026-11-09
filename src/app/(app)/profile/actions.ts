@@ -6,12 +6,14 @@ import type { FormState } from "@/app/(auth)/state";
 import { isAvatarId } from "@/core/avatars";
 import { usernameSchema } from "@/core/auth";
 import { THEME_AUTO } from "@/core/cosmetics";
+import { isAccentId } from "@/cosmetics/core/accents";
+import { writeAccentCookie } from "@/server/auth/accentCookie";
 import { getCurrentUser, requireUser } from "@/server/auth/session";
 import { readThemeCookie, writeThemeCookie } from "@/server/auth/themeCookie";
 import { usernameOwner } from "@/server/auth/users";
 import { RepoError, ServiceError } from "@/server/errors";
 import { hitRateLimit } from "@/server/ratelimit";
-import { getProfile, updateAvatar, updateUsername } from "@/server/repo";
+import { getProfile, updateAccent, updateAvatar, updateUsername } from "@/server/repo";
 import { equipCosmetic, pollCosmetics, type PollResult } from "@/server/services";
 
 const BUSY = "Hệ thống đang bận, vui lòng thử lại sau.";
@@ -93,6 +95,31 @@ export async function equipCosmeticAction(input: { kind: string; id: string | nu
     return { ok: false, error: BUSY };
   }
   revalidatePath("/", "layout"); // vẽ lại khung: avatar/khung ở thanh trên, CSS của theme mới trong <head>
+  return { ok: true };
+}
+
+// ---------------- Màu nhấn ----------------
+
+const accentSchema = z.object({ id: z.string().refine(isAccentId).nullable() });
+
+/**
+ * Chọn màu nhấn (một trong danh mục đã kiểm tương phản) hoặc `null` = dùng màu của theme. Ghi vào TÀI KHOẢN rồi ghi cookie
+ * `eg-accent` để lần render sau đúng màu ngay. Mã lạ bị chặn trước khi chạm DB; không nhận màu tự do.
+ */
+export async function setAccentAction(input: { id: string | null }): Promise<EquipResult> {
+  const user = await requireUser();
+  const parsed = accentSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Yêu cầu không hợp lệ." };
+  const { id } = parsed.data;
+  try {
+    if (!(await hitRateLimit(`accent:${user.id}`, 3600, 60))) return { ok: false, error: TOO_MANY };
+    await updateAccent(user.id, id);
+    await writeAccentCookie(id);
+  } catch (e) {
+    console.error("[profile:accent]", e);
+    return { ok: false, error: BUSY };
+  }
+  revalidatePath("/", "layout");
   return { ok: true };
 }
 

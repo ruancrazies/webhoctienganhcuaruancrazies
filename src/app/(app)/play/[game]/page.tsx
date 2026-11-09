@@ -5,6 +5,7 @@ import { gameById } from "@/games/registry";
 import { isCefr } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { getHome } from "@/server/services";
+import { Icon } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +46,7 @@ export default async function PlayPage({ params, searchParams }: { params: Promi
       <main className="page page-narrow">
         <Link href="/" className="back">‹ Trang chủ</Link>
         <div className="sheet sheet-plain state">
-          <div className="big" aria-hidden="true">🔒</div>
+          <div className="big" aria-hidden="true"><Icon name="lock" size={36} /></div>
           <h2>Cấp {cefr} đang khóa</h2>
           <p className="muted">Bạn cần đạt bài kiểm tra của cấp trước để chơi ở cấp này.</p>
           <Link href="/" className="btn">Về trang chủ</Link>
@@ -59,7 +60,7 @@ export default async function PlayPage({ params, searchParams }: { params: Promi
       <main className="page page-narrow">
         <Link href={`/level/${cefr}`} className="back">‹ Cấp {cefr}</Link>
         <div className="sheet sheet-plain state">
-          <div className="big" aria-hidden="true">🛠️</div>
+          <div className="big" aria-hidden="true"><Icon name="wrench" size={36} /></div>
           <h2>{meta.name} sắp ra mắt</h2>
           <p className="muted">Trò này chưa sẵn sàng. Hãy thử một trò khác.</p>
           <Link href={`/level/${cefr}`} className="btn">Chọn trò khác</Link>
@@ -73,7 +74,7 @@ export default async function PlayPage({ params, searchParams }: { params: Promi
       <main className="page page-narrow">
         <Link href={`/level/${cefr}`} className="back">‹ Cấp {cefr}</Link>
         <div className="sheet sheet-plain state">
-          <div className="big" aria-hidden="true">{meta.emoji}</div>
+          <div className="big" aria-hidden="true"><Icon name={meta.icon} size={36} /></div>
           <h2>{meta.name} chỉ chơi theo cấp</h2>
           <p className="muted">Trò này không chơi theo chủ đề. Hãy chọn “Tất cả” hoặc một lĩnh vực ở trang cấp.</p>
           <Link href={`/level/${cefr}`} className="btn">Về cấp {cefr}</Link>

@@ -7,6 +7,7 @@ import { ApiFail, apiGet, apiPost, errorMessage } from "@/lib/api";
 import { STATE_LABEL, fmtNumber, posLabel } from "@/lib/format";
 import { sfx, speak } from "@/lib/sound";
 import type { LearnCard, LearnMode, LearnPage, LearnState } from "@/types/api";
+import { Icon } from "@/components/Icon";
 
 const STATE_CHIP: Record<LearnState, string> = { new: "chip", learned: "chip chip-warn", due: "chip chip-red", mastered: "chip chip-good" };
 
@@ -206,7 +207,7 @@ export function LearnList({ cefr, topic, domain, mode }: Props) {
   if (error && items.length === 0) {
     return (
       <div className="sheet sheet-plain state" role="alert">
-        <div className="big" aria-hidden="true">{error.status === 403 ? "🔒" : "😵"}</div>
+        <div className="big" aria-hidden="true"><Icon name={error.status === 403 ? "lock" : "warning"} size={36} /></div>
         <h2>{error.status === 403 ? "Cấp này đang khóa" : "Không tải được danh sách"}</h2>
         <p className="muted">{error.message}</p>
         {error.status !== 403 ? <button type="button" className="btn" onClick={() => void load()}>Thử lại</button> : null}
@@ -217,14 +218,14 @@ export function LearnList({ cefr, topic, domain, mode }: Props) {
   if (items.length === 0) {
     return mode === "review" ? (
       <div className="sheet sheet-plain state">
-        <div className="big" aria-hidden="true">🌱</div>
+        <div className="big" aria-hidden="true"><Icon name="sprout" size={36} /></div>
         <h2>Chưa có từ nào để ôn lại</h2>
         <p className="muted">Các từ bạn đã học hoặc đã chơi sẽ xuất hiện ở đây.</p>
         <Link href={learnHref(hrefScope, "new")} className="btn">Học từ mới</Link>
       </div>
     ) : (
       <div className="sheet sheet-plain state">
-        <div className="big" aria-hidden="true">🎉</div>
+        <div className="big" aria-hidden="true"><Icon name="sparkles" size={36} /></div>
         <h2>Không còn từ mới ở phạm vi này</h2>
         <p className="muted">Bạn đã học hết từ ở đây, hãy ôn lại hoặc chọn lĩnh vực/chủ đề khác.</p>
         <Link href={learnHref(hrefScope, "review")} className="btn">Ôn lại từ cũ</Link>
@@ -264,7 +265,7 @@ export function LearnList({ cefr, topic, domain, mode }: Props) {
                   {w.ipa ? <div className="wc-ipa">/{w.ipa.replace(/^\/|\/$/g, "")}/</div> : null}
                 </div>
                 <button type="button" className="icon-btn" onClick={() => speak(w.en, { force: true })} aria-label={`Nghe phát âm ${w.en}`}>
-                  🔊
+                  <Icon name="volume" size={18} />
                 </button>
               </div>
               <div>
@@ -289,7 +290,7 @@ export function LearnList({ cefr, topic, domain, mode }: Props) {
                   </button>
                 ) : mode === "review" ? (
                   reviewed.has(w.wordId) ? (
-                    <span className="chip chip-good">✓ Đã ôn</span>
+                    <span className="chip chip-good"><Icon name="check" size={14} className="ic" />Đã ôn</span>
                   ) : (
                     <button type="button" className="btn btn-sm" onClick={() => markReview([w.wordId])}>
                       Đã ôn
@@ -309,7 +310,7 @@ export function LearnList({ cefr, topic, domain, mode }: Props) {
       ) : null}
       {canRefresh ? (
         <button type="button" className="btn btn-light btn-block" disabled={refreshing} onClick={() => void refresh()}>
-          {refreshing ? "Đang làm mới…" : cursor ? "🔄 Làm mới: 50 từ tiếp theo" : "🔄 Làm mới: quay lại từ đầu"}
+          {refreshing ? "Đang làm mới…" : <><Icon name="refresh" className="ic" />{cursor ? "Làm mới: 50 từ tiếp theo" : "Làm mới: quay lại từ đầu"}</>}
         </button>
       ) : (
         <p className="muted small" style={{ textAlign: "center" }}>Đã hiển thị hết danh sách.</p>

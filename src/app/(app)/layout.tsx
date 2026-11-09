@@ -14,7 +14,7 @@ import { getMyLook, usableThemeOptions } from "@/server/services";
 /** Khung chung của mọi trang sau đăng nhập. Lớp bảo vệ thật là requireUser() (proxy chỉ là tiện lợi). */
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const user = await requireUser();
-  const me = await getProfile(user.id);
+  const me = await getProfile(user.id); // màu nhấn do app/layout.tsx (gốc) vẽ từ cookie eg-accent
   const level = me ? xpLevelOf(me.xp).level : null;
   // Bộ hiển thị đã qua kiểm sở hữu/hạn dùng: món hết hạn tự về mặc định ngay cả khi hồ sơ còn ghi mã cũ.
   const mine = me ? await getMyLook(me) : null;

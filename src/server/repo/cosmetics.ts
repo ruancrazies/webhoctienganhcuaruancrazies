@@ -69,3 +69,24 @@ export async function updateLook(userId: string, patch: { theme?: string | null;
   if (!Object.keys(row).length) return;
   unwrap("profiles.updateLook", await db().from("profiles").update(row).eq("id", userId));
 }
+
+/**
+ * Màu nhấn đang chọn (mã thô trong DB). Cố ý tách khỏi getProfile: nếu migration 0021 chưa áp (hoặc DB lỗi) thì trả null,
+ * giao diện giữ màu của theme thay vì làm hỏng khung (app) và mọi trang.
+ */
+export async function getAccentId(userId: string): Promise<string | null> {
+  try {
+    const { data, error } = await db().from("profiles").select("accent").eq("id", userId).maybeSingle();
+    if (error) throw error;
+    const v = (data as { accent: string | null } | null)?.accent;
+    return typeof v === "string" ? v : null;
+  } catch (e) {
+    console.warn("[accent] không đọc được màu nhấn, dùng màu của theme", e);
+    return null;
+  }
+}
+
+/** Ghi màu nhấn (service/action đã kiểm mã với danh sách trong code). null = về màu của theme. */
+export async function updateAccent(userId: string, accent: string | null): Promise<void> {
+  unwrap("profiles.updateAccent", await db().from("profiles").update({ accent }).eq("id", userId));
+}

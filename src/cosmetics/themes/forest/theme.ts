@@ -8,7 +8,8 @@ export default defineTheme({
   scheme: "light",
   unlock: { type: "level", level: 10 },
   sort: 10,
-  pattern: "grid",
+  pattern: "waves",
+  skin: "soft",
   tokens: {
     bg: "#eef5ee",
     bgPattern: "#d5e5d6",

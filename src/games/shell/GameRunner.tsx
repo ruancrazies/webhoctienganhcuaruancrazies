@@ -21,6 +21,7 @@ import { TypeGame } from "../type";
 import { gameById } from "../registry";
 import { ResultView } from "./ResultView";
 import { sleep, type GameProps } from "./types";
+import { Icon } from "@/components/Icon";
 
 const COMPONENTS: Record<GameId, ComponentType<GameProps>> = {
   quiz: QuizGame,
@@ -201,13 +202,13 @@ export function GameRunner({ game, scope, label }: Props) {
       <div className="stack" style={{ gap: 16 }}>
         <div className="spread">
           <div className="row" style={{ gap: 8 }}>
-            <span aria-hidden="true" style={{ fontSize: 22 }}>{meta.emoji}</span>
+            <span aria-hidden="true"><Icon name={meta.icon} size={22} /></span>
             <b>{meta.name}</b>
             <span className="chip chip-plain">{scope.cefr} · {label}</span>
           </div>
           {phase === "playing" ? (
             <button type="button" className="btn btn-light btn-sm" onClick={() => setLeaving(true)}>
-              ✕ Thoát
+              <Icon name="x" size={14} className="ic" />Thoát
             </button>
           ) : null}
         </div>
@@ -231,13 +232,13 @@ export function GameRunner({ game, scope, label }: Props) {
           <Game key={round.attempt} items={round.items} onFinish={(a) => void submit(a)} />
         ) : phase === "submitting" ? (
           <div className="sheet sheet-plain state" role="status" aria-live="polite">
-            <div className="big" aria-hidden="true">📝</div>
+            <div className="big" aria-hidden="true"><Icon name="note" size={36} /></div>
             <h2>Đang chấm bài…</h2>
             <p className="muted">Đừng đóng trang, kết quả sẽ hiện ngay.</p>
           </div>
         ) : (
           <div className="sheet sheet-plain state" role="alert">
-            <div className="big" aria-hidden="true">⚠️</div>
+            <div className="big" aria-hidden="true"><Icon name="warning" size={36} /></div>
             <h2>Chưa nộp được bài</h2>
             <p className="muted">{failure?.message}</p>
             <div className="row" style={{ justifyContent: "center" }}>
@@ -263,7 +264,7 @@ export function GameRunner({ game, scope, label }: Props) {
 
       <header className="stack" style={{ gap: 8 }}>
         <div className="row" style={{ gap: 12, flexWrap: "nowrap" }}>
-          <span aria-hidden="true" style={{ fontSize: 40, lineHeight: 1 }}>{meta.emoji}</span>
+          <span aria-hidden="true"><Icon name={meta.icon} size={40} /></span>
           <div className="stack" style={{ gap: 2 }}>
             <h1>{meta.name}</h1>
             <p className="muted">{meta.blurb}</p>

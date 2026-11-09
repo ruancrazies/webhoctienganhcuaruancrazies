@@ -5,6 +5,7 @@ import { sfx } from "@/lib/sound";
 import type { Question } from "@/core/types";
 import { StepGame, type StepValue } from "./shell/StepGame";
 import type { GameProps } from "./shell/types";
+import { Icon } from "@/components/Icon";
 
 const isTextTarget = (t: EventTarget | null) => t instanceof HTMLElement && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
 
@@ -87,7 +88,7 @@ function ScrambleBoard({ q, onChange, disabled }: { q: Question; onChange: (v: s
 
       <div className="row">
         <button type="button" className="btn btn-light btn-sm" disabled={disabled || placed.length === 0} onClick={() => update(placed.slice(0, -1))}>
-          ⌫ Xóa chữ cuối
+          <Icon name="backspace" size={16} className="ic" />Xóa chữ cuối
         </button>
         <button type="button" className="btn btn-light btn-sm" disabled={disabled || placed.length === 0} onClick={() => update([])}>
           Xóa hết

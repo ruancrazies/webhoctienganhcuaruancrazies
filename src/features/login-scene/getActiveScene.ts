@@ -1,5 +1,6 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
+import { withTimeout } from "../../core/withTimeout";
 import { EMPTY_CONFIG, resolveSceneKey, type SceneConfig, type SceneRow, type SceneSource } from "../../core/loginScene";
 import { getSceneConfig } from "../../server/repo/scenes";
 import { defaultScene, isKnownScene, sceneById } from "./scenes";
@@ -14,14 +15,30 @@ export const SCENES_TAG = "login-scenes";
  */
 const cachedConfig = unstable_cache(() => getSceneConfig(), ["login-scene-config"], { tags: [SCENES_TAG], revalidate: 300 });
 
-/** Đọc cấu hình; DB lỗi thì trả cấu hình rỗng (→ scene mặc định) để trang đăng nhập không bao giờ hỏng. */
+/** Quá hạn này mà DB chưa trả lời thì vẽ trang bằng scene mặc định (đo ở giai đoạn 4: DB treo làm /login chậm thêm cả giây). */
+export const SCENE_CONFIG_TIMEOUT_MS = 1200;
+/** Sau một lần lỗi/quá hạn, trong khoảng này không chờ DB nữa (khỏi bắt mọi lượt đăng nhập cùng chịu 1,2 giây khi DB đang sự cố). */
+export const SCENE_CONFIG_BACKOFF_MS = 15_000;
+
+const FAILED: unique symbol = Symbol("scene-config-failed");
+let skipUntil = 0;
+
+/**
+ * Đọc cấu hình; DB lỗi HOẶC chậm thì trả cấu hình rỗng (→ scene mặc định) để trang đăng nhập không bao giờ hỏng hay chờ lâu.
+ * Truy vấn chậm vẫn chạy tiếp ở nền và được cache nếu thành công, nên lượt sau có đúng scene.
+ */
 export async function loadSceneConfig(): Promise<SceneConfig> {
-  try {
-    return await cachedConfig();
-  } catch (e) {
+  if (Date.now() < skipUntil) return EMPTY_CONFIG;
+  const attempt = cachedConfig().catch((e: unknown): typeof FAILED => {
     console.error("[login-scene] không đọc được cấu hình, dùng scene mặc định", e);
+    return FAILED;
+  });
+  const r = await withTimeout<SceneConfig | typeof FAILED>(attempt, SCENE_CONFIG_TIMEOUT_MS, FAILED);
+  if (r === FAILED) {
+    skipUntil = Date.now() + SCENE_CONFIG_BACKOFF_MS;
     return EMPTY_CONFIG;
   }
+  return r;
 }
 
 export type SceneView = {

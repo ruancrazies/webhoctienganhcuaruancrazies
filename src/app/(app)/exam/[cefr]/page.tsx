@@ -5,6 +5,7 @@ import { isCefr, nextLevel } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { getConfig } from "@/server/config";
 import { getHome } from "@/server/services";
+import { Icon } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export default async function ExamPage({ params }: { params: Promise<{ cefr: str
       <main className="page page-narrow">
         <Link href="/level/C2" className="back">‹ Cấp C2</Link>
         <div className="sheet sheet-plain state">
-          <div className="big" aria-hidden="true">🎓</div>
+          <div className="big" aria-hidden="true"><Icon name="cap" size={36} /></div>
           <h2>C2 không có bài kiểm tra</h2>
           <p className="muted">Hoàn thành bài thi C1 là hết lộ trình. C2 để bạn học thêm cho thoải mái.</p>
         </div>

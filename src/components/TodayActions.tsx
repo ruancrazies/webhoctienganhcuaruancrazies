@@ -1,14 +1,15 @@
 import Link from "next/link";
 import type { ActionView } from "@/types/api";
+import { Icon, type IconName } from "@/components/Icon";
 
-const ICON: Record<ActionView["reason"], string> = {
-  due_backlog: "🔁",
-  weak_grammar_topic: "🧩",
-  weak_skill: "🎯",
-  exam_gap: "📚",
-  ready_for_exam: "📝",
-  streak_risk: "🔥",
-  long_absence: "👋",
+const ICON: Record<ActionView["reason"], IconName> = {
+  due_backlog: "repeat",
+  weak_grammar_topic: "puzzle",
+  weak_skill: "target",
+  exam_gap: "book",
+  ready_for_exam: "note",
+  streak_risk: "flame",
+  long_absence: "chat",
 };
 
 /** "Hôm nay nên học gì": tối đa 3 gợi ý theo luật, mỗi gợi ý nói rõ lý do bằng số liệu của chính người học. */
@@ -24,7 +25,7 @@ export function TodayActions({ actions, showAll = false }: { actions: ActionView
         {actions.map((a) => (
           <li key={a.reason}>
             <Link href={a.href} className="action">
-              <span className="action-ico" aria-hidden="true">{ICON[a.reason]}</span>
+              <span className="action-ico" aria-hidden="true"><Icon name={ICON[a.reason]} size={22} /></span>
               <span className="action-body">
                 <b>{a.title}</b>
                 <span className="muted small">{a.why}</span>

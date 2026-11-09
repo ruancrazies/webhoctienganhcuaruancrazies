@@ -4,6 +4,8 @@ import { ResetForm } from "../_components/ResetForm";
 import { first, type SearchParams } from "../search-params";
 
 export const metadata = { title: "Đặt lại mật khẩu · Web học từ vựng" };
+// Scene theo mùa phụ thuộc ngày nên không được tĩnh hóa.
+export const dynamic = "force-dynamic";
 
 export default async function ResetPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;

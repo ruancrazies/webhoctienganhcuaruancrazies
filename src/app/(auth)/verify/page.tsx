@@ -5,6 +5,8 @@ import { VerifyForm } from "../_components/VerifyForm";
 import { first, type SearchParams } from "../search-params";
 
 export const metadata = { title: "Xác nhận email · Web học từ vựng" };
+// Scene theo mùa phụ thuộc ngày nên không được tĩnh hóa.
+export const dynamic = "force-dynamic";
 
 export default async function VerifyPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;

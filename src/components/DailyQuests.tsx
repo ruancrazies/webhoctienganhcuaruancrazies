@@ -7,6 +7,7 @@ import type { QuestId, QuestView } from "@/core/quests";
 import { apiPost, errorMessage } from "@/lib/api";
 import { fmtNumber, ratio } from "@/lib/format";
 import type { ClaimQuestResponse, QuestsResponse } from "@/types/api";
+import { Icon } from "@/components/Icon";
 
 /** Nơi làm nhiệm vụ: học/ôn/chơi ở trang chủ, kiểm tra ở /test. */
 const QUEST_HREF: Partial<Record<QuestId, string>> = { learn: "/", review: "/", play: "/", test: "/test" };
@@ -26,7 +27,7 @@ function QuestRow({ q, busy, onClaim }: { q: QuestView; busy: boolean; onClaim: 
           {q.id === "all" ? `${q.progress}/${q.target} nhiệm vụ` : `${fmtNumber(q.progress)}/${fmtNumber(q.target)}`}
         </span>
         {q.claimed ? (
-          <span className="chip chip-good">✓ Đã nhận</span>
+          <span className="chip chip-good"><Icon name="check" size={14} className="ic" />Đã nhận</span>
         ) : q.done ? (
           <button type="button" className="btn btn-mark btn-sm" disabled={busy} onClick={() => onClaim(q.id)}>
             {busy ? "Đang nhận…" : "Nhận thưởng"}

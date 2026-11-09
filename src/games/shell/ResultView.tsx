@@ -9,6 +9,7 @@ import type { GameMeta } from "../registry";
 import { DONT_KNOW } from "./types";
 import type { ReviewItem } from "@/core/types";
 import type { FinishResponse } from "@/types/api";
+import { Icon } from "@/components/Icon";
 
 type Props = {
   meta: GameMeta;
@@ -47,7 +48,7 @@ function ReviewRow({ r }: { r: ReviewItem }) {
         <p className="q">{r.prompt.replace("___", "_____")}</p>
         {r.en ? (
           <button type="button" className="icon-btn" onClick={() => speak(r.en!, { force: true })} aria-label={`Nghe ${r.en}`}>
-            🔊
+            <Icon name="volume" size={18} />
           </button>
         ) : null}
       </div>
@@ -78,7 +79,7 @@ export function ResultView({ meta, result, answered, total, cefr, scope, onRepla
       <section className="sheet" aria-labelledby="gr-h">
         <div className="grade">
           <h1 id="gr-h" style={{ fontSize: 14, fontWeight: 600, color: "var(--text-soft)" }}>
-            {meta.emoji} {meta.name} · cấp {cefr}
+            <Icon name={meta.icon} className="ic" />{meta.name} · cấp {cefr}
           </h1>
           <div className="score" aria-label={`Nhận được ${result.xpGained} XP`} style={{ fontSize: result.xpGained >= 1000 ? 38 : 48 }}>
             +{fmtNumber(result.xpGained)}
@@ -86,8 +87,8 @@ export function ResultView({ meta, result, answered, total, cefr, scope, onRepla
           <p className={`verdict${result.perfect ? " pass" : ""}`}>
             {result.perfect ? "Đúng hết! Thưởng thêm 20% XP" : wrong === 0 && graded ? "Làm tốt lắm!" : "XP"}
           </p>
-          {result.newBest ? <p className="chip chip-mark">🏅 Kỷ lục mới của bạn!</p> : null}
-          {leveledUp ? <p className="chip chip-good" role="status">🎉 Lên Level {lvAfter.level}!</p> : null}
+          {result.newBest ? <p className="chip chip-mark"><Icon name="medal" className="ic" />Kỷ lục mới của bạn!</p> : null}
+          {leveledUp ? <p className="chip chip-good" role="status"><Icon name="sparkles" className="ic" />Lên Level {lvAfter.level}!</p> : null}
         </div>
 
         <div className="stats" style={{ marginTop: 12, gridTemplateColumns: "repeat(2, 1fr)" }}>
@@ -100,7 +101,7 @@ export function ResultView({ meta, result, answered, total, cefr, scope, onRepla
             <span>{lvAfter.maxed ? "Tối đa" : `Còn ${fmtNumber(lvAfter.toNext)} XP`}</span>
           </div>
           <div className="stat">
-            <b>🔥 {result.streak}</b>
+            <b><Icon name="flame" className="ic" />{result.streak}</b>
             <span>Chuỗi ngày</span>
           </div>
           <div className="stat">
@@ -130,7 +131,7 @@ export function ResultView({ meta, result, answered, total, cefr, scope, onRepla
 
       {result.board && result.board.length > 0 ? (
         <section className="sheet" aria-labelledby="bd-h">
-          <h2 id="bd-h" style={{ marginBottom: 8 }}>⚡ Top 5 Đua tốc độ cấp {cefr}</h2>
+          <h2 id="bd-h" style={{ marginBottom: 8 }}><Icon name="bolt" className="ic" />Top 5 Đua tốc độ cấp {cefr}</h2>
           <ol className="board">
             {result.board.map((r, i) => (
               <li key={`${r.username}-${i}`}>

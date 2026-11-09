@@ -1,0 +1,33 @@
+import { defineScene } from "../types";
+
+export default defineScene({
+  id: "mua-he",
+  name: "Mùa hè",
+  greeting: "Hè rực rỡ! Mỗi ngày một ít từ mới, kỳ nghỉ thêm vui",
+  tagline: "Mùa hè là lúc tốt nhất để vượt qua thử thách từ vựng của bạn.",
+  sort: 25,
+  skin: "clay",
+  tokens: {
+    surface: "#fffdf8",
+    text: "#0c3a4d",
+    textSoft: "#3f6577",
+    accent: "#0b6e99",
+    accentSoft: "#e0f3fa",
+    onAccent: "#ffffff",
+    accentEdge: "#074a69",
+    border: "#cfe5ee",
+    controlBorder: "#0b6e99",
+    margin: "#e0675a",
+    mark: "#ffd66b",
+    danger: "#b3261e",
+    dangerSoft: "#fdecea",
+    success: "#17795a",
+    successSoft: "#e0f5ec",
+    stageBg: "#075985",
+    stageBg2: "#0e7490",
+    stageText: "#ffffff",
+    stageTextSoft: "#d9f3fa",
+    stageAccent: "#ffc98a",
+    glow: "#ffe27a",
+  },
+});

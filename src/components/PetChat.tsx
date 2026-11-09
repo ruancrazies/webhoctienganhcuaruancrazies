@@ -5,6 +5,7 @@ import { CHAT_MAX_CHARS, PET_PERSONA, type ChatPet, type ChatTurn } from "@/core
 import { usePersonalize } from "@/lib/aiPrefs";
 import { apiPost, errorMessage } from "@/lib/api";
 import { CHAT_OPEN_EVENT, isPetsOn, subscribePets, type PetWho } from "@/lib/pets";
+import { Icon } from "@/components/Icon";
 
 type Bubble = ChatTurn & { id: number; error?: boolean };
 const PETS: ChatPet[] = ["nuonuo", "phoebe"];
@@ -81,7 +82,7 @@ export function PetChat() {
   return (
     <section className="pchat" role="dialog" aria-label={`Trò chuyện với ${name}`}>
       <div className="pchat-head">
-        <b>💬 {name}</b>
+        <b><Icon name="chat" className="ic" />{name}</b>
         <div className="pchat-pick">
           {PETS.map((p) => (
             <button key={p} type="button" aria-pressed={p === pet} onClick={() => setPet(p)}>
@@ -89,7 +90,7 @@ export function PetChat() {
             </button>
           ))}
         </div>
-        <button type="button" className="pchat-x" aria-label="Đóng" onClick={() => setOpen(false)}>✕</button>
+        <button type="button" className="pchat-x" aria-label="Đóng" onClick={() => setOpen(false)}><Icon name="x" size={16} /></button>
       </div>
       <div className="pchat-log" ref={logEl} aria-live="polite">
         <div className="pchat-msg is-pet">{HELLO[pet]}</div>

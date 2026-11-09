@@ -40,3 +40,25 @@ Món mới sinh ra với `active: false` (chưa ai chọn được). Quy trình:
 ## Sự kiện (giai đoạn 3)
 
 Món có `unlock: { type: "event", event: "<mã đợt>" }` được cấp qua nhiệm vụ sự kiện (xem `docs/giai-doan-3.md`). `durationDays` quyết định hạn dùng tính từ ngày nhận. Khung/avatar mới phải có ảnh 96/192 trước khi `active: true` (CI chặn món bật mà thiếu ảnh: `tests/cosmetics/assets-gate.test.ts`).
+
+## Màu nhấn (giai đoạn 4)
+
+`src/cosmetics/core/accents.ts`: sáu màu (Xanh biển, Xanh lá, Cam đất, Tím, Hồng sen, Đỏ son), mỗi màu có bộ `light` cho theme nền sáng và bộ `dark` cho theme nền tối. Màu đè lên `accent`, `accentSoft`, `onAccent`, `accentEdge` và `controlBorder` (ở mọi theme viền ô nhập vốn trùng `accent`). Không có bảng màu tự do.
+
+- Lưu: `profiles.accent` (mã, `null` = màu của theme) và cookie `eg-accent`; `<html data-accent="…">` cộng một thẻ `<style data-accent-css>` chỉ chứa CSS của đúng màu đang chọn.
+- Cổng kiểm: `tests/cosmetics/accents.test.ts` chạy toàn bộ luật tương phản của theme trên **mọi cặp màu × theme**. Thêm một theme mới hay một màu mới đều tự được kiểm lại.
+- Thêm màu: thêm một mục trong `ACCENTS` (đủ `light` và `dark`), chạy `npm test`. Không cần migration.
+
+## Trợ năng (giai đoạn 4)
+
+`tests/cosmetics/a11y-css.test.ts` giữ ba điều của checklist ở mức CSS: viền focus chỉ dùng màu đủ 3:1 trên mọi theme (cấm `--mark`, `--border`), ô bấm tối thiểu 44px, và không còn emoji làm biểu tượng trong JSX (dùng `<Icon name="…" />`). Thêm biểu tượng mới: thêm một mục vào `PATHS` trong `src/components/Icon.tsx`.
+
+
+## Skin và họa tiết nền (giao diện bên trong)
+
+Mỗi theme có thêm hai trường tùy chọn, tách khỏi bảng màu:
+
+- `skin`: hình khối của thẻ, nút, thanh tiến độ. `paper` (mặc định, giữ nguyên giao diện gốc), `clay` (bo tròn, bóng đôi mềm), `soft` (phẳng, bóng mờ), `glass` (kính mờ, chỉ hợp nền tối), `neo` (viền dày, bóng cứng). Mỗi skin là một bộ biến CSS (`--radius`, `--card-shadow`, `--btn-shadow`...) khai báo trong `src/cosmetics/core/css.ts`; `globals.css` chỉ đọc biến, nên thêm skin = thêm một dòng ở đó.
+- `pattern`: ngoài `grid | dots | none` còn có `aurora | mesh | waves | diagonal | stars | petals | sunset`. Các kiểu mới dựng từ token bằng `color-mix`, không dùng mã màu thô.
+
+Scene đăng nhập cũng có `skin` riêng (không dùng `glass`), độc lập với theme người dùng chọn. Các trang đăng ký, quên mật khẩu, xác nhận, đặt lại mật khẩu dùng chung scene đang bật qua `AuthShell`.

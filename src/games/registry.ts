@@ -1,5 +1,6 @@
 import { GAME_RULES } from "../core/rules";
 import type { GameId } from "../core/types";
+import type { IconName } from "../components/Icon";
 
 /**
  * Danh sách 10 trò (mục 4.1). Dữ liệu thuần: dùng được cả ở server component lẫn client.
@@ -8,7 +9,7 @@ import type { GameId } from "../core/types";
 export type GameMeta = {
   id: GameId;
   name: string;
-  emoji: string;
+  icon: IconName;
   blurb: string;
   ready: boolean;
   levelOnly: boolean;
@@ -18,16 +19,16 @@ export type GameMeta = {
 };
 
 const base: Omit<GameMeta, "levelOnly" | "xp" | "srs">[] = [
-  { id: "quiz", name: "Trắc nghiệm", emoji: "✅", blurb: "Chọn nghĩa tiếng Việt đúng của từ", ready: true },
-  { id: "blitz", name: "Đua tốc độ", emoji: "⚡", blurb: "60 giây, 3 mạng, combo nhân điểm", ready: true },
-  { id: "type", name: "Gõ từ", emoji: "⌨️", blurb: "Nhìn nghĩa, gõ từ tiếng Anh", ready: true },
-  { id: "scramble", name: "Xếp chữ cái", emoji: "🔤", blurb: "Sắp lại các chữ cái thành từ đúng", ready: true },
-  { id: "cloze", name: "Điền vào câu", emoji: "📝", blurb: "Điền từ còn thiếu trong câu thật", ready: true },
-  { id: "listen", name: "Nghe và chọn", emoji: "🎧", blurb: "Nghe phát âm, chọn nghĩa đúng", ready: true },
-  { id: "match", name: "Ghép cặp", emoji: "🧩", blurb: "Nối từ tiếng Anh với nghĩa", ready: true },
-  { id: "flash", name: "Thẻ ghi nhớ", emoji: "🗂️", blurb: "Lật thẻ, tự đánh giá mình nhớ chưa", ready: true },
-  { id: "build", name: "Xếp câu", emoji: "🧱", blurb: "Sắp các từ thành câu hoàn chỉnh", ready: true },
-  { id: "tf", name: "Đúng hay sai", emoji: "⚖️", blurb: "Câu ngữ pháp này đúng hay sai?", ready: true },
+  { id: "quiz", name: "Trắc nghiệm", icon: "check-circle", blurb: "Chọn nghĩa tiếng Việt đúng của từ", ready: true },
+  { id: "blitz", name: "Đua tốc độ", icon: "bolt", blurb: "60 giây, 3 mạng, combo nhân điểm", ready: true },
+  { id: "type", name: "Gõ từ", icon: "keyboard", blurb: "Nhìn nghĩa, gõ từ tiếng Anh", ready: true },
+  { id: "scramble", name: "Xếp chữ cái", icon: "type", blurb: "Sắp lại các chữ cái thành từ đúng", ready: true },
+  { id: "cloze", name: "Điền vào câu", icon: "note", blurb: "Điền từ còn thiếu trong câu thật", ready: true },
+  { id: "listen", name: "Nghe và chọn", icon: "headphones", blurb: "Nghe phát âm, chọn nghĩa đúng", ready: true },
+  { id: "match", name: "Ghép cặp", icon: "puzzle", blurb: "Nối từ tiếng Anh với nghĩa", ready: true },
+  { id: "flash", name: "Thẻ ghi nhớ", icon: "cards", blurb: "Lật thẻ, tự đánh giá mình nhớ chưa", ready: true },
+  { id: "build", name: "Xếp câu", icon: "bricks", blurb: "Sắp các từ thành câu hoàn chỉnh", ready: true },
+  { id: "tf", name: "Đúng hay sai", icon: "scales", blurb: "Câu ngữ pháp này đúng hay sai?", ready: true },
 ];
 
 export const GAMES: GameMeta[] = base.map((g) => ({

@@ -9,7 +9,16 @@ export const THEME_GROUP_LABEL: Record<ThemeGroup, string> = {
   nature: "Thiên nhiên",
   event: "Sự kiện",
 };
-export type ThemePattern = "grid" | "dots" | "none";
+/** Họa tiết nền. grid/dots/none là nét mảnh; các kiểu còn lại là nền nhiều lớp dựng từ chính token của theme (không mã màu thô). */
+export type ThemePattern = "grid" | "dots" | "none" | "aurora" | "mesh" | "waves" | "diagonal" | "stars" | "petals" | "sunset";
+
+/**
+ * "Skin" = ngôn ngữ hình khối của theme (bo góc, viền, đổ bóng, độ trong của thẻ), tách khỏi bảng màu.
+ * paper: tờ vở viền mảnh, bóng cứng (bản gốc) · clay: đất sét mềm, bo tròn, bóng đôi · soft: phẳng hiện đại, bóng mờ
+ * glass: kính mờ trong suốt · neo: viền dày, bóng cứng kiểu poster.
+ */
+export type ThemeSkin = "paper" | "clay" | "soft" | "glass" | "neo";
+export const THEME_SKIN_LABEL: Record<ThemeSkin, string> = { paper: "Tờ vở", clay: "Đất sét", soft: "Phẳng mềm", glass: "Kính mờ", neo: "Poster" };
 
 export type ThemeDef = {
   /** Bất biến: DB và cookie tham chiếu mã này. Đổi tên chỉ đổi `name`. */
@@ -22,6 +31,8 @@ export type ThemeDef = {
   tokens: ThemeTokens;
   /** Họa tiết nền. Mặc định: grid (ô ly). */
   pattern?: ThemePattern;
+  /** Ngôn ngữ hình khối. Mặc định: paper (giữ nguyên giao diện gốc). */
+  skin?: ThemeSkin;
   /** Thứ tự hiển thị (nhỏ trước); mặc định 100. */
   sort?: number;
   /** false = ngừng cung cấp: người đã sở hữu vẫn thấy, người khác không chọn được. Không xóa thư mục. */

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ClientPassage, RevealedPassage } from "@/core/types";
+import { Icon } from "@/components/Icon";
 
 const SKILL_LABEL = { reading: "Bài đọc", listening: "Bài nghe" } as const;
 
@@ -59,9 +60,9 @@ function Listening({ passage }: { passage: ClientPassage }) {
         <audio controls preload="none" src={passage.audioUrl} style={{ width: "100%" }} />
       ) : (
         <div className="row">
-          <button type="button" className="btn" onClick={() => play(0.9)} disabled={playing}>🔊 Nghe</button>
-          <button type="button" className="btn btn-light" onClick={() => play(0.7)} disabled={playing}>🐢 Nghe chậm</button>
-          {playing ? <button type="button" className="btn btn-light" onClick={stop}>⏹ Dừng</button> : null}
+          <button type="button" className="btn" onClick={() => play(0.9)} disabled={playing}><Icon name="volume" className="ic" />Nghe</button>
+          <button type="button" className="btn btn-light" onClick={() => play(0.7)} disabled={playing}><Icon name="turtle" className="ic" />Nghe chậm</button>
+          {playing ? <button type="button" className="btn btn-light" onClick={stop}><Icon name="stop" className="ic" />Dừng</button> : null}
         </div>
       )}
       <p className="muted small">Bạn nghe lại được nhiều lần. Lời thoại sẽ hiện sau khi nộp bài.</p>

@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useRef } from "react";
 import { speak } from "@/lib/sound";
 import type { Question } from "@/core/types";
+import { Icon } from "@/components/Icon";
 
 const KIND: Record<string, string> = {
   quiz: "Chọn nghĩa tiếng Việt của từ",
@@ -63,11 +64,11 @@ export function QuestionCard({ q, value, onChange, onEnter, disabled }: Props) {
 
       <div className="row" style={{ alignItems: "flex-start", flexWrap: "nowrap" }}>
         <p className={`q-prompt${isSentence ? " sentence" : ""}`} style={{ flex: 1 }}>
-          {q.game === "listen" ? "🎧 Bấm nút loa để nghe" : <Sentence text={q.prompt} />}
+          {q.game === "listen" ? <><Icon name="headphones" className="ic" />Bấm nút loa để nghe</> : <Sentence text={q.prompt} />}
         </p>
         {canSpeak ? (
           <button type="button" className="icon-btn" onClick={() => speak(q.prompt, { force: true })} aria-label={`Nghe phát âm ${q.prompt}`}>
-            🔊
+            <Icon name="volume" size={20} />
           </button>
         ) : null}
       </div>

@@ -6,6 +6,7 @@ import { speak } from "@/lib/sound";
 import type { Question } from "@/core/types";
 import { StepGame } from "./shell/StepGame";
 import type { GameProps } from "./shell/types";
+import { Icon } from "@/components/Icon";
 
 type CardProps = { q: Question; value: string; onChange: (v: string) => void; disabled: boolean };
 
@@ -21,7 +22,7 @@ function ListenQuestion({ q, value, onChange, disabled }: CardProps) {
       <QuestionCard q={q} value={value} onChange={onChange} disabled={disabled} />
       <div>
         <button type="button" className="btn btn-light btn-sm" onClick={() => speak(q.prompt, { force: true, rate: 0.55 })}>
-          🐢 Nghe chậm
+          <Icon name="turtle" className="ic" />Nghe chậm
         </button>
       </div>
     </div>

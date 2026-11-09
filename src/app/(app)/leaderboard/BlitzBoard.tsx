@@ -5,6 +5,7 @@ import { apiGet, errorMessage } from "@/lib/api";
 import { fmtNumber } from "@/lib/format";
 import type { Cefr } from "@/core/types";
 import type { BlitzBoardResponse } from "@/types/api";
+import { Icon } from "@/components/Icon";
 
 const LEVELS: Cefr[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
@@ -30,7 +31,7 @@ export function BlitzBoard() {
     <section className="sheet" aria-labelledby="bz-h">
       <div className="stack">
         <div className="stack" style={{ gap: 2 }}>
-          <h2 id="bz-h">⚡ Đua tốc độ</h2>
+          <h2 id="bz-h"><Icon name="bolt" className="ic" />Đua tốc độ</h2>
           <p className="muted small">Điểm cao nhất theo từng cấp, top 5.</p>
         </div>
         <div className="scope" role="group" aria-label="Chọn cấp">

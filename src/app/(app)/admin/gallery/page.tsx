@@ -8,6 +8,7 @@ import { checkAssets, checkTheme, type Check } from "@/cosmetics/checks";
 import { AVATARS, FRAMES, THEMES } from "@/cosmetics/registry";
 import { checkScene } from "@/features/login-scene/checks";
 import { SCENES } from "@/features/login-scene/scenes";
+import { Icon } from "@/components/Icon";
 
 export const metadata = { title: "Gallery · Quản trị" };
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ function Checks({ checks }: { checks: Check[] }) {
         <ul className="weak-list">
           {bad.map((c) => (
             <li key={c.label}>
-              <span>✗ {c.label}</span>
+              <span><Icon name="x" size={14} className="ic" />{c.label}</span>
               <span className="muted small">{c.detail}</span>
             </li>
           ))}

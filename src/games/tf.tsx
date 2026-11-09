@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import { StepGame } from "./shell/StepGame";
 import type { GameProps } from "./shell/types";
+import { Icon } from "@/components/Icon";
 
 /** Đúng hay sai: câu ngữ pháp đã điền sẵn đáp án. Đáp án gửi lên là "true" / "false". */
 export function TfGame(props: GameProps) {
@@ -23,10 +24,10 @@ export function TfGame(props: GameProps) {
           </p>
           <div className="tf-btns" role="group" aria-label="Chọn đúng hoặc sai">
             <button type="button" className="tf-btn tf-yes" aria-pressed={value === "true"} disabled={disabled} onClick={() => setValue("true")}>
-              <span aria-hidden="true">✓</span> Đúng
+              <Icon name="check" size={16} className="ic" />Đúng
             </button>
             <button type="button" className="tf-btn tf-no" aria-pressed={value === "false"} disabled={disabled} onClick={() => setValue("false")}>
-              <span aria-hidden="true">✗</span> Sai
+              <Icon name="x" size={16} className="ic" />Sai
             </button>
           </div>
         </div>

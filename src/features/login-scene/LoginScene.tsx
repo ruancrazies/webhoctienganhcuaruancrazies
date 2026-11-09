@@ -95,7 +95,7 @@ export function LoginScene({ id, greeting, tagline, canvas, pal, preview, childr
     <div className="ls-frame" data-login-scene={id}>
       <div ref={rootRef} className={`ls-root${preview ? " ls-preview" : ""}`} data-live={live || undefined} data-lit={lit || undefined}>
         <div ref={stageRef} className="ls-stage">
-          <div className="ls-art" aria-hidden="true"><i /><i /><i /><i /></div>
+          <div className="ls-art" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /></div>
           <div className="ls-copy">
             <p className="ls-greeting">{greeting}</p>
             <p className="ls-tagline">{tagline}</p>

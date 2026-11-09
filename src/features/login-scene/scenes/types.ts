@@ -1,4 +1,5 @@
 import type { ThemeTokens } from "../../../cosmetics/core/tokens";
+import type { ThemeSkin } from "../../../cosmetics/core/define";
 import { ID_RE } from "../../../cosmetics/core/unlock";
 
 /**
@@ -45,6 +46,8 @@ export type SceneMeta = {
   /** Dòng phụ dưới câu chào. */
   tagline: string;
   tokens: SceneTokens;
+  /** Hình khối của thẻ đăng nhập (bo góc, bóng, viền). Độc lập với skin của theme trong app; mặc định "soft". Không dùng "glass" vì thẻ cần nền đặc. */
+  skin?: Exclude<ThemeSkin, "glass">;
   /** Có phần canvas nâng cao không (khi có thì BẮT BUỘC có draw.ts; test kiểm). */
   canvas?: SceneCanvas;
   sort?: number;

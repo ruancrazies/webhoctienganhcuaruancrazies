@@ -4,6 +4,7 @@ import { xpLevelOf } from "@/core/xpLevel";
 import { fmtNumber } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { getLeaderboard } from "@/server/services";
+import { Icon } from "@/components/Icon";
 
 export const metadata = { title: "Xếp hạng · Web học từ vựng" };
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export default async function LeaderboardPage() {
         <h2 id="xp-h" style={{ marginBottom: 6 }}>Tổng XP</h2>
         {rows.length === 0 ? (
           <div className="state">
-            <div className="big" aria-hidden="true">🏁</div>
+            <div className="big" aria-hidden="true"><Icon name="flag" size={36} /></div>
             <p className="muted">Chưa có ai trên bảng. Chơi một vòng để lên đầu bảng.</p>
           </div>
         ) : (

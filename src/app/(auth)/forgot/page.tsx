@@ -3,6 +3,8 @@ import { AuthShell } from "../_components/AuthShell";
 import { ForgotForm } from "../_components/ForgotForm";
 
 export const metadata = { title: "Quên mật khẩu · Web học từ vựng" };
+// Scene theo mùa phụ thuộc ngày nên không được tĩnh hóa.
+export const dynamic = "force-dynamic";
 
 export default function ForgotPage() {
   return (

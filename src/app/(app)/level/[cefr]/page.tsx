@@ -4,6 +4,7 @@ import { LevelScopePicker } from "./LevelScopePicker";
 import { LEVEL_NAMES, fmtNumber, isCefr, prevLevel, ratio } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { getHome } from "@/server/services";
+import { Icon } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export default async function LevelPage({ params }: { params: Promise<{ cefr: st
       <main className="page page-narrow">
         <Link href="/" className="back">‹ Trang chủ</Link>
         <div className="sheet sheet-plain state">
-          <div className="big" aria-hidden="true">🔒</div>
+          <div className="big" aria-hidden="true"><Icon name="lock" size={36} /></div>
           <h2>Cấp {cefr} đang khóa</h2>
           <p className="muted">Bạn cần đạt bài kiểm tra cấp {prev ?? "trước"} để mở cấp này. Không thể thi nhảy cấp.</p>
           <Link href={prev ? `/level/${prev}` : "/"} className="btn">Về cấp {prev ?? "đầu"}</Link>
@@ -73,7 +74,7 @@ export default async function LevelPage({ params }: { params: Promise<{ cefr: st
                 </p>
               )}
             </div>
-            {level.pass ? <span className="chip chip-good">✓ Đã qua</span> : (
+            {level.pass ? <span className="chip chip-good"><Icon name="check" size={14} className="ic" />Đã qua</span> : (
               <Link href={`/exam/${cefr}`} className={level.eligible ? "btn btn-mark" : "btn btn-light"}>
                 {level.eligible ? "Thi ngay" : "Xem điều kiện"}
               </Link>

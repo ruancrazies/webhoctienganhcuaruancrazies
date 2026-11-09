@@ -6,13 +6,14 @@ import { LEVEL_NAMES, fmtNumber, ratio } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { getHome } from "@/server/services";
 import type { HomeLevel } from "@/types/api";
+import { Icon } from "@/components/Icon";
 
 export const metadata = { title: "Học · Web học từ vựng" };
 export const dynamic = "force-dynamic";
 
 function statusChip(l: HomeLevel) {
-  if (!l.unlocked) return <span className="chip chip-plain">🔒 Khóa</span>;
-  if (l.pass) return <span className="chip chip-good">✓ Đã qua</span>;
+  if (!l.unlocked) return <span className="chip chip-plain"><Icon name="lock" size={14} className="ic" />Khóa</span>;
+  if (l.pass) return <span className="chip chip-good"><Icon name="check" size={14} className="ic" />Đã qua</span>;
   if (l.eligible) return <span className="chip chip-mark">Sẵn sàng thi</span>;
   return <span className="chip">Đang học</span>;
 }
@@ -72,7 +73,7 @@ export default async function HomePage() {
         </h1>
         <div className="stats">
           <div className="stat">
-            <b>🔥 {profile.streak}</b>
+            <b><Icon name="flame" className="ic" />{profile.streak}</b>
             <span>ngày liên tiếp</span>
           </div>
           <div className="stat">

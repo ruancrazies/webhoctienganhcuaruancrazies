@@ -5,6 +5,7 @@ import { sfx, speak } from "@/lib/sound";
 import { useDwell } from "@/lib/useDwell";
 import type { Answer } from "@/core/types";
 import type { GameProps } from "./shell/types";
+import { Icon } from "@/components/Icon";
 
 type Slot = { i: number; pass: 1 | 2 };
 
@@ -101,17 +102,17 @@ export function FlashGame({ items, onFinish }: GameProps) {
 
         <div className="row" style={{ justifyContent: "center" }}>
           <button type="button" className="btn btn-light btn-sm" onClick={() => speak(item.prompt, { force: true })}>
-            🔊 Nghe
+            <Icon name="volume" className="ic" />Nghe
           </button>
         </div>
 
         {flipped ? (
           <div className="fc-rate">
             <button type="button" className="btn btn-red" onClick={() => rate(false)}>
-              ✗ Chưa nhớ
+              <Icon name="x" size={16} className="ic" />Chưa nhớ
             </button>
             <button type="button" className="btn" style={{ background: "var(--success)", borderColor: "var(--success)", boxShadow: "0 3px 0 var(--success-edge)" }} onClick={() => rate(true)}>
-              ✓ Đã nhớ
+              <Icon name="check" size={16} className="ic" />Đã nhớ
             </button>
           </div>
         ) : (

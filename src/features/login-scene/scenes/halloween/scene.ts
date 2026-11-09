@@ -6,6 +6,7 @@ export default defineScene({
   greeting: "Halloween vui vẻ! Từ mới đang trốn trong bóng tối",
   tagline: "Rọi đèn pin vào ô mật khẩu để soi xem bạn đang gõ gì.",
   sort: 10,
+  skin: "neo",
   tokens: {
     surface: "#fffaf0", text: "#2b1240", textSoft: "#5a4570", accent: "#5b21a6", accentSoft: "#efe4fb", onAccent: "#ffffff", accentEdge: "#3b1470",
     border: "#e3d6f0", controlBorder: "#5b21a6", margin: "#c2410c", mark: "#ffb24a", danger: "#b3261e", dangerSoft: "#fdecea", success: "#1b6b3f", successSoft: "#e3f4ea",

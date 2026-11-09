@@ -6,6 +6,7 @@ import { GAMES } from "@/games/registry";
 import { fmtNumber, pct } from "@/lib/format";
 import { requireUser } from "@/server/auth/session";
 import { getInsights } from "@/server/services";
+import { Icon } from "@/components/Icon";
 
 export const metadata = { title: "Hồ sơ năng lực · Web học từ vựng" };
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ const gameName = (id: string) => GAMES.find((g) => g.id === id)?.name ?? id;
 function Trend({ v }: { v: number | null }) {
   if (v === null || Math.abs(v) < 0.005) return null;
   const pts = Math.round(Math.abs(v) * 100);
-  return v > 0 ? <span className="up small">▲ {pts} điểm</span> : <span className="down small">▼ {pts} điểm</span>;
+  return v > 0 ? <span className="up small"><Icon name="arrow-up" size={14} className="ic" />tăng {pts} điểm</span> : <span className="down small"><Icon name="arrow-down" size={14} className="ic" />giảm {pts} điểm</span>;
 }
 
 const hourLabel = (h: number) => `${h}h`;

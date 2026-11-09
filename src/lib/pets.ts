@@ -1,6 +1,7 @@
 /**
  * Tùy chọn thú cưng nền + kênh "trợ lý" (nhắc nhở/gợi ý). Chỉ là tùy chọn giao diện nên lưu ở localStorage
- * (như tắt âm/giao diện tối). Mặc định BẬT. Một công tắc duy nhất: tắt = ẩn pet và không còn lời nhắc nào.
+ * (như tắt âm/giao diện tối). Mặc định BẬT, trừ khi thiết bị bật "giảm chuyển động" (prefers-reduced-motion) và người dùng chưa tự chọn:
+ * thú cưng đi lại liên tục là chuyển động trang trí nên mặc định TẮT với họ; bật tay thì tôn trọng lựa chọn. Một công tắc duy nhất: tắt = ẩn pet và không còn lời nhắc nào.
  *
  * Từ bất kỳ component client nào, muốn thú cưng nói một câu:
  *   import { petSay } from "@/lib/pets";
@@ -43,7 +44,8 @@ function writeFlag(key: string, on: boolean): void {
   if (typeof window !== "undefined") window.dispatchEvent(new Event(EVENT_PREFS));
 }
 
-export const isPetsOn = (): boolean => readFlag(KEY_PETS, true);
+const reducedMotion = (): boolean => typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+export const isPetsOn = (): boolean => readFlag(KEY_PETS, !reducedMotion());
 export const setPetsOn = (on: boolean): void => writeFlag(KEY_PETS, on);
 
 export function subscribePets(cb: () => void): () => void {

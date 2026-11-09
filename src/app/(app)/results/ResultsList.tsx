@@ -6,6 +6,7 @@ import { ApiFail, apiGet, errorMessage } from "@/lib/api";
 import { fmtVnDateTime, pct } from "@/lib/format";
 import type { Cefr } from "@/core/types";
 import type { ResultListItem, ResultType, ResultsPage } from "@/types/api";
+import { Icon } from "@/components/Icon";
 
 const GATED: Cefr[] = ["A1", "A2", "B1", "B2", "C1"];
 const TYPE_FILTERS: { v: ResultType | "all"; label: string }[] = [
@@ -129,7 +130,7 @@ export function ResultsList({ initial }: { initial: ResultsPage }) {
 
       {items.length === 0 ? (
         <div className="sheet sheet-plain state">
-          <div className="big" aria-hidden="true">📝</div>
+          <div className="big" aria-hidden="true"><Icon name="note" size={36} /></div>
           <p className="muted">{loading ? "Đang tải…" : type === "all" && cefr === "all" ? "Bạn chưa nộp bài kiểm tra nào." : "Không có bài nào khớp bộ lọc."}</p>
           {type === "all" && cefr === "all" && !loading ? <Link href="/test" className="btn">Làm bài kiểm tra</Link> : null}
         </div>

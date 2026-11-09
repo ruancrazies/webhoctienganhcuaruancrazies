@@ -3,6 +3,8 @@ import { AuthShell } from "../_components/AuthShell";
 import { RegisterForm } from "../_components/RegisterForm";
 
 export const metadata = { title: "Đăng ký · Web học từ vựng" };
+// Scene theo mùa phụ thuộc ngày nên không được tĩnh hóa.
+export const dynamic = "force-dynamic";
 
 export default function RegisterPage() {
   return (

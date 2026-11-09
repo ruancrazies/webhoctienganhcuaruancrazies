@@ -5,6 +5,7 @@ import { requireUser } from "@/server/auth/session";
 import { getResultDetail } from "@/server/services";
 import { resultRefSchema } from "@/types/api";
 import { ResultReview } from "./ResultReview";
+import { Icon } from "@/components/Icon";
 
 export const metadata = { title: "Xem lại bài · Web học từ vựng" };
 export const dynamic = "force-dynamic";
@@ -29,7 +30,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ t
         <main className="page page-narrow">
           <Link href="/results" className="back">‹ Kết quả</Link>
           <div className="sheet sheet-plain state">
-            <div className="big" aria-hidden="true">🗂️</div>
+            <div className="big" aria-hidden="true"><Icon name="cards" size={36} /></div>
             <h2>Không có chi tiết bài làm</h2>
             <p className="muted">Bài này làm trước khi có tính năng xem lại (hoặc bị đóng vì hết giờ), nên chỉ còn điểm số.</p>
             <Link href="/results" className="btn">Về danh sách</Link>

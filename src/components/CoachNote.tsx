@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { apiGet } from "@/lib/api";
 import { usePersonalize } from "@/lib/aiPrefs";
 import type { CoachResponse } from "@/types/api";
+import { Icon } from "@/components/Icon";
 
 /**
  * Lời nhắn coach hôm nay (giai đoạn 3). Tải sau khi trang đã hiện để không làm chậm trang chủ khi Gemini phản hồi chậm.
@@ -25,7 +26,7 @@ export function CoachNote() {
   if (!coach) return null;
   return (
     <section className="coach" aria-label="Lời nhắn hôm nay">
-      <p className="coach-msg">💬 {coach.message}</p>
+      <p className="coach-msg"><Icon name="chat" className="ic" />{coach.message}</p>
       <p className="muted small coach-note">
         {coach.source === "ai"
           ? "AI viết từ bản tóm tắt ẩn danh về kết quả học của bạn (không có tên hay email)."

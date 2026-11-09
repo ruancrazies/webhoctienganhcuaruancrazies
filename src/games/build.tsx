@@ -5,6 +5,7 @@ import { speak, sfx } from "@/lib/sound";
 import type { Question } from "@/core/types";
 import { StepGame, type StepValue } from "./shell/StepGame";
 import type { GameProps } from "./shell/types";
+import { Icon } from "@/components/Icon";
 
 /** Xếp câu: bấm từ ở dưới để đưa lên câu, bấm từ trong câu để bỏ ra. Chỉ số theo vị trí nên từ trùng nhau không bị lẫn. */
 function BuildBoard({ q, onChange, disabled }: { q: Question; onChange: (v: string[]) => void; disabled: boolean }) {
@@ -64,14 +65,14 @@ function BuildBoard({ q, onChange, disabled }: { q: Question; onChange: (v: stri
 
       <div className="row">
         <button type="button" className="btn btn-light btn-sm" disabled={disabled || placed.length === 0} onClick={() => update(placed.slice(0, -1))}>
-          ⌫ Xóa từ cuối
+          <Icon name="backspace" size={16} className="ic" />Xóa từ cuối
         </button>
         <button type="button" className="btn btn-light btn-sm" disabled={disabled || placed.length === 0} onClick={() => update([])}>
           Xóa hết
         </button>
         {full ? (
           <button type="button" className="icon-btn" aria-label="Nghe câu của bạn" onClick={() => speak(placed.map((i) => tokens[i]).join(" "), { force: true })}>
-            🔊
+            <Icon name="volume" size={18} />
           </button>
         ) : null}
       </div>

@@ -2,9 +2,12 @@ import Link from "next/link";
 import { logoutAction } from "@/app/(auth)/actions";
 import { MuteToggle } from "@/components/MuteButton";
 import { PetSettings } from "@/components/PetSettings";
+import { AccentPicker } from "@/components/AccentPicker";
 import { AutoThemeSwitch } from "@/components/ThemeToggle";
+import { ACCENTS, accentCss, accentSwatchCss, resolveAccentId } from "@/cosmetics/core/accents";
+import { THEMES } from "@/cosmetics/registry";
 import { requireUser } from "@/server/auth/session";
-import { getProfile } from "@/server/repo";
+import { getAccentId, getProfile } from "@/server/repo";
 import { notFound } from "next/navigation";
 import { AvatarPicker, UsernameForm } from "../AccountSettings";
 
@@ -15,6 +18,9 @@ export default async function SettingsPage() {
   const user = await requireUser();
   const profile = await getProfile(user.id);
   if (!profile) notFound();
+  const accent = resolveAccentId(await getAccentId(user.id));
+  // Trang này mang CSS của MỌI màu nhấn (vài trăm byte mỗi màu) để đổi màu tức thì mà không phải tải lại.
+  const accentStyles = ACCENTS.map((a) => accentCss(a.id, THEMES)).join("") + accentSwatchCss(THEMES);
 
   return (
     <main className="page page-narrow">
@@ -38,6 +44,8 @@ export default async function SettingsPage() {
           <AutoThemeSwitch />
         </div>
         <p className="small"><Link href="/profile/collection?tab=theme">Chọn giao diện trong Bộ sưu tập</Link></p>
+        <style data-accent-all dangerouslySetInnerHTML={{ __html: accentStyles }} />
+        <AccentPicker options={ACCENTS.map((a) => ({ id: a.id, name: a.name }))} initial={accent} />
       </section>
 
       <section className="sheet sheet-plain stack" aria-labelledby="st-h">

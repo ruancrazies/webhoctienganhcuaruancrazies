@@ -33,6 +33,13 @@ describe("registry scene", () => {
     for (const id of ["default", "halloween", "giang-sinh"]) expect(sceneById(id)).toBeDefined();
   });
 
+  it("Giai đoạn 4 thêm Tết, Trung thu, Khai giảng: đều có canvas và đang bật", () => {
+    for (const id of ["tet", "trung-thu", "khai-giang"]) {
+      expect(sceneById(id)?.canvas, id).toBeDefined();
+      expect(isKnownScene(id), id).toBe(true);
+    }
+  });
+
   it("scene có canvas thì có draw.ts và ngược lại; scene.css chỉ khi có hình tĩnh", () => {
     for (const f of scanScenes()) {
       expect(!!sceneById(f.id)!.canvas, f.id).toBe(f.hasDraw);
